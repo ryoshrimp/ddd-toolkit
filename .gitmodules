@@ -1,0 +1,6 @@
+[submodule "ddd-toolkit-core"]
+	path = ddd-toolkit-core
+	url = git@github.com:ryoshrimp/ddd-toolkit-core.git
+[submodule "ddd-toolkit-macro"]
+	path = ddd-toolkit-macro
+	url = git@github.com:ryoshrimp/ddd-toolkit-macro.git
