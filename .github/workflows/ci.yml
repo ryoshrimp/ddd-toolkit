@@ -17,6 +17,19 @@ jobs:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      # ddd-toolkit-macro's trybuild UI tests build each fixture in an
+      # isolated, non-workspace crate with cargo's --offline flag hardcoded
+      # (trybuild always passes it). This workspace's [patch] on
+      # ddd-toolkit-core's git URL means the *patched* build here never
+      # fetches that git dependency for real, so trybuild's offline build
+      # has nothing to find and fails with "you are in the offline mode".
+      # Fetch it for real first, from a worktree outside this workspace
+      # (so the patch doesn't apply), to warm cargo's git cache.
+      - name: Warm cargo git cache for ddd-toolkit-macro's trybuild dependency
+        run: |
+          git -C ddd-toolkit-macro worktree add "$RUNNER_TEMP/ddd-toolkit-macro-standalone" HEAD
+          cargo fetch --manifest-path "$RUNNER_TEMP/ddd-toolkit-macro-standalone/Cargo.toml"
+          git -C ddd-toolkit-macro worktree remove --force "$RUNNER_TEMP/ddd-toolkit-macro-standalone"
       - run: cargo test --workspace --all-features
 
   feature-matrix:
