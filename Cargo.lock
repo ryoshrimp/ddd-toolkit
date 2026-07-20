@@ -60,7 +60,7 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 name = "ddd-toolkit"
 version = "0.0.0"
 dependencies = [
- "ddd-toolkit-core 0.1.0",
+ "ddd-toolkit-core",
  "ddd-toolkit-macro",
 ]
 
@@ -74,18 +74,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "ddd-toolkit-core"
-version = "0.1.0"
-source = "git+ssh://git@github.com/ryoshrimp/ddd-toolkit-core.git?tag=v0.1.0#114518e6a2a06c7adcd7b59d175fb5598386313b"
-dependencies = [
- "trait-variant",
-]
-
-[[package]]
 name = "ddd-toolkit-macro"
 version = "0.1.0"
 dependencies = [
- "ddd-toolkit-core 0.1.0 (git+ssh://git@github.com/ryoshrimp/ddd-toolkit-core.git?tag=v0.1.0)",
+ "ddd-toolkit-core",
  "proc-macro2",
  "quote",
  "syn 3.0.1",

@@ -18,3 +18,13 @@ derive = ["dep:ddd-toolkit-macro"]
 chrono = ["ddd-toolkit-core/chrono"]
 uuid = ["ddd-toolkit-core/uuid"]
 zeroize = ["ddd-toolkit-macro/zeroize"]
+
+# ddd-toolkit-macro is developed as its own standalone repo/crate and
+# declares its ddd-toolkit-core dependency via git tag so it builds on its
+# own. Inside this workspace both crates are also checked out locally as
+# submodules, so redirect that git dependency to the local path: otherwise
+# Cargo compiles two separate copies of ddd-toolkit-core side by side, and
+# local edits to ddd-toolkit-core are invisible to ddd-toolkit-macro's own
+# build/tests within this workspace.
+[patch."ssh://git@github.com/ryoshrimp/ddd-toolkit-core.git"]
+ddd-toolkit-core = { path = "ddd-toolkit-core" }
