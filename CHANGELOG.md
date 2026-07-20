@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-20
+
+### Fixed
+
+- CI: `cargo test --workspace --all-features` had been failing on every run
+  since CI was added. `ddd-toolkit-macro`'s trybuild UI tests build each
+  fixture in an isolated, non-workspace crate with cargo's `--offline` flag
+  hardcoded, but this workspace's `[patch]` on `ddd-toolkit-core`'s git URL
+  meant the patched build here never fetched that git dependency for real,
+  so trybuild's offline build had nothing to find. Added a CI step that
+  fetches it for real first, from a `git worktree` outside this workspace
+  (so the patch doesn't apply), to warm cargo's git cache. Repo/CI-only;
+  doesn't affect the published package.
+
 ## [0.1.1] - 2026-07-20
 
 ### Added
@@ -54,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `zeroize`-feature compile break. `scripts/check-feature-matrix.sh` checks
   the facade compiles under every individual feature combination.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ryoshrimp/ddd-toolkit/releases/tag/v0.1.0
