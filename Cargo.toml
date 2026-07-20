@@ -5,3 +5,16 @@ edition = "2024"
 
 [workspace]
 members = ["ddd-toolkit-core", "ddd-toolkit-macro"]
+
+
+[dependencies]
+ddd-toolkit-core = { version = "0.1.0", path = "ddd-toolkit-core" }
+ddd-toolkit-macro = { version = "0.1.0", path = "ddd-toolkit-macro", optional = true }
+
+
+[features]
+default = ["derive"]
+derive = ["dep:ddd-toolkit-macro"]
+chrono = ["ddd-toolkit-core/chrono"]
+uuid = ["ddd-toolkit-core/uuid"]
+zeroize = ["ddd-toolkit-macro/zeroize"]
