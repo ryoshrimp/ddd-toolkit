@@ -1,0 +1,13 @@
+[package]
+name = "ddd-toolkit-facade-tests"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+ddd-toolkit = { path = "..", features = ["derive", "chrono", "uuid", "zeroize"] }
+
+[dev-dependencies]
+zeroize = "1"
+uuid = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }

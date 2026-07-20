@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2024"
 
 [workspace]
-members = ["ddd-toolkit-core", "ddd-toolkit-macro"]
+members = ["ddd-toolkit-core", "ddd-toolkit-macro", "facade-tests"]
 
 
 [dependencies]
