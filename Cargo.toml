@@ -2,6 +2,13 @@
 name = "ddd-toolkit"
 version = "0.1.0"
 edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Domain-Driven Design building blocks for Rust: a single-dependency facade over ddd-toolkit-core and its derive macros."
+repository = "https://github.com/ryoshrimp/ddd-toolkit"
+documentation = "https://docs.rs/ddd-toolkit"
+readme = "README.md"
+keywords = ["ddd", "domain-driven-design", "entity", "value-object", "aggregate"]
+categories = ["rust-patterns", "data-structures"]
 
 [workspace]
 members = ["ddd-toolkit-core", "ddd-toolkit-macro", "facade-tests"]
