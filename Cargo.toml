@@ -20,7 +20,7 @@ members = ["ddd-toolkit-core", "ddd-toolkit-macro", "facade-tests"]
 
 
 [dependencies]
-ddd-toolkit-core = { version = "0.2.0", path = "ddd-toolkit-core" }
+ddd-toolkit-core = { version = "0.2.1", path = "ddd-toolkit-core" }
 ddd-toolkit-macro = { version = "0.2.1", path = "ddd-toolkit-macro", optional = true }
 
 
