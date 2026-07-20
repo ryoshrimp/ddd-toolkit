@@ -33,5 +33,5 @@ zeroize = ["ddd-toolkit-macro/zeroize"]
 # Cargo compiles two separate copies of ddd-toolkit-core side by side, and
 # local edits to ddd-toolkit-core are invisible to ddd-toolkit-macro's own
 # build/tests within this workspace.
-[patch."ssh://git@github.com/ryoshrimp/ddd-toolkit-core.git"]
+[patch."https://github.com/ryoshrimp/ddd-toolkit-core.git"]
 ddd-toolkit-core = { path = "ddd-toolkit-core" }
