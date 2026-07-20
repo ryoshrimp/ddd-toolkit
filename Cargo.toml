@@ -5,5 +5,3 @@ edition = "2024"
 
 [workspace]
 members = ["ddd-toolkit-core", "ddd-toolkit-macro"]
-
-[dependencies]
