@@ -5,10 +5,11 @@ Thanks for your interest in contributing!
 This repo is the facade over
 [`ddd-toolkit-core`](https://github.com/ryoshrimp/ddd-toolkit-core) and
 [`ddd-toolkit-macro`](https://github.com/ryoshrimp/ddd-toolkit-macro), pulled
-in here as git submodules. Changes to core domain/port logic or to the derive
-macros belong in those repos, not here - open an issue/PR there instead if
-that's what you're touching. This repo's own contributions are about the
-facade re-exports, the `facade-tests` integration suite, and docs.
+in here as regular crates.io dependencies (see `Cargo.toml`). Changes to core
+domain/port logic or to the derive macros belong in those repos, not here -
+open an issue/PR there instead if that's what you're touching. This repo's
+own contributions are about the facade re-exports, the `facade-tests`
+integration suite, and docs.
 
 ## Reporting bugs / requesting features
 
@@ -18,8 +19,8 @@ issue - they help make sure we get the context needed to act on it quickly.
 ## Development setup
 
 - Rust 1.85+ (Edition 2024)
-- Clone with submodules: `git clone --recurse-submodules ...` (or
-  `git submodule update --init --recursive` after a plain clone).
+- A plain `git clone` is enough - `ddd-toolkit-core` / `ddd-toolkit-macro` are
+  pulled in as ordinary crates.io dependencies, not submodules.
 
 ## Running checks locally
 
