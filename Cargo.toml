@@ -1,6 +1,6 @@
 [package]
 name = "ddd-toolkit"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
@@ -10,7 +10,7 @@ documentation = "https://docs.rs/ddd-toolkit"
 readme = "README.md"
 keywords = ["ddd", "domain-driven-design", "entity", "value-object", "aggregate"]
 categories = ["rust-patterns", "data-structures"]
-exclude = [".github"]
+exclude = [".github", "scripts"]
 
 [package.metadata.docs.rs]
 all-features = true
