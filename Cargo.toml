@@ -20,8 +20,8 @@ members = ["facade-tests"]
 
 
 [dependencies]
-ddd-toolkit-core = "0.2.1"
-ddd-toolkit-macro = { version = "0.2.2", optional = true }
+ddd-toolkit-core = "0.2.2"
+ddd-toolkit-macro = { version = "0.2.3", optional = true }
 
 
 [features]
