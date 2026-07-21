@@ -20,8 +20,8 @@ members = ["facade-tests"]
 
 
 [dependencies]
-ddd-toolkit-core = "0.2.2"
-ddd-toolkit-macro = { version = "0.2.3", optional = true }
+ddd-toolkit-core = "0.3.0"
+ddd-toolkit-macro = { version = "0.3.0", optional = true }
 
 
 [features]
@@ -30,3 +30,12 @@ derive = ["dep:ddd-toolkit-macro"]
 chrono = ["ddd-toolkit-core/chrono"]
 uuid = ["ddd-toolkit-core/uuid"]
 zeroize = ["ddd-toolkit-macro/zeroize"]
+serde = ["ddd-toolkit-core/serde", "ddd-toolkit-macro/serde"]
+
+[dev-dependencies]
+# Only for this crate's own crate-root doctest: with `serde` enabled, every
+# `#[derive(ValueObject)]`/etc type (the doctest included) gets `Serialize`/
+# `Deserialize`, which - like `zeroize` - only resolves if this crate itself
+# depends on `serde` directly. A real consumer enabling this feature needs
+# the same in their own `[dependencies]`.
+serde = "1"

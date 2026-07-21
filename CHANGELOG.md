@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `serde` feature, forwarding `ddd-toolkit-core`/`ddd-toolkit-macro`'s new
+  `serde` features: `Serialize`/`Deserialize` on `ValueObject`/`EntityId`/
+  `EnumVo` derives, not `SecretVo`. Requires depending on the `serde` crate
+  directly, same as `zeroize`.
+
+### Changed
+
+- Bumped the `ddd-toolkit-core`/`ddd-toolkit-macro` dependency requirements
+  to `0.3.0` (the versions that add the `serde` feature this crate now
+  forwards).
+
 ## [0.1.5] - 2026-07-21
 
 ### Added
