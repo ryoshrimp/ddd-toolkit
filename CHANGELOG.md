@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-07-21
+
+### Added
+
+- `facade-tests/tests/multi_aggregate_flow.rs`: a `place_order` example
+  coordinating two aggregates (`Order` and `Inventory`) through only
+  `ddd_toolkit::` paths, covering a pre-mutation guard, saving both
+  aggregates in one use case, and a `DispatchError` surfaced after both are
+  already persisted.
+
+### Fixed
+
+- `scripts/check-feature-matrix.sh` was being included in the published
+  crate (it's a CI/dev-only script, not part of the workspace's nested
+  `facade-tests` crate, so it wasn't auto-excluded the way that is).
+  Excluded it explicitly, matching `.github`.
+- Removed the `coverage` CI job, its Codecov upload, and the README badge.
+  `cargo llvm-cov --workspace` only measures this workspace's own members:
+  `ddd-toolkit`'s `src/lib.rs` is just re-exports (near-zero coverable
+  lines), and `facade-tests` has no library source of its own - the actual
+  logic lives in `ddd-toolkit-core`/`ddd-toolkit-macro`, separate repos not
+  part of this workspace. The job could only ever report ~0% with nothing
+  to regress against, so it was pure CI cost with no signal; those two
+  repos' own coverage (98%/97%) are the meaningful numbers.
+
 ## [0.1.4] - 2026-07-21
 
 ### Added
@@ -94,7 +119,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `zeroize`-feature compile break. `scripts/check-feature-matrix.sh` checks
   the facade compiles under every individual feature combination.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.1...v0.1.2
