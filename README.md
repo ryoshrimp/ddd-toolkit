@@ -156,6 +156,7 @@ covered in the [API docs](https://docs.rs/ddd-toolkit).
 | `chrono` | no      | `Clock` port + `SystemClock`/`FixedClock` adapters |
 | `uuid`   | no      | `IdGenerator` port + `UuidV4Generator`/`UuidV7Generator` adapters |
 | `zeroize`| no      | `#[vo(zeroize)]` support on `SecretVo` (also requires depending on the `zeroize` crate directly - see its docs) |
+| `serde`  | no      | `Serialize`/`Deserialize` on `ValueObject`/`EntityId`/`EnumVo`, not `SecretVo` (also requires depending on the `serde` crate directly - see its docs) |
 
 ## Crates in this project
 

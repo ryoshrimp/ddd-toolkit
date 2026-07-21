@@ -5,9 +5,11 @@ edition = "2024"
 publish = false
 
 [dependencies]
-ddd-toolkit = { path = "..", features = ["derive", "chrono", "uuid", "zeroize"] }
+ddd-toolkit = { path = "..", features = ["derive", "chrono", "uuid", "zeroize", "serde"] }
 
 [dev-dependencies]
 zeroize = "1"
 uuid = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+serde = "1"
+serde_json = "1"

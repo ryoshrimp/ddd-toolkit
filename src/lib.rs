@@ -31,6 +31,7 @@
 //! | `chrono`  | no  | `port::clock::Clock` and its [`adapter`]/[`mock`] implementations |
 //! | `uuid`    | no  | the `uuid`-backed [`port::id::IdGenerator`] adapter |
 //! | `zeroize` | no  | `#[vo(zeroize)]` support on [`domain::SecretVo`] (also needs the `zeroize` crate as a direct dependency - see its docs) |
+//! | `serde`   | no  | `Serialize`/`Deserialize` on [`domain::ValueObject`]/[`domain::EntityId`]/[`domain::EnumVo`] derives, not [`domain::SecretVo`] (also needs the `serde` crate as a direct dependency - see its docs) |
 //!
 //! # Examples
 //!

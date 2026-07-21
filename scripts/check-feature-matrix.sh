@@ -14,6 +14,7 @@ combos=(
   "--no-default-features --features chrono"
   "--no-default-features --features uuid"
   "--no-default-features --features derive,zeroize"
+  "--no-default-features --features derive,serde"
   "--all-features"
 )
 
