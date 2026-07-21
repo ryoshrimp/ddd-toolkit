@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-07-21
+
+### Changed
+
+- Dropped the `ddd-toolkit-core`/`ddd-toolkit-macro` git submodules and the
+  workspace `[patch]` that redirected to them; both are now plain
+  crates.io path-free dependencies (`ddd-toolkit-core = "0.2.2"`,
+  `ddd-toolkit-macro = "0.2.3"`). CI no longer checks out submodules or
+  needs the trybuild git-cache warmup step that worked around the patch.
+- Rewrote the crate-root doc comment and README as a fuller landing page:
+  a module-by-module tour (`domain`/`port`/`adapter`/`mock`/`application`),
+  a features table, badges, an `AggregateRoot` + `InMemoryStore` example
+  alongside the existing `SecretVo` one, and a link to this changelog.
+
 ## [0.1.2] - 2026-07-20
 
 ### Fixed
@@ -68,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `zeroize`-feature compile break. `scripts/check-feature-matrix.sh` checks
   the facade compiles under every individual feature combination.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ryoshrimp/ddd-toolkit/releases/tag/v0.1.0
