@@ -1,20 +1,23 @@
-use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
-};
+use std::sync::{Arc, Mutex};
 
 use ddd_toolkit_core::{Secret, SecretMetadata};
 use zeroize::Zeroize;
 
 struct Probe {
     value: Vec<u8>,
-    zeroized: Arc<AtomicBool>,
+    operations: Arc<Mutex<Vec<&'static str>>>,
 }
 
 impl Zeroize for Probe {
     fn zeroize(&mut self) {
         self.value.zeroize();
-        self.zeroized.store(true, Ordering::SeqCst);
+        self.operations.lock().unwrap().push("zeroize");
+    }
+}
+
+impl Drop for Probe {
+    fn drop(&mut self) {
+        self.operations.lock().unwrap().push("drop");
     }
 }
 
@@ -29,15 +32,30 @@ fn secret_redacts_and_exposes_only_explicitly() {
 }
 
 #[test]
-fn secret_zeroizes_on_drop() {
-    let zeroized = Arc::new(AtomicBool::new(false));
+fn secret_zeroizes_then_drops_inner_exactly_once() {
+    let operations = Arc::new(Mutex::new(Vec::new()));
     {
         let _secret = Secret::new(Probe {
             value: b"secret".to_vec(),
-            zeroized: Arc::clone(&zeroized),
+            operations: Arc::clone(&operations),
         });
     }
-    assert!(zeroized.load(Ordering::SeqCst));
+    assert_eq!(*operations.lock().unwrap(), ["zeroize", "drop"]);
+}
+
+#[test]
+fn into_inner_neither_zeroizes_nor_drops_the_returned_value() {
+    let operations = Arc::new(Mutex::new(Vec::new()));
+    let inner = Secret::new(Probe {
+        value: b"secret".to_vec(),
+        operations: Arc::clone(&operations),
+    })
+    .into_inner();
+
+    assert!(operations.lock().unwrap().is_empty());
+    assert_eq!(inner.value, b"secret");
+    drop(inner);
+    assert_eq!(*operations.lock().unwrap(), ["drop"]);
 }
 
 #[test]
