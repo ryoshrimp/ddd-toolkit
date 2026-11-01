@@ -1,8 +1,3 @@
-// Macro 0.4.0 emits `field: field` in named ValueObject constructors.
-// Clippy 1.99 checks those external macro spans; keep coverage until upstream
-// generates shorthand fields. This allowance is limited to this test crate.
-#![allow(clippy::redundant_field_names)]
-
 // Serde generation is opt-in per value object and uses core's serde re-export.
 // This consumer intentionally has no direct serde dependency.
 #[derive(ddd_toolkit::ValueObject)]

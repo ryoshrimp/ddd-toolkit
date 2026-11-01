@@ -11,7 +11,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = '''
-#![allow(dead_code, clippy::redundant_field_names)]
+#![allow(dead_code)]
 use api::AggregateRoot as _;
 
 #[derive(macros::ValueObject)]
@@ -256,7 +256,7 @@ class MacroConsumerTests(unittest.TestCase):
                 deps += dependency("macros", "ddd-toolkit-macro", ROOT / "crates/macro")
                 deps += 'serde_json = "1"\nserde = { version = "1", features = ["derive"] }\n'
                 source = f'extern crate self as {name};\npub use implementation::*;\n'
-                source += SOURCE.replace("#![allow(dead_code, clippy::redundant_field_names)]", "").replace("api::", f"{name}::")
+                source += SOURCE.replace("#![allow(dead_code)]", "").replace("api::", f"{name}::")
                 # Test the same derive in library, integration, and doctest targets.
                 source += '\n/// ```\n/// #[derive(macros::ValueObject)]\n/// struct Id(u64);\n/// ```\npub struct DocExample;\n'
                 self.check_consumer(deps, source, package=package,

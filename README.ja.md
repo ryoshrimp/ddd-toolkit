@@ -8,8 +8,8 @@
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#ライセンス)
 
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
-[`ddd-toolkit-core`](crates/core) 0.4.1 の公開 API と、
-[`ddd-toolkit-macro`](crates/macro) 0.4.1 の四つの derive マクロを再エクスポートします。
+[`ddd-toolkit-core`](crates/core) 0.4.3 の公開 API と、
+[`ddd-toolkit-macro`](crates/macro) 0.5.1 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
 最新の Rust stable（edition 2024）で検証しています。
@@ -170,9 +170,11 @@ struct UserId(String);
 固定してください。他の Serde フォーマットでも newtype と tuple の違いがあるため、
 各フォーマットの API を使って移行してください。
 
-Clippy 1.99 は、マクロ 0.4.1 が生成する名前付き値オブジェクトのコンストラクターに
-`clippy::redundant_field_names` を報告します。`-D warnings` を使う場合、生成器が修正されるまでは
-利用側モジュールでこの lint に限定した許可が必要になる場合があります。
+マクロ 0.5.1 は、検証付きコンストラクターや名前付き enum バリアントを含め、
+名前付き値オブジェクトの生成コードでフィールド省略記法を使います。
+`clippy::redundant_field_names` の許可は不要です。対応バージョンや serde feature の
+要件は [core/macro の互換性契約](docs/macro-compatibility.md) を参照してください。
+
 `Secret<T>` は feature の指定なしで使え、自動的にはシリアライズされません。
 `Secret::into_inner` を呼び出した後のゼロ化は呼び出し側の責任です。
 

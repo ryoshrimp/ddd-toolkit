@@ -8,9 +8,9 @@ English | [日本語](README.ja.md)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#license)
 
 Domain-Driven Design traits and helpers, re-exported from
-[`ddd-toolkit-core`](crates/core) 0.4.1,
+[`ddd-toolkit-core`](crates/core) 0.4.3,
 plus the four derives from
-[`ddd-toolkit-macro`](crates/macro) 0.4.1.
+[`ddd-toolkit-macro`](crates/macro) 0.5.1.
 All public items are available at `ddd_toolkit::`.
 
 Tested with the latest stable Rust (edition 2024). No minimum supported Rust
@@ -171,9 +171,12 @@ producer/consumer upgrades or pin facade 0.3 / macro 0.4 until migration is read
 The same newtype-vs-tuple change applies to other Serde formats; migrate them
 using their format-specific APIs.
 
-Clippy 1.99 also reports `clippy::redundant_field_names` in macro 0.4.1's
-named value-object constructors. With `-D warnings`, consuming modules may need
-an allowance for that specific lint until the upstream generator is fixed.
+Macro 0.5.1 generates shorthand fields in named value-object constructors,
+including validated constructors and named enum variants. No
+`clippy::redundant_field_names` allowance is needed. See the
+[core/macro compatibility contract](docs/macro-compatibility.md) for supported
+versions and serde feature requirements.
+
 `Secret<T>` is available without a feature flag and is not automatically serialized.
 Calling `Secret::into_inner` transfers zeroization responsibility to the caller.
 

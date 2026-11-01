@@ -2,7 +2,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
     Data, DeriveInput, Field, Fields, GenericParam, Generics, Lifetime, LitStr, Member, Result,
-    Type, parse_quote,
+    Type, ext::IdentExt, parse_quote,
 };
 
 use crate::path::core_path;
@@ -213,8 +213,7 @@ fn enum_construct(variant: &EnumVariant<'_>, arguments: &[syn::Ident]) -> TokenS
     if variant.unit {
         quote! { Self::#variant_name }
     } else if variant.named {
-        let members = &variant.members;
-        quote! { Self::#variant_name { #(#members: #arguments),* } }
+        quote! { Self::#variant_name { #(#arguments),* } }
     } else {
         quote! { Self::#variant_name(#(#arguments),*) }
     }
@@ -709,6 +708,7 @@ fn expand_single(
     let inner_ty = &field.ty;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     let construct = match &named_field {
+        Some(field) if field.unraw() == "inner" => quote! { Self { inner } },
         Some(field) => quote! { Self { #field: inner } },
         None => quote! { Self(inner) },
     };
@@ -851,7 +851,7 @@ fn expand_multi(
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
-    let construct = construct_self(named, &members, &arguments);
+    let construct = construct_self(named, &arguments);
     let constructor = match (&attrs.validator, &attrs.error) {
         (Some(validator), Some(error)) => quote! {
             /// **English:**<br>
@@ -954,9 +954,9 @@ fn expand_multi(
     })
 }
 
-fn construct_self(named: bool, members: &[Member], arguments: &[syn::Ident]) -> TokenStream {
+fn construct_self(named: bool, arguments: &[syn::Ident]) -> TokenStream {
     if named {
-        quote! { Self { #(#members: #arguments),* } }
+        quote! { Self { #(#arguments),* } }
     } else {
         quote! { Self(#(#arguments),*) }
     }

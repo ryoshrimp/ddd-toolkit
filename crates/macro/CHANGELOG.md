@@ -5,6 +5,22 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-11-01
+
+### Fixed
+
+- Generate shorthand fields for same-name bindings in named struct and enum
+  constructors, including validation and single fields named `inner`, without
+  changing argument order or APIs. Preserve explicit fields for different bindings.
+  Facade consumers pass strict Clippy without redundant-field-names allowances (#22).
+
+### Added
+
+- Core compatibility contract (>=0.4.1, <0.5.0), exact released-minimum and
+  current-core consumer coverage with dependency renames and serde on/off (#14).
+- Independent missing-serde-feature regression tests and feature troubleshooting
+  for direct-core and facade consumers (#13).
+
 ## [0.5.0] - 2026-11-01
 
 ### Fixed
