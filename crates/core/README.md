@@ -57,6 +57,19 @@ Async ports return boxed `Send` futures. Their implementations and callers must
 satisfy the relevant lifetime and thread-safety bounds; the crate does not
 select an executor.
 
+With a typical `Box::pin` implementation, boxing a non-zero-sized future requires
+heap allocation, and polling a `dyn Future` uses dynamic dispatch. This is a
+trade-off, not a measured performance problem: type erasure supports `dyn` port
+usage, while explicit lifetimes and `Send` bounds state borrowing and
+thread-safety requirements in the contract. Whether these costs matter depends
+on the workload.
+
+Runtime independence does not mean support for non-`Send` futures. An
+implementation returning a `!Send` future does not fit the current signatures,
+even when the caller uses a single-threaded executor. Choose adapters whose
+futures satisfy the declared bounds; a different future representation would
+require a separate review of `dyn` compatibility, `Send`, and breaking changes.
+
 ## Example: aggregate, repository, and event publishing
 
 Identifiers are application-defined: `Entity::Id` has no required marker trait.

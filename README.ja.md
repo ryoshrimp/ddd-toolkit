@@ -8,7 +8,7 @@
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#ライセンス)
 
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
-[`ddd-toolkit-core`](crates/core) 0.4.3 の公開 API と、
+[`ddd-toolkit-core`](crates/core) 0.4.4 の公開 API と、
 [`ddd-toolkit-macro`](crates/macro) 0.5.1 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
@@ -58,6 +58,12 @@ ddd-toolkit = "0.4"
 コアが定義するのは契約です。ストレージアダプター、時計、ID 生成器、非同期ランタイムは
 提供せず、トランザクションや配信も自動的には保証しません。アダプターはアプリケーション側で
 実装してください。非同期ポートは、ランタイムを選ばずにボックス化された `Send` Future を返します。
+通常の `Box::pin` 実装ではサイズがゼロでない Future のためにヒープ確保を行い、
+`dyn Future` の poll には動的ディスパッチが使われます。型消去はポートの `dyn` 利用を可能にし、
+明示的なライフタイムと `Send` 境界は借用とスレッド安全性の要件を示します。
+これは実測された性能問題ではなくトレードオフです。ランタイム非依存でも `!Send` な Future は
+扱えず、単一スレッド executor でも現在のシグネチャに適合しません。詳細は
+[core の非同期契約](crates/core/README.ja.md#構成要素)を参照してください。
 
 ## 使用例
 

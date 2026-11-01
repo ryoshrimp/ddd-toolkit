@@ -256,6 +256,45 @@ fn async_dispatch_restores_complete_snapshot_on_error() {
 }
 
 #[test]
+fn async_dispatch_restores_snapshot_when_publisher_future_panics() {
+    struct PanickingPublisher {
+        calls: Vec<u64>,
+    }
+
+    impl AsyncDomainEventPublisher for PanickingPublisher {
+        type Event = TestEvent;
+        type Error = &'static str;
+
+        fn publish<'a>(
+            &'a mut self,
+            event: &'a Self::Event,
+        ) -> Pin<Box<dyn Future<Output = Result<(), Self::Error>> + Send + 'a>> {
+            Box::pin(async move {
+                self.calls.push(event.id);
+                if event.id == 2 {
+                    panic!("publisher future panic");
+                }
+                Ok(())
+            })
+        }
+    }
+
+    let mut aggregate = aggregate_with_events();
+    let mut publisher = PanickingPublisher { calls: Vec::new() };
+    let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        poll_ready(dispatch_events_async(&mut aggregate, &mut publisher))
+    }))
+    .unwrap_err();
+
+    assert_eq!(
+        panic.downcast_ref::<&str>(),
+        Some(&"publisher future panic")
+    );
+    assert_eq!(publisher.calls, vec![1, 2]);
+    assert_eq!(aggregate.events, aggregate_with_events().events);
+}
+
+#[test]
 fn async_dispatch_restores_snapshot_when_future_is_dropped() {
     let mut aggregate = aggregate_with_events();
     let mut publisher = RecordingPublisher {

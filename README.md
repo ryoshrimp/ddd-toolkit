@@ -8,7 +8,7 @@ English | [日本語](README.ja.md)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#license)
 
 Domain-Driven Design traits and helpers, re-exported from
-[`ddd-toolkit-core`](crates/core) 0.4.3,
+[`ddd-toolkit-core`](crates/core) 0.4.4,
 plus the four derives from
 [`ddd-toolkit-macro`](crates/macro) 0.5.1.
 All public items are available at `ddd_toolkit::`.
@@ -58,6 +58,13 @@ from facade 0.2. See the migration guide below and [CHANGELOG.md](CHANGELOG.md).
 Core defines contracts, not storage adapters, clock or ID generators, an async
 runtime, or automatic transaction/delivery guarantees. Implement adapters in your
 application. Async ports return boxed `Send` futures without choosing a runtime.
+A typical `Box::pin` implementation allocates on the heap for a non-zero-sized
+future, and polling `dyn Future` uses dynamic dispatch. Type erasure supports
+`dyn` port usage, and explicit lifetime/`Send` bounds express borrowing and
+thread-safety requirements. These are trade-offs, not measured performance
+problems. Runtime independence does not allow `!Send` futures: they do not fit
+the current signatures, even on a single-threaded executor. See the
+[core async contract](crates/core/README.md#building-blocks) for details.
 
 ## Example
 
