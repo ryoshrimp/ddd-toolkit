@@ -5,7 +5,7 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2026-11-01
 
 ### Fixed
 
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** prepared facade 0.4.0 with macro 0.5.0 (core remains 0.4.2).
+- **Breaking:** upgraded to macro 0.5.0 (core remains 0.4.2).
   `Code(7)` now serializes as `{"Code":7}`, not `{"Code":[7]}`. Migrate saved
   single-field variants by removing exactly one outer tuple wrapper, including
   `{"Codes":[[7,8]]}` → `{"Codes":[7,8]}`. Identify old records by schema/version;
