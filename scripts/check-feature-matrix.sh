@@ -22,4 +22,8 @@ for combo in "${combos[@]}"; do
   cargo test -p ddd-toolkit --doc ${combo}
 done
 
+# Core must also work without serde, independently of macro's dev-dependencies.
+cargo test -p ddd-toolkit-core --no-default-features
+cargo test -p ddd-toolkit-core --features serde
+
 echo "All feature combinations checked successfully."

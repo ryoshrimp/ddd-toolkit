@@ -1,0 +1,5 @@
+error: events is a flag and takes no value
+ --> tests/ui/aggregate_attribute_value.rs:5:17
+  |
+5 |     #[aggregate(events = true)]
+  |                 ^^^^^^

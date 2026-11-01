@@ -1,0 +1,6 @@
+error: Entity requires exactly one #[entity(id)] field
+ --> tests/ui/entity_multiple_ids.rs:7:5
+  |
+7 | /     #[entity(id)]
+8 | |     second: u64,
+  | |_______________^

@@ -1,0 +1,5 @@
+error: AggregateRoot requires exactly one #[aggregate(events)] field
+ --> tests/ui/aggregate_missing_queue.rs:4:8
+  |
+4 | struct MissingQueue {
+  |        ^^^^^^^^^^^^

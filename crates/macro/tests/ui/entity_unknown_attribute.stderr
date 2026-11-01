@@ -1,0 +1,5 @@
+error: unknown entity attribute
+ --> tests/ui/entity_unknown_attribute.rs:5:14
+  |
+5 |     #[entity(key)]
+  |              ^^^

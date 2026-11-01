@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 ddd-toolkit = { path = "..", features = ["derive", "serde"] }
 # Macro 0.4 resolves this package directly, even when derives are re-exported.
-ddd-toolkit-core = "0.4.0"
+ddd-toolkit-core = { workspace = true }
 
 [dev-dependencies]
 serde_json = "1"

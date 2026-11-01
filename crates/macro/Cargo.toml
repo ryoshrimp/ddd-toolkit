@@ -1,0 +1,32 @@
+[package]
+name = "ddd-toolkit-macro"
+version = "0.4.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+description = "Derive macros for ddd-toolkit-core's ValueObject, Entity, DomainEvent, and AggregateRoot traits."
+repository = "https://github.com/ryoshrimp/ddd-toolkit"
+documentation = "https://docs.rs/ddd-toolkit-macro"
+readme = "README.md"
+keywords = ["ddd", "domain-driven-design", "derive", "macro", "value-object"]
+categories = ["development-tools::procedural-macro-helpers", "rust-patterns"]
+exclude = [".github"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro-crate = "3.5.0"
+proc-macro2 = "1.0.107"
+quote = "1.0.47"
+syn = { version = "3.0.6", features = ["derive", "parsing", "printing", "proc-macro"] }
+
+[dev-dependencies]
+# Tests exercise generated implementations against core's traits.
+# Macro expansion resolves the calling crate's direct core dependency
+# (including renamed dependencies); core is not needed to build the macros.
+ddd-toolkit-core = { workspace = true, features = ["serde"] }
+trybuild = "1"

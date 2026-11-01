@@ -1,0 +1,5 @@
+error: aggregate accepts only the events flag
+ --> tests/ui/aggregate_unknown_attribute.rs:5:17
+  |
+5 |     #[aggregate(other)]
+  |                 ^^^^^

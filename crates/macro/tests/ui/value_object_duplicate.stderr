@@ -1,0 +1,5 @@
+error: value_object attributes may be specified only once
+ --> tests/ui/value_object_duplicate.rs:5:1
+  |
+5 | #[value_object(serde)]
+  | ^^^^^^^^^^^^^^^^^^^^^^

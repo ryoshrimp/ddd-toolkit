@@ -1,0 +1,16 @@
+error[E0277]: the trait bound `NotAggregate: AggregateRoot` is not satisfied
+  --> tests/ui/async_repository_aggregate_bound.rs:20:22
+   |
+20 |     type Aggregate = NotAggregate;
+   |                      ^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `AggregateRoot` is not implemented for `NotAggregate`
+  --> tests/ui/async_repository_aggregate_bound.rs:5:1
+   |
+ 5 | struct NotAggregate {
+   | ^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `ddd_toolkit_core::AsyncRepository::Aggregate`
+  --> $WORKSPACE/crates/core/src/async_repository.rs
+   |
+   |     type Aggregate: AggregateRoot;
+   |                     ^^^^^^^^^^^^^ required by this bound in `AsyncRepository::Aggregate`

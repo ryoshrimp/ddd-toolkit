@@ -1,0 +1,5 @@
+error: validated ValueObject inner fields must not be public
+  --> tests/ui/value_object_public_validated.rs:12:24
+   |
+12 | pub struct PublicValue(pub String);
+   |                        ^^^^^^^^^^

@@ -1,0 +1,5 @@
+error: AggregateRoot can only be derived for a named-field struct
+ --> tests/ui/aggregate_enum.rs:4:6
+  |
+4 | enum InvalidAggregate {
+  |      ^^^^^^^^^^^^^^^^

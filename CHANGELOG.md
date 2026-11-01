@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidated core, derive macros, and facade tests into one Cargo workspace.
+  Crate names, versions, and public APIs are unchanged.
+- Added a single release workflow that publishes missing crate versions in
+  dependency order; see `docs/releasing.md`.
+
 ## [0.3.0] - 2026-11-01
 
 ### Changed

@@ -1,0 +1,5 @@
+error: AggregateRoot requires a named-field struct
+ --> tests/ui/aggregate_unit.rs:4:8
+  |
+4 | struct InvalidAggregate;
+  |        ^^^^^^^^^^^^^^^^

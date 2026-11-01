@@ -1,0 +1,5 @@
+error: validate and error must be specified together
+ --> tests/ui/value_object_missing_validate.rs:4:1
+  |
+4 | #[value_object(error = &'static str)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
