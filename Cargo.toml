@@ -12,6 +12,10 @@ categories = ["rust-patterns", "data-structures"]
 exclude = [".github", "scripts"]
 
 [[example]]
+name = "getting_started"
+required-features = ["derive"]
+
+[[example]]
 name = "basic"
 required-features = ["derive"]
 

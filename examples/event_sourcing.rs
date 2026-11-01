@@ -1,4 +1,15 @@
-//! Zero-based revisions, schema upcasting, replay, and optional snapshots.
+//! Advanced: rebuild a counter from events rather than loading its saved state.
+//! 発展編: 現在値の保存ではなく、過去の事実を適用してCounterを復元する。
+//!
+//! Run: cargo run -p ddd-toolkit --example event_sourcing --locked
+//! Read main first: old event (+2) → replay → snapshot → append (+3) → restore (5).
+//! main から読む: 旧形式の+2 → 再生 → スナップショット → +3追記 → 5に復元。
+//! Revisions start at 0. ExpectedRevision rejects a concurrent/stale write.
+//! リビジョンは0始まり。期待した位置と異なる書き込みは競合として拒否する。
+//! A snapshot is a cache; an upcaster converts legacy event data on load.
+//! スナップショットは途中状態のキャッシュ、upcasterは旧イベント形式の変換。
+//! Neither event sourcing nor snapshots are required just to publish domain events.
+//! 通知を使うだけならイベントソーシングもスナップショットも必須ではない。
 use ddd_toolkit::{
     AggregateReplay, AggregateRoot as _, AggregateSnapshot, AppendError, AppendResult,
     CurrentRevision, EventStore, EventUpcaster, ExpectedRevision, LoadResult, NoStream,

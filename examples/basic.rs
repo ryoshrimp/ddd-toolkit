@@ -1,4 +1,11 @@
-//! Save an aggregate, then publish; a partial failure can duplicate delivery.
+//! Advanced delivery exercise, NOT the first tutorial: start with getting_started.rs.
+//! 発展編（最初は getting_started.rs）: 保存後の配信が部分失敗するとどうなるか。
+//!
+//! Run: cargo run -p ddd-toolkit --example basic --locked
+//! Read main first, then support/mod.rs for the in-memory adapters.
+//! main → support/mod.rs の順に読む。これは業務モデルより配信契約に絞った例。
+//! Expected: the restored batch retries event 1, producing deliveries [1, 1, 2].
+//! 結果: 先頭の配信成功は取り消せないため、バッチ再試行で [1, 1, 2] となる。
 mod support;
 
 use ddd_toolkit::{AggregateRoot as _, Repository, dispatch_events};
@@ -18,6 +25,8 @@ fn main() {
     assert_eq!(loaded.total, 4200);
     assert!(loaded.pull_events().is_empty());
 
+    // Saving succeeded. A later publisher error cannot undo that save.
+    // 保存と配信は別操作。後の配信失敗で保存がロールバックされるわけではない。
     let mut publisher = Publisher {
         fail_at: Some(1),
         ..Publisher::default()
@@ -28,6 +37,8 @@ fn main() {
     );
     assert!(store.exists(&1).unwrap()); // Publication failure does not roll back saving.
     assert_eq!(order.events, vec![Placed(1), Placed(2)]);
+    // The whole batch was restored, including the event already delivered.
+    // 配信済みイベントも含めたバッチ全体が復元される。受信側には重複対策が必要。
     publisher.fail_at = None;
     dispatch_events(&mut order, &mut publisher).unwrap();
     assert!(order.pull_events().is_empty());

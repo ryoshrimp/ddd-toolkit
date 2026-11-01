@@ -67,12 +67,14 @@ ddd-toolkit = "0.4"
 
 ## 実行可能なサンプル
 
-チェックアウト後、[サンプルガイド](examples/README.ja.md)から、`ddd_toolkit::` API のみを使い
-assert で結果を確認する4種類のフローを実行できます。
+**DDD が初めてなら [注文の入門ガイド](examples/README.ja.md#初めての方へ)から始めてください**。
+業務ルール、集約、保存、通知を学んでから障害対策へ進めます。用語とコードの対応、読む順番も説明します。
+チェックアウト後、`ddd_toolkit::` API のみを使い、assert で結果を確認する5種類の例を実行できます。
 
 | サンプル | 内容 | コマンド |
 | --- | --- | --- |
-| [基本形](examples/basic.rs) | 集約、Repository、配信失敗と再試行による重複 | `cargo run -p ddd-toolkit --example basic --features derive --locked` |
+| [はじめの一歩](examples/getting_started.rs) | 下書き → 商品追加 → 確定 → 保存 → 通知 | `cargo run -p ddd-toolkit --example getting_started --features derive --locked` |
+| [再配信（発展）](examples/basic.rs) | 集約、Repository、配信失敗と再試行による重複 | `cargo run -p ddd-toolkit --example basic --features derive --locked` |
 | [CQRS](examples/cqrs.rs) | コマンド／クエリハンドラー、Specification と Policy | `cargo run -p ddd-toolkit --example cqrs --features derive --locked` |
 | [イベントソーシング](examples/event_sourcing.rs) | ExpectedRevision、アップキャスト、再生、スナップショット | `cargo run -p ddd-toolkit --example event_sourcing --features derive --locked` |
 | [配信信頼性](examples/reliable_delivery.rs) | 非同期アウトボックス、冪等なプロジェクション、チェックポイント | `cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked` |

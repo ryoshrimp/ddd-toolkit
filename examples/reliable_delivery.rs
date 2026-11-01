@@ -1,4 +1,16 @@
-//! Runtime-neutral async ports with deliberately immediate, in-memory adapters.
+//! Advanced: retry a credit notification without increasing the balance twice.
+//! 発展編: 入金通知を再試行しても残高を二重加算しない。async/Futureの基礎が前提。
+//!
+//! Run: cargo run -p ddd-toolkit --example reliable_delivery --locked
+//! Read main → deliver → adapter implementations. Skip ready's polling details first.
+//! main → deliver → アダプターの順に読む。最初はreadyのpollの詳細を飛ばしてよい。
+//! Outbox = saved pending notifications; projection = event-derived read state;
+//! checkpoint = processing position; stable IDs deduplicate repeated application.
+//! outbox=送信待ちの記録、projection=イベントから作る参照状態、checkpoint=処理位置。
+//! Expected: broker/checkpoint/ack failures, three deliveries, balance still 10.
+//! ブローカー・位置保存・ack失敗から再試行し、配信3回でも残高は10のまま。
+//! Memory adapters demonstrate contracts, not durable or exactly-once delivery.
+//! メモリ実装は契約の教材。永続性やexactly-once配信を提供するものではない。
 use ddd_toolkit::{
     AggregateRoot as _, AppendError, AppendResult, AsyncDomainEventPublisher,
     AsyncIdempotentProjection, AsyncProjectionCheckpointStore, AsyncTransactionalOutbox,

@@ -1,6 +1,87 @@
-# facade 経由の実行可能なサンプル
+# 注文の例から学ぶ DDD と ddd-toolkit
 
 [English](README.md) | 日本語
+
+## 初めての方へ
+
+最初は **[getting_started.rs](getting_started.rs)** だけを読んでください。
+Rust の構造体・enum・trait・`Result` の基礎は前提ですが、DDD の事前知識、DB、
+非同期処理の知識は不要です。失敗時の再配信からではなく、業務の言葉から始めます。
+
+```sh
+cargo run -p ddd-toolkit --example getting_started --locked
+```
+
+期待する標準出力（Cargoのビルドログは別です）:
+
+```text
+getting_started: order #1 confirmed; saved total=4200 yen; notifications=1
+```
+
+### 何を作るのか
+
+小さな店の「注文」を扱います。下書きの注文に1200円と3000円の商品を追加し、
+確定した注文を保存し、確認メールを手配する担当へ「注文が確定された」と通知します。
+実際のメールは送らず、通知をメモリに記録して結果を確認します。
+
+守りたい約束は「価格は正」「空の注文は確定できない」「確定後は変更・再確定できない」。
+`Order::add_item` と `Order::confirm` にこのルールを置きます。
+呼び出し側ごとに検証すると、別の入口から変更したときにルールが抜けるためです。
+`derive` はルールを生成しません。ルールは開発者が業務に合わせて実装します。
+
+### 用語とコードの対応
+
+| 用語 | この例での意味 | コード |
+| --- | --- | --- |
+| ドメイン | ソフトウェアで扱う業務とそのルール | 注文の確定ルール |
+| エンティティ | 内容が変わってもIDで同じものと識別する対象 | `Order`、`id` |
+| 集約 / 集約ルート | 一緒に整合性を守る単位 / その変更の入口 | `Order` と非公開フィールド・業務メソッド |
+| リポジトリー | 集約を保存・取得するための契約 | `Repository`、`MemoryOrders` |
+| ドメインイベント | 業務で起きた事実。命令ではない | `OrderConfirmed` |
+| アプリケーション層 | 業務メソッド、保存、通知の順序を調整する部分 | `main` |
+| アダプター | 契約を具体的な保存先や通知先につなぐ実装 | `MemoryOrders`、`Notifications` |
+
+DDD はこのクレートのtraitを全部使うことではなく、業務の言葉・境界・ルールをモデルに
+反映する考え方です。集約は複数エンティティを含むこともありますが、この例は1つです。
+値オブジェクト（IDではなく値で区別する型）や複数集約は、入門ではまだ扱いません。
+実システムの金額型、税、商品明細、在庫、配送、決済もこの教材の範囲外です。
+
+### コードの読む順番
+
+1. **`OrderError` と `Order` のメソッド**: 業務の約束を確認します。
+   フィールドが非公開なので、利用側は直接 `confirmed` を書き換えずメソッドを呼びます。
+   `main` は同じファイル内のため検証用に状態を参照しますが、変更はメソッド経由です。
+2. **`main` の前半**: 空の注文の拒否 → 商品追加 → 確定。
+   `assert_eq!` は期待結果の確認であり、業務ルールの実装ではありません。
+3. **保存 → 通知**: `save` は注文の状態を保存します。`record_event` は通知を保留するだけ。
+   `dispatch_events` を呼んで初めて `publish` が呼ばれ、成功すると保留キューが空になります。
+   状態の保存とイベント履歴の保存は別物です。この例はイベントソーシングではありません。
+4. **末尾のアダプター**: 最後に戻って読めば十分です。`Infallible` はこのメモリ実装に
+   アダプター由来のエラーがないという型であり、実DBが失敗しないという意味ではありません。
+
+自分で試すなら、商品価格や `confirm` の順番を変えてみてください。
+空の確定・0円追加・確定後の変更が拒否され、合計やイベント数が変わらないことをassertで
+確かめられます。例では前提が決まっているため `unwrap` を使いますが、利用者入力や
+外部I/Oのある本番アプリケーションではエラーを呼び出し元へ返すなどの処理が必要です。
+
+### 次に何を読むか
+
+| 順番 | 例 | 学ぶこと / 先に知っておくこと |
+| --- | --- | --- |
+| 1 | [getting_started.rs](getting_started.rs) | 業務ルール、保存、通知。まずこれだけで十分 |
+| 2 | [cqrs.rs](cqrs.rs) | 更新の命令と参照の質問を分ける。Specificationは真偽の条件、Policyは拒否理由付きの制約 |
+| 3 | [basic.rs](basic.rs) | **発展: 配信の部分失敗と重複**。名前はbasicだが最初の入門ではない |
+| 任意 | [event_sourcing.rs](event_sourcing.rs) | **発展: 状態ではなく事実の履歴から復元**。revision、snapshot、upcasterを学ぶ |
+| 任意 | [reliable_delivery.rs](reliable_delivery.rs) | **発展: asyncと障害対策**。outbox、projection、checkpoint、重複排除を学ぶ |
+
+各ファイルは独立したプログラムです。同じ `Order` という名前でも入門例のモデルを
+そのまま継承するわけではありません。後続例はAPIを絞って学ぶための小さなモデルです。
+`cqrs` と `basic` の共通部品は [support/mod.rs](support/mod.rs) にあります。
+CQRSの例は注文金額の調整を題材にし、入門の確定フローとは別です。
+CQRS は「更新と参照の責務を分ける」ことであり、別DBや非同期処理を必須にしません。
+ライフサイクルコールバックは保存・配信の順番を明示する仕組みで、DBトランザクションではありません。
+
+## 全例の実行と期待結果
 
 リポジトリのルートで次を実行してください。全例が facade のみを使い、`derive` feature
 （既定で有効）を必要とし、assert で期待結果を確認します。追加依存、DB、ブローカー、
@@ -8,12 +89,15 @@
 
 ```sh
 cargo build -p ddd-toolkit --examples --all-features --locked
+cargo run -p ddd-toolkit --example getting_started --features derive --locked
 cargo run -p ddd-toolkit --example basic --features derive --locked
 cargo run -p ddd-toolkit --example cqrs --features derive --locked
 cargo run -p ddd-toolkit --example event_sourcing --features derive --locked
 cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 ```
 
+- [getting_started.rs](getting_started.rs): 注文の業務ルール → 確定 → 保存 → 通知。
+  合計4200円、通知1件。空注文・0円・確定後の変更を拒否します。
 - [basic.rs](basic.rs): 注文を保存し、最初のイベントを配信した後に失敗させ、復元された
   バッチを再試行します。配信結果は `[1, 1, 2]`。保存は保留イベントを消費せず、
   配信失敗も保存をロールバックしません。
@@ -31,6 +115,22 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
   （残高10）です。適用後、ack前にチェックポイントを保存します。保存失敗後の再適用は
   `AlreadyApplied` ですが、チェックポイントは再保存します。実ブローカーの consumer を動かす
   代わりにプロジェクションを直接呼びます。
+
+## 発展例の用語
+
+- **revision / ExpectedRevision**: ストリーム（1集約のイベント列）の位置 / 書き込み前に
+  期待する位置。同時更新で他の書き込みが先に進んでいれば拒否して上書きを防ぎます。
+- **replay / snapshot / upcaster**: 過去イベントの適用による復元 / 途中状態のキャッシュ /
+  旧イベント形式を現在の形式へ変換する処理。Counterはこの仕組みだけを示す教材です。
+- **outbox**: 状態保存と同じトランザクションで、後で送る通知を記録する置き場。
+- **projection**: イベントから作る参照用の状態。例では入金イベントから残高を作ります。
+- **checkpoint**: 読み手の処理位置の記録。位置だけでは二重適用を防げないため、
+  安定したIDを使う重複排除も必要です。
+- **at-least-once**: 同じ通知が複数回届き得る配信。入金を二度加算しないよう、
+  同じイベントを繰り返しても効果が増えない（冪等な）適用を行います。
+
+イベント通知とイベントソーシングは別です。通知を使うからといって履歴から状態を
+復元する設計やアウトボックスまで必須になるわけではありません。必要な段階で選んでください。
 
 ## アダプターの責任範囲
 
@@ -55,5 +155,5 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
   コマンドや投入を無条件に繰り返すと効果の欠落・重複が起こり得るため、コミット結果が不確実な
   場合は、このヘルパーではなく永続的なアプリケーション／アダプターの復旧で解決してください。
 
-CIは通常のワークスペーステストとfeature-matrixに加え、4例を明示的にビルド・実行します。
+CIは通常のワークスペーステストとfeature-matrixに加え、5例を明示的にビルド・実行します。
 `required-features = ["derive"]` により、no-default-features の検査ではderive依存の例を除外します。

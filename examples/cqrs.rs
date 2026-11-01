@@ -1,4 +1,13 @@
-//! A command validates rules and invokes an explicit save/dispatch lifecycle.
+//! After getting_started.rs: separate an update command from a read query (CQRS).
+//! 入門の次: 注文金額を増やす命令と、金額を読む質問の責務を分ける。
+//!
+//! Run: cargo run -p ddd-toolkit --example cqrs --locked
+//! Read main → AddToOrder::handle → SaveThenDispatch → Total, then support/mod.rs.
+//! main → 命令の処理 → 保存/配信の順序 → クエリ → 共通アダプターの順に読む。
+//! Expected: reject zero / totals above 5000, then query a total of 4200.
+//! 0の加算と上限超過を拒否し、200を加算して4200を参照する。別DBは不要。
+//! This deliberately smaller model is independent of the confirmation tutorial.
+//! 入門の確定モデルとは独立したAPI教材。エラー変換の詳細は後から読んでよい。
 mod support;
 
 use ddd_toolkit::{
@@ -8,6 +17,8 @@ use ddd_toolkit::{
 use std::convert::Infallible;
 use support::{Order, Placed, Publisher, Store};
 
+// A reusable yes/no condition. Adapter failure and an unsatisfied rule differ.
+// 再利用可能な真偽条件。条件不成立と評価自体の失敗は別。
 struct Positive;
 impl Specification<u32> for Positive {
     type Error = Infallible;
@@ -15,6 +26,8 @@ impl Specification<u32> for Positive {
         Ok(*amount > 0)
     }
 }
+// A constraint that can explain rejection; it does not persist anything.
+// 拒否理由を返せる制約。Policy 自体は保存を行わない。
 struct Limit;
 impl Policy<u32> for Limit {
     type Error = Error;
@@ -87,6 +100,8 @@ impl CommandHandler for AddToOrder {
         Ok(())
     }
 }
+// Application orchestration, not a database transaction: dispatch can fail AFTER save.
+// アプリケーションの手順。トランザクションではなく、保存成功後に配信だけ失敗し得る。
 struct SaveThenDispatch;
 impl<'storage> LifecycleCallback<'storage, Order, Store, Publisher> for SaveThenDispatch {
     type Output = ();
