@@ -11,10 +11,10 @@ use syn::Result;
 /// 依存がない場合は呼び出し位置を示すエラーを返します。
 pub fn core_path() -> Result<TokenStream> {
     let package = "ddd-toolkit-core";
-    if let Ok(found) = proc_macro_crate::crate_name(package) {
-        if let Some(path) = path_for_found_crate(package, found) {
-            return Ok(path);
-        }
+    if let Ok(found) = proc_macro_crate::crate_name(package)
+        && let Some(path) = path_for_found_crate(package, found)
+    {
+        return Ok(path);
     }
 
     Err(syn::Error::new(

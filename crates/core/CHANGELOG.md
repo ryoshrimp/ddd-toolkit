@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-01
+
 ### Changed
 
 - Clarified that testing targets the latest stable Rust without a specified MSRV;
   removed the unverified Rust 1.85 minimum declaration and MSRV badges.
 - Grouped rustdoc prose by language and placed language labels on separate lines.
 - Re-exported APIs inherit their original documentation without duplicate language sections.
+- Simplified two test-helper conditions to satisfy stable Clippy after removing
+  the MSRV declaration; behavior is unchanged.
 
 ## [0.4.0] - 2026-11-01
 
@@ -163,7 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Poisoned mutexes in `mock` are recovered from instead of panicking forever.
 - `SystemClock` tests no longer assert wall-clock monotonicity.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit-core/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/commits/main
+[0.4.1]: https://crates.io/crates/ddd-toolkit-core/0.4.1
 [0.4.0]: https://github.com/ryoshrimp/ddd-toolkit-core/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/ryoshrimp/ddd-toolkit-core/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/ryoshrimp/ddd-toolkit-core/compare/v0.2.2...v0.2.3

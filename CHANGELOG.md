@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-01
+
 ### Added
 
 - Japanese README with installation, examples, feature requirements, and migration notes.
@@ -189,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `zeroize`-feature compile break. `scripts/check-feature-matrix.sh` checks
   the facade compiles under every individual feature combination.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/commits/main
+[0.3.1]: https://crates.io/crates/ddd-toolkit/0.3.1
 [0.3.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.5...v0.2.0
 [0.1.5]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.4...v0.1.5

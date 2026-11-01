@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-01
+
 ### Added
 
 - Japanese README covering all four derives, validation, serialization, and aggregate events.
@@ -16,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarified that testing targets the latest stable Rust without a specified MSRV
   and removed the unverified Rust 1.85 minimum declaration.
 - Placed rustdoc language labels on separate lines from their text.
+- Simplified two nested conditions to satisfy stable Clippy after removing the
+  MSRV declaration; macro behavior is unchanged.
 
 ## [0.4.0] - 2026-11-01
 
@@ -181,7 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   membership is already exhaustive) and properly supports `no_display`; the
   other three macros now reject `rename_all`.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit-macro/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/commits/main
+[0.4.1]: https://crates.io/crates/ddd-toolkit-macro/0.4.1
 [0.4.0]: https://github.com/ryoshrimp/ddd-toolkit-macro/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/ryoshrimp/ddd-toolkit-macro/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/ryoshrimp/ddd-toolkit-macro/compare/v0.2.3...v0.2.4

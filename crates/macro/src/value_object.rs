@@ -809,16 +809,15 @@ fn expand_multi(
         Fields::Unnamed(fields) => fields.unnamed.iter().collect(),
         Fields::Unit => unreachable!("unit fields are rejected before expansion"),
     };
-    if attrs.validator.is_some() {
-        if let Some(field) = field_list
+    if attrs.validator.is_some()
+        && let Some(field) = field_list
             .iter()
             .find(|field| matches!(field.vis, syn::Visibility::Public(_)))
-        {
-            return Err(syn::Error::new_spanned(
-                field,
-                "validated ValueObject fields must not be public",
-            ));
-        }
+    {
+        return Err(syn::Error::new_spanned(
+            field,
+            "validated ValueObject fields must not be public",
+        ));
     }
 
     let members: Vec<Member> = field_list

@@ -8,8 +8,8 @@
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#ライセンス)
 
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
-[`ddd-toolkit-core`](crates/core) 0.4.0 の公開 API と、
-[`ddd-toolkit-macro`](crates/macro) 0.4.0 の四つの derive マクロを再エクスポートします。
+[`ddd-toolkit-core`](crates/core) 0.4.1 の公開 API と、
+[`ddd-toolkit-macro`](crates/macro) 0.4.1 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
 最新の Rust stable（edition 2024）で検証しています。
@@ -34,7 +34,7 @@ derive マクロを使う場合（デフォルトで有効）:
 ```toml
 [dependencies]
 ddd-toolkit = "0.3"
-ddd-toolkit-core = "0.4.0"
+ddd-toolkit-core = "0.4.1"
 ```
 
 **重要:** マクロ 0.4 は、ファサード経由で呼び出す場合も利用側クレートに
@@ -151,14 +151,14 @@ struct UserId(String);
 検証付きのデシリアライズでは検証関数を実行し、失敗を `value object validation failed` に
 変換します。列挙型は外部タグ形式を使います。同じ属性で検証と併用するときは
 `#[value_object(validate = check, error = Error, serde)]` のように `serde` を最後に置いてください。
-マクロ 0.4.0 は、フラグの後ろに他のオプションを記述すると拒否します。
+マクロ 0.4.1 は、フラグの後ろに他のオプションを記述すると拒否します。
 
-**マクロ 0.4.0 の制限:** `Code(u32)` のような単一フィールドのタプルバリアントは
+**マクロ 0.4.1 の制限:** `Code(u32)` のような単一フィールドのタプルバリアントは
 `{"Code":[7]}` にシリアライズしますが、生成されたデシリアライザーは `{"Code":7}` を
 期待するため、自身の JSON 出力を復元できません。JSON の往復変換が必要な場合は
 `Code { value: u32 }` のような名前付きバリアントを使ってください。
 
-Clippy 1.99 は、マクロ 0.4.0 が生成する名前付き値オブジェクトのコンストラクターに
+Clippy 1.99 は、マクロ 0.4.1 が生成する名前付き値オブジェクトのコンストラクターに
 `clippy::redundant_field_names` を報告します。`-D warnings` を使う場合、生成器が修正されるまでは
 利用側モジュールでこの lint に限定した許可が必要になる場合があります。
 `Secret<T>` は feature の指定なしで使え、自動的にはシリアライズされません。

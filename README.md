@@ -8,9 +8,9 @@ English | [日本語](README.ja.md)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#license)
 
 Domain-Driven Design traits and helpers, re-exported from
-[`ddd-toolkit-core`](crates/core) 0.4.0,
+[`ddd-toolkit-core`](crates/core) 0.4.1,
 plus the four derives from
-[`ddd-toolkit-macro`](crates/macro) 0.4.0.
+[`ddd-toolkit-macro`](crates/macro) 0.4.1.
 All public items are available at `ddd_toolkit::`.
 
 Tested with the latest stable Rust (edition 2024). No minimum supported Rust
@@ -34,7 +34,7 @@ For derive macros (enabled by default):
 ```toml
 [dependencies]
 ddd-toolkit = "0.3"
-ddd-toolkit-core = "0.4.0"
+ddd-toolkit-core = "0.4.1"
 ```
 
 **Important:** macro 0.4 requires a direct `ddd-toolkit-core` dependency
@@ -152,15 +152,15 @@ No direct `serde` dependency is required for these generated implementations.
 Validated deserialization runs the validator and maps failure to
 `value object validation failed`. Enums use externally tagged variants.
 When combining serde and validation in one attribute, place the `serde` flag
-last (`#[value_object(validate = check, error = Error, serde)]`): macro 0.4.0
+last (`#[value_object(validate = check, error = Error, serde)]`): macro 0.4.1
 rejects a flag followed by other options.
 
-**Upstream 0.4.0 limitation:** a single-field tuple enum variant such as
+**Macro 0.4.1 limitation:** a single-field tuple enum variant such as
 `Code(u32)` serializes to `{"Code":[7]}`, but its generated deserializer expects
 `{"Code":7}`. It cannot round-trip its own JSON. Use a named variant such as
 `Code { value: u32 }` when JSON round-tripping is required.
 
-Clippy 1.99 also reports `clippy::redundant_field_names` in macro 0.4.0's
+Clippy 1.99 also reports `clippy::redundant_field_names` in macro 0.4.1's
 named value-object constructors. With `-D warnings`, consuming modules may need
 an allowance for that specific lint until the upstream generator is fixed.
 `Secret<T>` is available without a feature flag and is not automatically serialized.
