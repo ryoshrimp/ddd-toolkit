@@ -95,6 +95,9 @@
 //! [`EventIdentity`] と [`VersionedEvent`] はイベントのスキーマを表し、[`UpcasterChain`] は
 //! バージョンを自動選択せず、[`EventUpcaster`] の段階を追加順に適用します。
 
+// Generated derives use the library name in both library and consumer targets.
+extern crate self as ddd_toolkit_core;
+
 mod aggregate_root;
 mod async_dispatch;
 mod async_domain_event_publisher;

@@ -23,9 +23,9 @@ derive マクロです。値オブジェクト、識別子で比較するエン�
 cargo add ddd-toolkit-core ddd-toolkit-macro
 ```
 
-生成されたコードがコアのトレイトを参照するため、利用側クレートには
-`ddd-toolkit-core` の直接依存が必要です。コア依存の別名には対応していますが、
-`ddd-toolkit` ファサードだけへの依存ではクレートのパスを解決できません。
+生成パスは直接依存の `ddd-toolkit-core` を優先し、なければ `ddd-toolkit` の
+再エクスポートを使います。両者の依存名変更に対応しています。ファサードだけへの
+依存でも、既定の `derive` feature を使って利用できます。
 
 ## Derive
 

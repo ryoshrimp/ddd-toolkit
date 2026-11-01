@@ -6,8 +6,8 @@
 //!
 //! With the default `derive` feature, the `ValueObject`, `Entity`, `DomainEvent`,
 //! and `AggregateRoot` derive macros are also available at this crate's root.
-//! Macro 0.4 requires consumers to add `ddd-toolkit-core = "0.4.0"` directly,
-//! even when invoking derives through this facade. Trait-only usage does not.
+//! Generated paths prefer a direct `ddd-toolkit-core` dependency, then this
+//! facade. Both dependencies may be renamed; a facade-only dependency suffices.
 //!
 //! The optional `serde` feature enables core's serde support and the serde
 //! derives needed by generated deserializers. Serialization is opt-in per value
@@ -26,9 +26,9 @@
 //! ストレージのアダプターと非同期ランタイムはアプリケーションが提供します。
 //!
 //! 既定の `derive` feature では `ValueObject`、`Entity`、`DomainEvent`、
-//! `AggregateRoot` の derive マクロもルートから利用できます。マクロ 0.4 は
-//! ファサード経由でも利用側に `ddd-toolkit-core = "0.4.0"` の直接依存を要求します。
-//! トレイトだけを使用する場合、直接依存は不要です。
+//! `AggregateRoot` の derive マクロもルートから利用できます。生成パスは直接依存の
+//! `ddd-toolkit-core` を優先し、なければファサードを使います。両者の依存名変更に
+//! 対応しており、ファサードだけの依存でも利用できます。
 //!
 //! 任意の `serde` feature はコアの serde 対応と生成された逆直列化に必要な serde の
 //! derive を有効にします。直列化は型ごとに `#[value_object(serde)]` で指定し、
@@ -60,6 +60,8 @@
 //! assert_eq!(format!("{key:?}"), "[REDACTED]");
 //! assert_eq!(key.expose_secret(|value| value.len()), 6);
 //! ```
+
+extern crate self as ddd_toolkit;
 
 pub use ddd_toolkit_core::*;
 

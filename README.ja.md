@@ -34,13 +34,11 @@ derive マクロを使う場合（デフォルトで有効）:
 ```toml
 [dependencies]
 ddd-toolkit = "0.3"
-ddd-toolkit-core = "0.4.1"
 ```
 
-**重要:** マクロ 0.4 は、ファサード経由で呼び出す場合も利用側クレートに
-`ddd-toolkit-core` の直接依存を要求します。コア依存の別名には対応しています。
-以前のようにファサードだけに依存する構成では derive を利用できません。
-マクロの再エクスポートによって依存の解決方法が変わるわけではありません。
+ファサードだけへの依存で derive を利用できます。生成パスは直接依存の
+`ddd-toolkit-core` があれば優先し、なければファサードの再エクスポートを使います。
+コアとファサードのどちらの依存名変更にも対応しています。
 
 ファサード 0.3.0 は core/macro 0.4.0 を採用しており、ファサード 0.2 から
 破壊的な API 変更があります。後述の移行ガイドと [CHANGELOG.md](CHANGELOG.md)を参照してください。
@@ -135,7 +133,7 @@ fn main() {
 
 | Feature | デフォルト | 有効になる機能 |
 |---------|---------|---------|
-| `derive` | 有効 | `ValueObject`、`Entity`、`DomainEvent`、`AggregateRoot` の derive。利用側にはコアの直接依存も必要 |
+| `derive` | 有効 | `ValueObject`、`Entity`、`DomainEvent`、`AggregateRoot` の derive。コアの直接依存は不要 |
 | `serde` | 無効 | コアの serde 再エクスポートと、`#[value_object(serde)]` に必要な serde derive 対応。`derive` とは独立 |
 
 値オブジェクトをシリアライズするには、ファサードの `serde` feature を有効にし、
@@ -181,7 +179,7 @@ Clippy 1.99 は、マクロ 0.4.1 が生成する名前付き値オブジェク�
   `EventDispatcher` をイベントパブリッシャーの契約に置き換えてください。
   `PortError` は廃止され、エラー型はアダプターが選びます。
 - `chrono`、`uuid`、`zeroize` の feature 指定を削除してください。
-- derive を使う場合はコアの直接依存を追加し、serde は値オブジェクトごとに有効にしてください。
+- serde は値オブジェクトごとに有効にしてください。derive はファサードだけの依存で利用できます。
 
 詳細は [API ドキュメント](https://docs.rs/ddd-toolkit)を参照してください。
 [`facade-tests`](facade-tests/tests) では、独自リポジトリ、非同期ポート、複数集約の処理、

@@ -3,8 +3,7 @@
 // generates shorthand fields. This allowance is limited to this test crate.
 #![allow(clippy::redundant_field_names)]
 
-// Derives are invoked through the facade; core is a direct dependency because
-// macro 0.4 resolves its generated paths from the consumer's Cargo.toml.
+// Derives are invoked through the facade without a direct core dependency.
 use ddd_toolkit::AggregateRoot as _;
 
 #[derive(ddd_toolkit::ValueObject)]

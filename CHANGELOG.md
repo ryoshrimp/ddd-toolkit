@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Derives now support facade-only and renamed facade dependencies, preferring
+  direct core dependencies when present. Missing-dependency errors use current
+  package names (#11). Isolated Cargo consumer tests cover resolution and serde.
+- Prepared facade 0.3.2 with core/macro 0.4.2 for the path-resolution fix.
+
 ## [0.3.1] - 2026-11-01
 
 ### Added

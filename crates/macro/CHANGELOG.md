@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolve direct core dependencies first, falling back to facade re-exports;
+  preserve both dependency renames and library self-references. Diagnostics now
+  name `ddd-toolkit-core` and `ddd-toolkit` (#11). Prepared version 0.4.2.
+
 ## [0.4.1] - 2026-11-01
 
 ### Added

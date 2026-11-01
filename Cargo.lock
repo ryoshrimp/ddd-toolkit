@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "ddd-toolkit"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "ddd-toolkit-core",
  "ddd-toolkit-macro",
@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "ddd-toolkit-core"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "serde",
  "trybuild",
@@ -25,14 +25,13 @@ name = "ddd-toolkit-facade-tests"
 version = "0.0.0"
 dependencies = [
  "ddd-toolkit",
- "ddd-toolkit-core",
  "serde_json",
  "zeroize",
 ]
 
 [[package]]
 name = "ddd-toolkit-macro"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "ddd-toolkit-core",
  "proc-macro-crate",

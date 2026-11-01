@@ -23,9 +23,9 @@ version (MSRV) is specified.
 cargo add ddd-toolkit-core ddd-toolkit-macro
 ```
 
-Your crate must depend directly on `ddd-toolkit-core`: generated code references
-its traits. Renamed core dependencies are supported, but depending only on the
-`ddd-toolkit` facade is not sufficient for crate-path resolution.
+Generated paths prefer a direct `ddd-toolkit-core` dependency, then fall back
+to `ddd-toolkit` and its re-exports. Both dependencies may be renamed. Using
+only the facade with its default `derive` feature is also supported.
 
 ## Derives
 

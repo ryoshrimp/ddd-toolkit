@@ -34,14 +34,11 @@ For derive macros (enabled by default):
 ```toml
 [dependencies]
 ddd-toolkit = "0.3"
-ddd-toolkit-core = "0.4.1"
 ```
 
-**Important:** macro 0.4 requires a direct `ddd-toolkit-core` dependency
-in the consuming crate, including when derives are invoked through this
-facade. A renamed core dependency is supported. The previous facade-only
-installation no longer suffices for derives; re-exporting macros does not
-change their dependency resolution.
+Derives work with the facade as the only toolkit dependency. Generated paths
+prefer a direct `ddd-toolkit-core` dependency when present, otherwise they use
+the facade's re-exports. Both core and facade dependencies may be renamed.
 
 Facade 0.3.0 adopts core/macro 0.4.0 and contains breaking API changes
 from facade 0.2. See the migration guide below and [CHANGELOG.md](CHANGELOG.md).
@@ -136,7 +133,7 @@ may deliver duplicates. Application adapters define transaction guarantees.
 
 | Feature | Default | Enables |
 |---------|---------|---------|
-| `derive` | yes | `ValueObject`, `Entity`, `DomainEvent`, `AggregateRoot` derives; consumers also need core directly |
+| `derive` | yes | `ValueObject`, `Entity`, `DomainEvent`, `AggregateRoot` derives; no direct core dependency required |
 | `serde` | no | Core's serde re-export and serde derive support for `#[value_object(serde)]`; independent of `derive` |
 
 To serialize a value object, enable the facade's `serde` feature and opt in on
@@ -183,7 +180,7 @@ Calling `Secret::into_inner` transfers zeroization responsibility to the caller.
   and `EventDispatcher` with event publisher contracts. `PortError` is gone;
   adapters choose their own error types.
 - Remove `chrono`, `uuid`, and `zeroize` feature requests.
-- Add a direct core dependency for derives and opt in to serde per value object.
+- Opt in to serde per value object; a facade-only dependency supports derives.
 
 More details are in the [API docs](https://docs.rs/ddd-toolkit). The
 [`facade-tests`](facade-tests/tests) integration suite covers custom repositories,
