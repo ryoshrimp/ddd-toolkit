@@ -5,6 +5,16 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-11-01
+
+### Changed
+
+- Upgrade to core 0.4.4 for safe `Secret` reference access and a shared internal
+  event restoration guard, with zeroization/drop and async panic regression
+  coverage (#16, #17). Public APIs and event restoration semantics are unchanged.
+- Explain boxed `Send` future allocation/dynamic-dispatch trade-offs and why
+  runtime independence does not allow `!Send` futures, in English and Japanese (#15).
+
 ## [0.4.1] - 2026-11-01
 
 ### Fixed

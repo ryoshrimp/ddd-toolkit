@@ -8,7 +8,7 @@
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#ライセンス)
 
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
-[`ddd-toolkit-core`](crates/core) 0.4.3 の公開 API と、
+[`ddd-toolkit-core`](crates/core) 0.4.4 の公開 API と、
 [`ddd-toolkit-macro`](crates/macro) 0.5.1 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 

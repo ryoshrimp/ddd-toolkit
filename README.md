@@ -8,7 +8,7 @@ English | [日本語](README.ja.md)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#license)
 
 Domain-Driven Design traits and helpers, re-exported from
-[`ddd-toolkit-core`](crates/core) 0.4.3,
+[`ddd-toolkit-core`](crates/core) 0.4.4,
 plus the four derives from
 [`ddd-toolkit-macro`](crates/macro) 0.5.1.
 All public items are available at `ddd_toolkit::`.
