@@ -1,36 +1,5 @@
+use crate::event_restoration_guard::EventRestorationGuard;
 use crate::{AggregateRoot, DomainEventPublisher};
-
-struct EventRestorationGuard<'a, A: AggregateRoot> {
-    aggregate: &'a mut A,
-    snapshot: Option<Vec<A::Event>>,
-}
-
-impl<'a, A: AggregateRoot> EventRestorationGuard<'a, A> {
-    fn new(aggregate: &'a mut A, snapshot: Vec<A::Event>) -> Self {
-        Self {
-            aggregate,
-            snapshot: Some(snapshot),
-        }
-    }
-
-    fn events(&self) -> impl Iterator<Item = &A::Event> {
-        self.snapshot.as_deref().into_iter().flatten()
-    }
-
-    fn commit(&mut self) {
-        self.snapshot.take();
-    }
-}
-
-impl<A: AggregateRoot> Drop for EventRestorationGuard<'_, A> {
-    fn drop(&mut self) {
-        if let Some(snapshot) = self.snapshot.take() {
-            for event in snapshot {
-                self.aggregate.record_event(event);
-            }
-        }
-    }
-}
 
 /// **English:**<br>
 /// Publishes the events currently held by `aggregate` through `publisher`.
