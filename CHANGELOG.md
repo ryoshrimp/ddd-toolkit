@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A beginner-friendly order tutorial covering business rules, aggregate boundaries,
   persistence and event notification, with bilingual reading paths, a DDD glossary,
   expected output and exercises. Separates introductory material from advanced
-  retry/event-sourcing/outbox examples; CI also runs the tutorial (#26).
+  retry/event-sourcing/outbox examples; CI also runs the tutorial. The delivery
+  retry example is named `dispatch_retry` to describe its purpose (#26).
 - Four runnable facade-only examples for aggregate persistence/event dispatch,
   CQRS with specifications/policies, event sourcing with snapshots/upcasting,
   and async outbox/projection reliability. Includes assertion-checked retry and

@@ -1,7 +1,7 @@
-//! Advanced delivery exercise, NOT the first tutorial: start with getting_started.rs.
+//! Retry event dispatch after a partial failure; observe duplicate delivery.
 //! 発展編（最初は getting_started.rs）: 保存後の配信が部分失敗するとどうなるか。
 //!
-//! Run: cargo run -p ddd-toolkit --example basic --locked
+//! Run: cargo run -p ddd-toolkit --example dispatch_retry --locked
 //! Read main first, then support/mod.rs for the in-memory adapters.
 //! main → support/mod.rs の順に読む。これは業務モデルより配信契約に絞った例。
 //! Expected: the restored batch retries event 1, producing deliveries [1, 1, 2].
@@ -43,5 +43,5 @@ fn main() {
     dispatch_events(&mut order, &mut publisher).unwrap();
     assert!(order.pull_events().is_empty());
     assert_eq!(publisher.accepted, vec![Placed(1), Placed(1), Placed(2)]);
-    println!("basic: saved total=4200; retry delivered [1, 1, 2]");
+    println!("dispatch_retry: saved total=4200; retry delivered [1, 1, 2]");
 }

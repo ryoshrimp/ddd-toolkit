@@ -16,7 +16,7 @@ name = "getting_started"
 required-features = ["derive"]
 
 [[example]]
-name = "basic"
+name = "dispatch_retry"
 required-features = ["derive"]
 
 [[example]]

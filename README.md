@@ -76,7 +76,7 @@ From a checkout, run five assertion-checked examples using only `ddd_toolkit::` 
 | Example | Demonstrates | Command |
 | --- | --- | --- |
 | [Getting started](examples/getting_started.rs) | Draft → add items → confirm → save → notify | `cargo run -p ddd-toolkit --example getting_started --features derive --locked` |
-| [Delivery retries (advanced)](examples/basic.rs) | Aggregate, repository, dispatch failure and duplicate retry | `cargo run -p ddd-toolkit --example basic --features derive --locked` |
+| [Delivery retries (advanced)](examples/dispatch_retry.rs) | Aggregate, repository, dispatch failure and duplicate retry | `cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked` |
 | [CQRS](examples/cqrs.rs) | Command/query handlers, Specification and Policy | `cargo run -p ddd-toolkit --example cqrs --features derive --locked` |
 | [Event sourcing](examples/event_sourcing.rs) | ExpectedRevision, upcasting, replay and snapshots | `cargo run -p ddd-toolkit --example event_sourcing --features derive --locked` |
 | [Reliable delivery](examples/reliable_delivery.rs) | Async outbox, idempotent projection and checkpoints | `cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked` |

@@ -40,7 +40,7 @@ Before opening a PR, run the same checks CI runs (see
 cargo test --workspace --all-features --locked
 cargo build -p ddd-toolkit --examples --all-features --locked
 cargo run -p ddd-toolkit --example getting_started --all-features --locked
-cargo run -p ddd-toolkit --example basic --all-features --locked
+cargo run -p ddd-toolkit --example dispatch_retry --all-features --locked
 cargo run -p ddd-toolkit --example cqrs --all-features --locked
 cargo run -p ddd-toolkit --example event_sourcing --all-features --locked
 cargo run -p ddd-toolkit --example reliable_delivery --all-features --locked

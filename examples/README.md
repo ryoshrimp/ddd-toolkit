@@ -74,13 +74,13 @@ errors, for example by returning them to the caller.
 | --- | --- | --- |
 | 1 | [getting_started.rs](getting_started.rs) | Business rules, persistence, notification. Enough to start |
 | 2 | [cqrs.rs](cqrs.rs) | Separate update commands from read queries. A Specification tests a condition; a Policy enforces a constraint with a rejection reason |
-| 3 | [basic.rs](basic.rs) | **Advanced: partial delivery failure and duplicates**. Despite the name, not the first tutorial |
+| 3 | [dispatch_retry.rs](dispatch_retry.rs) | **Advanced: partial delivery failure and duplicates** |
 | Optional | [event_sourcing.rs](event_sourcing.rs) | **Advanced: reconstruct state from facts**. Revisions, snapshots and upcasters |
 | Optional | [reliable_delivery.rs](reliable_delivery.rs) | **Advanced: async and failure recovery**. Outbox, projection, checkpoint and deduplication |
 
 Each file is an independent program. A later `Order` does not extend the tutorial
 model: later examples deliberately narrow the model to focus on API contracts.
-`cqrs` and `basic` share [support/mod.rs](support/mod.rs). The CQRS example adjusts
+`cqrs` and `dispatch_retry` share [support/mod.rs](support/mod.rs). The CQRS example adjusts
 an order total; it is not the tutorial's confirmation workflow. CQRS separates
 update and read responsibilities; it does not require another database or async.
 A lifecycle callback makes save/dispatch ordering explicit, not transactional.
@@ -94,7 +94,7 @@ No new dependency, database, broker, or async runtime is required.
 ```sh
 cargo build -p ddd-toolkit --examples --all-features --locked
 cargo run -p ddd-toolkit --example getting_started --features derive --locked
-cargo run -p ddd-toolkit --example basic --features derive --locked
+cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked
 cargo run -p ddd-toolkit --example cqrs --features derive --locked
 cargo run -p ddd-toolkit --example event_sourcing --features derive --locked
 cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
@@ -103,7 +103,7 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 - [getting_started.rs](getting_started.rs): business rules → confirmation → save →
   notify. Total 4200 yen, one notification. Rejects empty orders, zero prices and
   changes after confirmation.
-- [basic.rs](basic.rs): saves an order, fails after publishing the first event,
+- [dispatch_retry.rs](dispatch_retry.rs): saves an order, fails after publishing the first event,
   then retries the restored batch. Expected deliveries: `[1, 1, 2]`. Saving does
   not drain pending events; publication failure does not roll back the save.
 - [cqrs.rs](cqrs.rs): rejects zero increments (Specification) and totals above

@@ -70,13 +70,13 @@ DDD はこのクレートのtraitを全部使うことではなく、業務の�
 | --- | --- | --- |
 | 1 | [getting_started.rs](getting_started.rs) | 業務ルール、保存、通知。まずこれだけで十分 |
 | 2 | [cqrs.rs](cqrs.rs) | 更新の命令と参照の質問を分ける。Specificationは真偽の条件、Policyは拒否理由付きの制約 |
-| 3 | [basic.rs](basic.rs) | **発展: 配信の部分失敗と重複**。名前はbasicだが最初の入門ではない |
+| 3 | [dispatch_retry.rs](dispatch_retry.rs) | **発展: 配信の部分失敗と重複** |
 | 任意 | [event_sourcing.rs](event_sourcing.rs) | **発展: 状態ではなく事実の履歴から復元**。revision、snapshot、upcasterを学ぶ |
 | 任意 | [reliable_delivery.rs](reliable_delivery.rs) | **発展: asyncと障害対策**。outbox、projection、checkpoint、重複排除を学ぶ |
 
 各ファイルは独立したプログラムです。同じ `Order` という名前でも入門例のモデルを
 そのまま継承するわけではありません。後続例はAPIを絞って学ぶための小さなモデルです。
-`cqrs` と `basic` の共通部品は [support/mod.rs](support/mod.rs) にあります。
+`cqrs` と `dispatch_retry` の共通部品は [support/mod.rs](support/mod.rs) にあります。
 CQRSの例は注文金額の調整を題材にし、入門の確定フローとは別です。
 CQRS は「更新と参照の責務を分ける」ことであり、別DBや非同期処理を必須にしません。
 ライフサイクルコールバックは保存・配信の順番を明示する仕組みで、DBトランザクションではありません。
@@ -90,7 +90,7 @@ CQRS は「更新と参照の責務を分ける」ことであり、別DBや非�
 ```sh
 cargo build -p ddd-toolkit --examples --all-features --locked
 cargo run -p ddd-toolkit --example getting_started --features derive --locked
-cargo run -p ddd-toolkit --example basic --features derive --locked
+cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked
 cargo run -p ddd-toolkit --example cqrs --features derive --locked
 cargo run -p ddd-toolkit --example event_sourcing --features derive --locked
 cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
@@ -98,7 +98,7 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 
 - [getting_started.rs](getting_started.rs): 注文の業務ルール → 確定 → 保存 → 通知。
   合計4200円、通知1件。空注文・0円・確定後の変更を拒否します。
-- [basic.rs](basic.rs): 注文を保存し、最初のイベントを配信した後に失敗させ、復元された
+- [dispatch_retry.rs](dispatch_retry.rs): 注文を保存し、最初のイベントを配信した後に失敗させ、復元された
   バッチを再試行します。配信結果は `[1, 1, 2]`。保存は保留イベントを消費せず、
   配信失敗も保存をロールバックしません。
 - [cqrs.rs](cqrs.rs): 加算ゼロを Specification、合計5000超過を Policy で拒否し、
