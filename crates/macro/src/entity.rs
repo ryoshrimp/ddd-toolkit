@@ -12,11 +12,30 @@ use crate::path::core_path;
 /// 指定された一つの名前付きフィールドから識別子の取得・比較・ハッシュを
 /// 生成し、不正な形状、属性の誤配置、識別子の曖昧さをエラーにします。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
+    let mut trait_only = false;
     for attr in &input.attrs {
-        if attr.path().is_ident("entity") {
+        if !attr.path().is_ident("entity") {
+            continue;
+        }
+        let mut option_found = false;
+        attr.parse_nested_meta(|meta| {
+            option_found = true;
+            if !meta.path.is_ident("trait_only") {
+                return Err(meta.error("entity(id) must be placed on a named field"));
+            }
+            if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
+                return Err(meta.error("trait_only is a flag and takes no value"));
+            }
+            if trait_only {
+                return Err(meta.error("duplicate trait_only attribute"));
+            }
+            trait_only = true;
+            Ok(())
+        })?;
+        if !option_found {
             return Err(syn::Error::new_spanned(
                 attr,
-                "entity(id) must be placed on a named field",
+                "entity requires the trait_only flag",
             ));
         }
     }
@@ -63,6 +82,19 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
+    let trait_impl = quote! {
+        impl #impl_generics #core::Entity for #name #ty_generics #where_clause {
+            type Id = #id_ty;
+
+            fn id(&self) -> &Self::Id {
+                &self.#id_name
+            }
+        }
+    };
+    if trait_only {
+        return Ok(trait_impl);
+    }
+
     let mut partial_eq_generics = input.generics.clone();
     partial_eq_generics
         .make_where_clause()
@@ -85,13 +117,7 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     let (hash_impl, hash_ty, hash_where) = hash_generics.split_for_impl();
 
     Ok(quote! {
-        impl #impl_generics #core::Entity for #name #ty_generics #where_clause {
-            type Id = #id_ty;
-
-            fn id(&self) -> &Self::Id {
-                &self.#id_name
-            }
-        }
+        #trait_impl
 
         impl #impl_generics #name #ty_generics #where_clause {
             /// **English:**<br>

@@ -11,6 +11,7 @@ struct Attributes {
     validator: Option<syn::Path>,
     error: Option<Type>,
     serde: bool,
+    trait_only: bool,
 }
 
 /// **English:**<br>
@@ -84,6 +85,10 @@ fn expand_enum(
             &input.ident,
             "ValueObject requires at least one variant",
         ));
+    }
+
+    if attrs.trait_only {
+        return trait_only_impl(input, None);
     }
 
     let mut variants = Vec::with_capacity(data.variants.len());
@@ -696,6 +701,9 @@ fn expand_single(
     member: Member,
     named_field: Option<syn::Ident>,
 ) -> Result<TokenStream> {
+    if attrs.trait_only {
+        return trait_only_impl(input, Some((&field.ty, &member)));
+    }
     if attrs.validator.is_some() && matches!(field.vis, syn::Visibility::Public(_)) {
         return Err(syn::Error::new_spanned(
             field,
@@ -809,6 +817,9 @@ fn expand_multi(
     fields: &Fields,
     named: bool,
 ) -> Result<TokenStream> {
+    if attrs.trait_only {
+        return trait_only_impl(input, None);
+    }
     let field_list: Vec<&Field> = match fields {
         Fields::Named(fields) => fields.named.iter().collect(),
         Fields::Unnamed(fields) => fields.unnamed.iter().collect(),
@@ -954,6 +965,23 @@ fn expand_multi(
     })
 }
 
+fn trait_only_impl(input: &DeriveInput, field: Option<(&Type, &Member)>) -> Result<TokenStream> {
+    let core = core_path()?;
+    let name = &input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    let (inner, borrowed, owned) = match field {
+        Some((ty, member)) => (quote!(#ty), quote!(&self.#member), quote!(self.#member)),
+        None => (quote!(Self), quote!(self), quote!(self)),
+    };
+    Ok(quote! {
+        impl #impl_generics #core::ValueObject for #name #ty_generics #where_clause {
+            type Inner = #inner;
+            fn as_inner(&self) -> &Self::Inner { #borrowed }
+            fn into_inner(self) -> Self::Inner { #owned }
+        }
+    })
+}
+
 fn construct_self(named: bool, arguments: &[syn::Ident]) -> TokenStream {
     if named {
         quote! { Self { #(#arguments),* } }
@@ -979,11 +1007,22 @@ fn parse_attributes(input: &DeriveInput) -> Result<Attributes> {
         validator: None,
         error: None,
         serde: false,
+        trait_only: false,
     };
     if let Some(attr) = matching.first() {
         let mut option_found = false;
         attr.parse_nested_meta(|meta| {
             option_found = true;
+            if meta.path.is_ident("trait_only") {
+                if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
+                    return Err(meta.error("trait_only is a flag and takes no value"));
+                }
+                if attributes.trait_only {
+                    return Err(meta.error("duplicate trait_only attribute"));
+                }
+                attributes.trait_only = true;
+                return Ok(());
+            }
             if meta.path.is_ident("validate") {
                 if attributes.validator.is_some() {
                     return Err(meta.error("duplicate validate attribute"));
@@ -1018,6 +1057,14 @@ fn parse_attributes(input: &DeriveInput) -> Result<Attributes> {
         }
     }
 
+    if attributes.trait_only
+        && (attributes.validator.is_some() || attributes.error.is_some() || attributes.serde)
+    {
+        return Err(syn::Error::new_spanned(
+            matching[0],
+            "trait_only cannot be combined with validate, error, or serde",
+        ));
+    }
     if attributes.validator.is_some() != attributes.error.is_some() {
         return Err(syn::Error::new_spanned(
             matching.first().expect("one attribute exists"),

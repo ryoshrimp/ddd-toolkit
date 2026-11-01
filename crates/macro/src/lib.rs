@@ -61,6 +61,12 @@ mod value_object;
 /// Lowercased variant names must be distinct; generated names must not collide
 /// with other methods or field accessors.
 ///
+/// `#[value_object(trait_only)]` generates only the domain trait implementation,
+/// with the same `Inner` mapping but no inherent methods, constructors, standard
+/// traits, or extra bounds. It preserves handwritten APIs and cannot be combined
+/// with `validate`, `error`, or `serde`. It does not enforce invariants on public
+/// fields, direct enum construction, or independently implemented deserialization.
+///
 /// `#[value_object(validate = path, error = ErrorType)]` replaces `new` with
 /// `try_new` (or `try_new_<variant>`). Both options are required together. The
 /// validator receives `&Inner` for a single-field struct and `&Self` otherwise,
@@ -94,6 +100,11 @@ mod value_object;
 /// バリアントアクセサーは不一致なら `None`、ユニットなら `Some(())`、それ以外は
 /// フィールド参照のタプルを返します。小文字化した名前は一意である必要があり、
 /// 生成する名前を他のメソッドやフィールドアクセサーと衝突させないでください。
+///
+/// `#[value_object(trait_only)]` は同じ `Inner` 対応のドメイントレイト実装だけを
+/// 生成し、固有メソッド、コンストラクター、標準トレイト、追加の境界は生成しません。
+/// 手書きの API を維持でき、`validate`、`error`、`serde` とは併用できません。
+/// 公開フィールド、列挙型の直接構築、別途実装された逆直列化の不変条件は保証しません。
 ///
 /// `#[value_object(validate = path, error = ErrorType)]` は `new` を `try_new`
 /// （列挙型では `try_new_<variant>`）に置き換えます。両オプションの同時指定が必要です。
@@ -153,6 +164,10 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 /// is generated. Non-struct inputs, misplaced flags, missing or multiple identifier
 /// fields, unknown options, and missing core dependencies cause compile errors.
 ///
+/// `#[entity(trait_only)]` generates only the domain trait implementation. It
+/// still requires `#[entity(id)]`, but adds no inherent `id()`, standard traits,
+/// or extra bounds, so handwritten accessors and equality semantics are preserved.
+///
 /// **日本語:**<br>
 /// `ddd_toolkit_core::Entity` と識別子を借用する固有の `id()`、
 /// 識別子フィールドだけを使う `PartialEq`、`Eq`、`Hash` を実装します。
@@ -162,6 +177,10 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 /// 実装する必要があります。コンストラクターや識別子の検証は生成しません。
 /// 構造体以外、フラグの誤配置、識別子の欠落・複数指定、未知のオプション、
 /// コア依存の欠落はコンパイルエラーになります。
+///
+/// `#[entity(trait_only)]` はドメイントレイト実装だけを生成します。
+/// `#[entity(id)]` は引き続き必要ですが、固有の `id()`、標準トレイト、追加の
+/// 境界は生成しないため、手書きのアクセサーと等価性の意味を維持できます。
 ///
 /// # Example / 使用例
 ///
