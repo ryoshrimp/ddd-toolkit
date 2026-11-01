@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Four runnable facade-only examples for aggregate persistence/event dispatch,
+  CQRS with specifications/policies, event sourcing with snapshots/upcasting,
+  and async outbox/projection reliability. Includes assertion-checked retry and
+  deduplication flows, bilingual guides explaining adapter durability/runtime
+  responsibilities, explicit derive feature requirements, and CI build/run
+  coverage (#26).
 - CI rustdoc check that denies documentation warnings across the workspace with
   all features enabled, without generating dependency documentation, plus local
   reproduction instructions in `CONTRIBUTING.md` (#30).

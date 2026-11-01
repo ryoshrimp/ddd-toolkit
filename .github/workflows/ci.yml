@@ -19,6 +19,13 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: ./scripts/check-rust-test-environment.sh
       - run: cargo test --workspace --all-features --locked
+      - run: cargo build -p ddd-toolkit --examples --all-features --locked
+      - name: Run facade examples
+        run: |
+          cargo run -p ddd-toolkit --example basic --all-features --locked
+          cargo run -p ddd-toolkit --example cqrs --all-features --locked
+          cargo run -p ddd-toolkit --example event_sourcing --all-features --locked
+          cargo run -p ddd-toolkit --example reliable_delivery --all-features --locked
       - run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
   feature-matrix:

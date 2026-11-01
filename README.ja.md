@@ -65,6 +65,23 @@ ddd-toolkit = "0.4"
 扱えず、単一スレッド executor でも現在のシグネチャに適合しません。詳細は
 [core の非同期契約](crates/core/README.ja.md#構成要素)を参照してください。
 
+## 実行可能なサンプル
+
+チェックアウト後、[サンプルガイド](examples/README.ja.md)から、`ddd_toolkit::` API のみを使い
+assert で結果を確認する4種類のフローを実行できます。
+
+| サンプル | 内容 | コマンド |
+| --- | --- | --- |
+| [基本形](examples/basic.rs) | 集約、Repository、配信失敗と再試行による重複 | `cargo run -p ddd-toolkit --example basic --features derive --locked` |
+| [CQRS](examples/cqrs.rs) | コマンド／クエリハンドラー、Specification と Policy | `cargo run -p ddd-toolkit --example cqrs --features derive --locked` |
+| [イベントソーシング](examples/event_sourcing.rs) | ExpectedRevision、アップキャスト、再生、スナップショット | `cargo run -p ddd-toolkit --example event_sourcing --features derive --locked` |
+| [配信信頼性](examples/reliable_delivery.rs) | 非同期アウトボックス、冪等なプロジェクション、チェックポイント | `cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked` |
+
+すべて `derive`（既定で有効）が必要です。追加依存や非同期ランタイムは不要です。
+アダプターはインメモリの実演用で永続ストレージではありません。再試行で重複配信が起こり得ます。
+原子的なトランザクション、永続性、claim の復旧は本番アダプターの責任です。
+非同期の例は即座に完了する Future のみを poll し、実際の I/O は扱いません。
+
 ## 使用例
 
 上記の二つの依存を追加した場合:
