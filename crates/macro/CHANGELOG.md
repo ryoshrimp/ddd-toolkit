@@ -5,6 +5,19 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Opt-in `#[value_object(trait_only)]` and `#[entity(trait_only)]` derive modes
+  generate only the corresponding domain trait, with no constructors, inherent
+  methods, standard trait implementations, or extra bounds. Existing handwritten
+  APIs and equality semantics can be retained; default derive behavior is unchanged
+  (#34).
+- Facade-only consumer coverage for handwritten APIs, renamed dependencies, and
+  absent generated constructors, `Debug`, and `Clone`, plus English/Japanese
+  documentation of the modes and their invariant-protection limitations (#34).
+
 ## [0.5.1] - 2026-11-01
 
 ### Fixed
