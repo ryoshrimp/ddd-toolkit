@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Reorganize the English and Japanese READMEs around the intended audience,
+  non-goals, experimental 0.x stability and GitHub Issues feedback. Start with
+  four derives and a runnable quick start, then link to the order tutorial and
+  Advanced contracts/examples while preserving API constraints, features and
+  migration guidance (#28).
 - Clarify synchronous/asynchronous dispatch restoration on publisher panic and
   async future cancellation in English and Japanese rustdoc, including unpolled
   futures, irreversible publication side effects, duplicate retries, and limits

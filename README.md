@@ -7,6 +7,24 @@ English | [日本語](README.ja.md)
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#license)
 
+A Rust toolkit for developers who want to introduce Domain-Driven Design (DDD)
+contracts and derives into their application: express identity, value validation,
+aggregate event queues, and domain events without writing the corresponding trait
+implementations by hand. It complements your existing storage and runtime choices;
+it is not a framework that automatically implements persistence, transactions, or
+delivery guarantees.
+
+**Experimental, 0.x:** APIs may change. See the existing
+[compatibility and breaking-change policy](docs/macro-compatibility.md#api-stability-for-generated-code).
+Feedback on APIs, documentation, and use cases is welcome via
+[GitHub Issues](https://github.com/ryoshrimp/ddd-toolkit/issues).
+
+Start with the [four derives and quick start](#four-derives), continue with the
+[order tutorial](examples/README.md#start-here), then explore [Advanced](#advanced)
+when you need additional contracts.
+
+## Package and toolchain
+
 Domain-Driven Design traits and helpers, re-exported from
 [`ddd-toolkit-core`](crates/core) 0.4.4,
 plus the four derives from
@@ -22,18 +40,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [release instructions](docs/releasing
 
 ## Installation
 
+For the quick start, use the default features (`derive` is enabled):
+
+```toml
+[dependencies]
+ddd-toolkit = "0.4"
+```
+
 For traits and helpers without derive macros:
 
 ```toml
 [dependencies]
 ddd-toolkit = { version = "0.4", default-features = false }
-```
-
-For derive macros (enabled by default):
-
-```toml
-[dependencies]
-ddd-toolkit = "0.4"
 ```
 
 Derives work with the facade as the only toolkit dependency. Generated paths
@@ -43,9 +61,61 @@ the facade's re-exports. Both core and facade dependencies may be renamed.
 Facade 0.3.0 adopts core/macro 0.4.0 and contains breaking API changes
 from facade 0.2. See the migration guide below and [CHANGELOG.md](CHANGELOG.md).
 
-## What's here
+## Four derives
 
-- `Entity`, `ValueObject`, `AggregateRoot`, and `DomainEvent` traits and derives.
+| Derive | Start with |
+| --- | --- |
+| `ValueObject` | Values with equality and optional validation |
+| `Entity` | Identity-based equality and hashing via `#[entity(id)]` |
+| `AggregateRoot` | Pending domain events in a `#[aggregate(events)]` queue |
+| `DomainEvent` | A domain event type implementing the event contract |
+
+### Quick start
+
+After adding the dependency with `derive` enabled as shown above, save this as
+`src/main.rs` and run `cargo run`:
+
+```rust
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_email, error = &'static str)]
+struct Email(String);
+
+fn validate_email(value: &str) -> Result<(), &'static str> {
+    if value.contains('@') { Ok(()) } else { Err("missing @") }
+}
+
+fn main() {
+    let email = Email::try_new("a@b.com".to_owned()).unwrap();
+    assert_eq!(email.as_inner(), "a@b.com");
+    assert_eq!(Email::try_new("invalid".to_owned()), Err("missing @"));
+}
+```
+
+`ValueObject` derives `Debug`, `Clone`, `PartialEq`, `Eq`, and `Hash`;
+do not derive these again. Unvalidated structs use `new`; validated structs use
+`try_new`. Named/multi-field structs and data-carrying enums are also supported.
+`Entity` derives equality and hashing using only the `#[entity(id)]` field.
+
+## Next: runnable examples
+
+**New to DDD? Continue with the [order tutorial](examples/README.md#start-here)**:
+express an order's business rules in code, then save the aggregate and send a
+notification. The guide maps terminology to code and explains reading order.
+From a checkout, start with:
+
+```sh
+cargo run -p ddd-toolkit --example getting_started --features derive --locked
+```
+
+Then try [CQRS](examples/cqrs.rs) for command/query handlers, Specification and
+Policy (`cargo run -p ddd-toolkit --example cqrs --features derive --locked`).
+Both use only `ddd_toolkit::` APIs and check results with assertions.
+For retries, event sourcing, and outbox examples, see [Advanced](#advanced).
+
+## Advanced
+
+Use these contracts as needed; they are not prerequisites for the four derives:
+
 - `Repository` / `AsyncRepository`, `DomainEventPublisher` /
   `AsyncDomainEventPublisher`, and `dispatch_events` / `dispatch_events_async`.
 - CQRS command/query handlers and lifecycle contexts.
@@ -66,17 +136,12 @@ problems. Runtime independence does not allow `!Send` futures: they do not fit
 the current signatures, even on a single-threaded executor. See the
 [core async contract](crates/core/README.md#building-blocks) for details.
 
-## Runnable examples
+### Advanced examples
 
-**New to DDD? Start with the [order tutorial](examples/README.md#start-here)**:
-express an order's business rules in code, then save the aggregate and send a
-notification. The guide maps terminology to code and explains reading order.
-From a checkout, run five assertion-checked examples using only `ddd_toolkit::` APIs:
+From a checkout, run these assertion-checked examples using only `ddd_toolkit::` APIs:
 
 | Example | Demonstrates | Command |
 | --- | --- | --- |
-| [Getting started](examples/getting_started.rs) | Draft → add items → confirm → save → notify | `cargo run -p ddd-toolkit --example getting_started --features derive --locked` |
-| [CQRS](examples/cqrs.rs) | Command/query handlers, Specification and Policy | `cargo run -p ddd-toolkit --example cqrs --features derive --locked` |
 | [Delivery retries (advanced)](examples/dispatch_retry.rs) | Aggregate, repository, dispatch failure and duplicate retry | `cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked` |
 | [Event sourcing](examples/event_sourcing.rs) | ExpectedRevision, upcasting, replay and snapshots | `cargo run -p ddd-toolkit --example event_sourcing --features derive --locked` |
 | [Reliable delivery](examples/reliable_delivery.rs) | Async outbox, idempotent projection and checkpoints | `cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked` |
@@ -86,34 +151,15 @@ are needed. Adapters are in-memory demonstrations, not durable storage. Retry ma
 duplicate delivery; atomic transactions, persistence and claim recovery belong to
 production adapters. The async demo polls only immediately-ready futures, not I/O.
 
-## Example
-
-After adding the dependency with `derive` enabled as shown above:
+### Secret values
 
 ```rust
-#[derive(ddd_toolkit::ValueObject)]
-#[value_object(validate = validate_email, error = &'static str)]
-struct Email(String);
-
-fn validate_email(value: &str) -> Result<(), &'static str> {
-    if value.contains('@') { Ok(()) } else { Err("missing @") }
-}
-
 fn main() {
-    let email = Email::try_new("a@b.com".to_owned()).unwrap();
-    assert_eq!(email.as_inner(), "a@b.com");
-    assert_eq!(Email::try_new("invalid".to_owned()), Err("missing @"));
-
     let key = ddd_toolkit::Secret::new("sekret".to_owned());
     assert_eq!(format!("{key:?}"), "[REDACTED]");
     assert_eq!(key.expose_secret(|value| value.len()), 6);
 }
 ```
-
-`ValueObject` derives `Debug`, `Clone`, `PartialEq`, `Eq`, and `Hash`;
-do not derive these again. Unvalidated structs use `new`; validated structs use
-`try_new`. Named/multi-field structs and data-carrying enums are also supported.
-`Entity` derives equality and hashing using only the `#[entity(id)]` field.
 
 ### Aggregate event publication
 
