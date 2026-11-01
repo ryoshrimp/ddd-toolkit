@@ -7,6 +7,22 @@
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#ライセンス)
 
+ドメイン駆動設計（DDD）の契約と derive をアプリケーションに導入したい開発者向けの
+Rust ツールキットです。同一性、値の検証、集約のイベントキュー、ドメインイベントを、
+対応するトレイト実装の手書きを減らして表現できます。既存のストレージやランタイムの選択を
+補完するものであり、永続化・トランザクション・配送保証を自動実装するフレームワークではありません。
+
+**0.x・実験的:** API は変更される可能性があります。既存の
+[互換性・破壊的変更の方針](docs/macro-compatibility.md#日本語)を参照してください。
+API・ドキュメント・ユースケースへのフィードバックを
+[GitHub Issues](https://github.com/ryoshrimp/ddd-toolkit/issues)で歓迎します。
+
+[四つの derive とクイックスタート](#四つの-derive)から始め、
+[注文の入門ガイド](examples/README.ja.md#初めての方へ)、必要に応じて
+[Advanced（発展）](#advanced発展)へ進んでください。
+
+## パッケージとツールチェーン
+
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
 [`ddd-toolkit-core`](crates/core) 0.4.4 の公開 API と、
 [`ddd-toolkit-macro`](crates/macro) 0.5.1 の四つの derive マクロを再エクスポートします。
@@ -22,18 +38,18 @@ crates.io では別々のパッケージとして公開し、開発とテスト�
 
 ## インストール
 
+クイックスタートでは、デフォルトの feature（`derive` が有効）を使います:
+
+```toml
+[dependencies]
+ddd-toolkit = "0.4"
+```
+
 トレイトとヘルパーだけを使い、derive マクロを使わない場合:
 
 ```toml
 [dependencies]
 ddd-toolkit = { version = "0.4", default-features = false }
-```
-
-derive マクロを使う場合（デフォルトで有効）:
-
-```toml
-[dependencies]
-ddd-toolkit = "0.4"
 ```
 
 ファサードだけへの依存で derive を利用できます。生成パスは直接依存の
@@ -43,9 +59,61 @@ ddd-toolkit = "0.4"
 ファサード 0.3.0 は core/macro 0.4.0 を採用しており、ファサード 0.2 から
 破壊的な API 変更があります。後述の移行ガイドと [CHANGELOG.md](CHANGELOG.md)を参照してください。
 
-## 提供する機能
+## 四つの derive
 
-- `Entity`、`ValueObject`、`AggregateRoot`、`DomainEvent` のトレイトと derive。
+| Derive | 最初に使う機能 |
+| --- | --- |
+| `ValueObject` | 等値比較と任意の検証を持つ値 |
+| `Entity` | `#[entity(id)]` による同一性ベースの等値比較とハッシュ |
+| `AggregateRoot` | `#[aggregate(events)]` のキューによる保留ドメインイベントの管理 |
+| `DomainEvent` | イベントの契約を実装するドメインイベント型 |
+
+### クイックスタート
+
+上記の手順で `derive` を有効にして依存を追加した後、次を `src/main.rs` に保存し、
+`cargo run` で実行してください:
+
+```rust
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_email, error = &'static str)]
+struct Email(String);
+
+fn validate_email(value: &str) -> Result<(), &'static str> {
+    if value.contains('@') { Ok(()) } else { Err("missing @") }
+}
+
+fn main() {
+    let email = Email::try_new("a@b.com".to_owned()).unwrap();
+    assert_eq!(email.as_inner(), "a@b.com");
+    assert_eq!(Email::try_new("invalid".to_owned()), Err("missing @"));
+}
+```
+
+`ValueObject` は `Debug`、`Clone`、`PartialEq`、`Eq`、`Hash` を生成するため、
+重複して derive しないでください。検証なしの構造体では `new`、検証付きでは
+`try_new` を使います。名前付き・複数フィールドの構造体と、データを持つ列挙型にも対応します。
+`Entity` は `#[entity(id)]` フィールドだけを使った等値比較とハッシュを生成します。
+
+## 次のステップ: 実行可能なサンプル
+
+**DDD が初めてなら、次は [注文の入門ガイド](examples/README.ja.md#初めての方へ)へ進んでください**。
+注文の業務ルールをコードで表し、集約の保存・通知につなぐ流れを学びます。
+ガイドでは用語とコードの対応、各サンプルの読む順番も説明します。
+チェックアウト後、まずは次を実行してください:
+
+```sh
+cargo run -p ddd-toolkit --example getting_started --features derive --locked
+```
+
+次に [CQRS](examples/cqrs.rs) でコマンド／クエリハンドラー、Specification と Policy を試せます
+（`cargo run -p ddd-toolkit --example cqrs --features derive --locked`）。
+どちらも `ddd_toolkit::` API のみを使い、assert で結果を確認します。
+再試行・イベントソーシング・アウトボックスの例は [Advanced（発展）](#advanced発展)を参照してください。
+
+## Advanced（発展）
+
+以下の契約は必要に応じて使ってください。四つの derive を使う前提条件ではありません:
+
 - `Repository` / `AsyncRepository`、`DomainEventPublisher` /
   `AsyncDomainEventPublisher`、`dispatch_events` / `dispatch_events_async`。
 - CQRS のコマンド／クエリハンドラーとライフサイクルコンテキスト。
@@ -65,17 +133,12 @@ ddd-toolkit = "0.4"
 扱えず、単一スレッド executor でも現在のシグネチャに適合しません。詳細は
 [core の非同期契約](crates/core/README.ja.md#構成要素)を参照してください。
 
-## 実行可能なサンプル
+### 発展サンプル
 
-**DDD が初めてなら [注文の入門ガイド](examples/README.ja.md#初めての方へ)から始めてください**。
-注文の業務ルールをコードで表し、集約の保存・通知につなぐ流れを学びます。
-ガイドでは用語とコードの対応、各サンプルの読む順番も説明します。
-チェックアウト後、`ddd_toolkit::` API のみを使い、assert で結果を確認する5種類の例を実行できます。
+チェックアウト後、`ddd_toolkit::` API のみを使い、assert で結果を確認する次の例を実行できます。
 
 | サンプル | 内容 | コマンド |
 | --- | --- | --- |
-| [はじめの一歩](examples/getting_started.rs) | 下書き → 商品追加 → 確定 → 保存 → 通知 | `cargo run -p ddd-toolkit --example getting_started --features derive --locked` |
-| [CQRS](examples/cqrs.rs) | コマンド／クエリハンドラー、Specification と Policy | `cargo run -p ddd-toolkit --example cqrs --features derive --locked` |
 | [再配信（発展）](examples/dispatch_retry.rs) | 集約、Repository、配信失敗と再試行による重複 | `cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked` |
 | [イベントソーシング](examples/event_sourcing.rs) | ExpectedRevision、アップキャスト、再生、スナップショット | `cargo run -p ddd-toolkit --example event_sourcing --features derive --locked` |
 | [配信信頼性](examples/reliable_delivery.rs) | 非同期アウトボックス、冪等なプロジェクション、チェックポイント | `cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked` |
@@ -85,34 +148,15 @@ ddd-toolkit = "0.4"
 原子的なトランザクション、永続性、claim の復旧は本番アダプターの責任です。
 非同期の例は即座に完了する Future のみを poll し、実際の I/O は扱いません。
 
-## 使用例
-
-上記の手順で `derive` を有効にして依存を追加すると、次のコードを利用できます:
+### 秘密値
 
 ```rust
-#[derive(ddd_toolkit::ValueObject)]
-#[value_object(validate = validate_email, error = &'static str)]
-struct Email(String);
-
-fn validate_email(value: &str) -> Result<(), &'static str> {
-    if value.contains('@') { Ok(()) } else { Err("missing @") }
-}
-
 fn main() {
-    let email = Email::try_new("a@b.com".to_owned()).unwrap();
-    assert_eq!(email.as_inner(), "a@b.com");
-    assert_eq!(Email::try_new("invalid".to_owned()), Err("missing @"));
-
     let key = ddd_toolkit::Secret::new("sekret".to_owned());
     assert_eq!(format!("{key:?}"), "[REDACTED]");
     assert_eq!(key.expose_secret(|value| value.len()), 6);
 }
 ```
-
-`ValueObject` は `Debug`、`Clone`、`PartialEq`、`Eq`、`Hash` を生成するため、
-重複して derive しないでください。検証なしの構造体では `new`、検証付きでは
-`try_new` を使います。名前付き・複数フィールドの構造体と、データを持つ列挙型にも対応します。
-`Entity` は `#[entity(id)]` フィールドだけを使った等値比較とハッシュを生成します。
 
 ### 集約イベントの発行
 
