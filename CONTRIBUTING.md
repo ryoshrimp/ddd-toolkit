@@ -41,9 +41,15 @@ cargo test --workspace --all-features --locked
 ./scripts/check-feature-matrix.sh
 python3 -m unittest discover -s scripts -p 'test_*.py'
 
+RUSTDOCFLAGS="-D warnings" cargo doc --workspace --all-features --no-deps --locked
 cargo fmt --all --check
 cargo clippy --workspace --all-features --all-targets -- -D warnings
 ```
+
+The rustdoc check builds documentation for all three published crates with all
+features enabled and treats documentation warnings (including broken intra-doc
+links) as errors. `--no-deps` excludes dependency documentation. This check is
+separate from the doctests run by the workspace tests and feature matrix.
 
 ## Diagnostic snapshots (core and macro)
 
