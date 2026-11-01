@@ -5,9 +5,11 @@ use crate::{
     Repository, cqrs::OperationState, dispatch_events,
 };
 
-/// **English:** Coordinates one synchronous aggregate save and event dispatch sequence.
+/// **English:**<br>
+/// Coordinates one synchronous aggregate save and event dispatch sequence.
 ///
-/// **日本語:** 同期の集約保存とイベント配信を一連で調整します。
+/// **日本語:**<br>
+/// 同期の集約保存とイベント配信を一連で調整します。
 pub struct LifecycleContext<'a, A, R, P>
 where
     A: AggregateRoot,
@@ -27,9 +29,11 @@ where
     R: Repository<Aggregate = A>,
     P: DomainEventPublisher<Event = A::Event>,
 {
-    /// **English:** Creates a lifecycle context borrowing the aggregate, repository, and publisher mutably.
+    /// **English:**<br>
+    /// Creates a lifecycle context borrowing the aggregate, repository, and publisher mutably.
     ///
-    /// **日本語:** 集約、リポジトリ、パブリッシャーを可変借用するライフサイクルコンテキストを作成します。
+    /// **日本語:**<br>
+    /// 集約、リポジトリ、パブリッシャーを可変借用するライフサイクルコンテキストを作成します。
     pub fn new(aggregate: &'a mut A, repository: &'a mut R, publisher: &'a mut P) -> Self {
         Self {
             aggregate,
@@ -40,9 +44,11 @@ where
         }
     }
 
-    /// **English:** Attempts repository persistence once; adapter errors are returned and the attempt cannot be retried.
+    /// **English:**<br>
+    /// Attempts repository persistence once; adapter errors are returned and the attempt cannot be retried.
     ///
-    /// **日本語:** リポジトリへの保存を一度試行します。アダプターエラーを返し、再試行はできません。
+    /// **日本語:**<br>
+    /// リポジトリへの保存を一度試行します。アダプターエラーを返し、再試行はできません。
     pub fn save(&mut self) -> Result<(), LifecycleOperationError<R::Error>> {
         if self.save_state != OperationState::Pending {
             return Err(LifecycleOperationError::AlreadySaved);
@@ -57,9 +63,11 @@ where
         }
     }
 
-    /// **English:** Attempts event dispatch once; adapter errors are returned and the attempt cannot be retried.
+    /// **English:**<br>
+    /// Attempts event dispatch once; adapter errors are returned and the attempt cannot be retried.
     ///
-    /// **日本語:** イベント配信を一度試行します。アダプターエラーを返し、再試行はできません。
+    /// **日本語:**<br>
+    /// イベント配信を一度試行します。アダプターエラーを返し、再試行はできません。
     pub fn dispatch(&mut self) -> Result<(), LifecycleOperationError<P::Error>> {
         if self.dispatch_state != OperationState::Pending {
             return Err(LifecycleOperationError::AlreadyDispatched);
@@ -74,9 +82,11 @@ where
         }
     }
 
-    /// **English:** Consumes the context and succeeds only when both save and dispatch succeeded.
+    /// **English:**<br>
+    /// Consumes the context and succeeds only when both save and dispatch succeeded.
     ///
-    /// **日本語:** コンテキストを消費し、保存と配信の両方が成功した場合にのみ成功します。
+    /// **日本語:**<br>
+    /// コンテキストを消費し、保存と配信の両方が成功した場合にのみ成功します。
     pub fn complete(self) -> Result<(), LifecycleCompletionError> {
         match (self.save_state, self.dispatch_state) {
             (OperationState::Succeeded, OperationState::Succeeded) => Ok(()),
@@ -92,9 +102,11 @@ where
     }
 }
 
-/// **English:** Defines work performed with a mutable lifecycle context. The callback result and error become the handler result and error.
+/// **English:**<br>
+/// Defines work performed with a mutable lifecycle context. The callback result and error become the handler result and error.
 ///
-/// **日本語:** 可変ライフサイクルコンテキストを使って実行する処理を定義します。コールバックの出力とエラーがハンドラーの出力とエラーになります。
+/// **日本語:**<br>
+/// 可変ライフサイクルコンテキストを使って実行する処理を定義します。コールバックの出力とエラーがハンドラーの出力とエラーになります。
 pub trait LifecycleCallback<'storage, A, R, P>
 where
     A: AggregateRoot,
@@ -112,9 +124,11 @@ where
         'storage: 'callback;
 }
 
-/// **English:** Loads an aggregate for a command, runs its lifecycle callback, and returns the callback output or an error.
+/// **English:**<br>
+/// Loads an aggregate for a command, runs its lifecycle callback, and returns the callback output or an error.
 ///
-/// **日本語:** コマンド対象の集約を読み込み、ライフサイクルコールバックを実行し、その出力またはエラーを返します。
+/// **日本語:**<br>
+/// コマンド対象の集約を読み込み、ライフサイクルコールバックを実行し、その出力またはエラーを返します。
 pub trait CommandHandler {
     type Command;
     type Aggregate: AggregateRoot;
@@ -143,9 +157,11 @@ pub trait CommandHandler {
             + From<LifecycleCompletionError>;
 }
 
-/// **English:** Creates an aggregate from a command and runs the lifecycle callback before returning its output.
+/// **English:**<br>
+/// Creates an aggregate from a command and runs the lifecycle callback before returning its output.
 ///
-/// **日本語:** コマンドから集約を作成し、ライフサイクルコールバックを実行してから出力を返します。
+/// **日本語:**<br>
+/// コマンドから集約を作成し、ライフサイクルコールバックを実行してから出力を返します。
 pub trait AggregateCreator {
     type Command;
     type Aggregate: AggregateRoot;
@@ -173,9 +189,11 @@ pub trait AggregateCreator {
             + From<LifecycleCompletionError>;
 }
 
-/// **English:** Handles a query without requiring aggregate lifecycle operations.
+/// **English:**<br>
+/// Handles a query without requiring aggregate lifecycle operations.
 ///
-/// **日本語:** 集約ライフサイクル操作を伴わずにクエリを処理します。
+/// **日本語:**<br>
+/// 集約ライフサイクル操作を伴わずにクエリを処理します。
 pub trait QueryHandler {
     type Query;
     type Result;

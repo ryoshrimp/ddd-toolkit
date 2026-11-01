@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Japanese README with installation, examples, feature requirements, and migration notes.
+
 ### Changed
 
+- Grouped rustdoc prose by language and placed language labels on separate lines.
+- Re-exported APIs inherit their original documentation without duplicate language sections.
 - Consolidated core, derive macros, and facade tests into one Cargo workspace.
   Crate names, versions, and public APIs are unchanged.
 - Added a single release workflow that publishes missing crate versions in

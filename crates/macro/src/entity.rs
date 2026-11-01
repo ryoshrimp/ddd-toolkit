@@ -4,10 +4,12 @@ use syn::{Data, DeriveInput, Fields, Result, parse_quote};
 
 use crate::path::core_path;
 
-/// **English:** Generates identity access, equality, and hashing from one marked
+/// **English:**<br>
+/// Generates identity access, equality, and hashing from one marked
 /// named field; rejects invalid shapes, misplaced attributes, or ambiguous identity.
 ///
-/// **日本語:** 指定された一つの名前付きフィールドから識別子の取得・比較・ハッシュを
+/// **日本語:**<br>
+/// 指定された一つの名前付きフィールドから識別子の取得・比較・ハッシュを
 /// 生成し、不正な形状、属性の誤配置、識別子の曖昧さをエラーにします。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     for attr in &input.attrs {
@@ -92,9 +94,11 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         }
 
         impl #impl_generics #name #ty_generics #where_clause {
-            /// **English:** Borrows the field marked as this entity's identifier.
+            /// **English:**<br>
+            /// Borrows the field marked as this entity's identifier.
             ///
-            /// **日本語:** このエンティティの識別子に指定されたフィールドを借用します。
+            /// **日本語:**<br>
+            /// このエンティティの識別子に指定されたフィールドを借用します。
             pub fn id(&self) -> &#id_ty {
                 &self.#id_name
             }

@@ -40,6 +40,24 @@ cargo fmt --all --check
 cargo clippy --workspace --all-features --all-targets -- -D warnings
 ```
 
+## Documentation
+
+Keep each rustdoc block in language order: all English prose, then all Japanese
+prose. Put `**English:**<br>` and `**日本語:**<br>` on their own doc-comment
+lines, with the body starting on the next line. Use `<br>` rather than a blank
+line after the label: rustdoc uses the first paragraph as the API-list summary,
+so a label-only paragraph would hide the summary text. Do not alternate languages
+paragraph by paragraph. Put shared code examples after both language sections,
+under `# Example / 使用例`, without duplicating the code.
+
+Let re-exported items inherit their original API documentation. Adding bilingual
+docs to both a `pub use` and its target makes rustdoc concatenate the language
+sections and repeat them on the rendered API page.
+
+Each published crate has `README.md` (English) and `README.ja.md` (Japanese),
+with links between them. Keep API descriptions, feature requirements, limitations,
+and code examples in sync when updating either version.
+
 ## Releasing
 
 See [docs/releasing.md](docs/releasing.md) for the single-operation release

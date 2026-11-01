@@ -1,4 +1,5 @@
-//! **English:** Re-exports the traits and helpers from `ddd-toolkit-core` 0.4,
+//! **English:**<br>
+//! Re-exports the traits and helpers from `ddd-toolkit-core` 0.4,
 //! including [`Entity`], [`ValueObject`], [`AggregateRoot`], [`Repository`],
 //! [`AsyncRepository`], event publishing, CQRS, and event-sourcing contracts.
 //! Storage adapters and async runtimes are supplied by the application.
@@ -15,7 +16,11 @@
 //! JSON; use named variants instead. [`Secret`] requires no feature and redacts
 //! formatting and zeroizes its contents on drop without a feature flag.
 //!
-//! **日本語:** `ddd-toolkit-core` 0.4 のトレイトとヘルパーを再公開します。
+//! Validation returns an application-defined error; construction
+//! uses `try_new` rather than the removed `TryFrom` implementation.
+//!
+//! **日本語:**<br>
+//! `ddd-toolkit-core` 0.4 のトレイトとヘルパーを再公開します。
 //! [`Entity`]、[`ValueObject`]、[`AggregateRoot`]、[`Repository`]、
 //! [`AsyncRepository`]、イベント発行、CQRS、イベントソーシングの契約を含みます。
 //! ストレージのアダプターと非同期ランタイムはアプリケーションが提供します。
@@ -32,13 +37,10 @@
 //! 名前付き variant を使ってください。全 derive に直列化が自動適用されるわけではありません。
 //! [`Secret`] は feature 指定なしで使え、書式出力を秘匿化して破棄時に内容をゼロ化します。
 //!
-//! # Example / 使用例
-//!
-//! **English:** Validation returns an application-defined error; construction
-//! uses `try_new` rather than the removed `TryFrom` implementation.
-//!
-//! **日本語:** 検証はアプリケーション定義のエラーを返します。廃止された
+//! 検証はアプリケーション定義のエラーを返します。廃止された
 //! `TryFrom` 実装の代わりに `try_new` で構築します。
+//!
+//! # Example / 使用例
 //!
 //! ```rust
 //! # #[cfg(feature = "derive")] {
@@ -59,13 +61,7 @@
 //! assert_eq!(key.expose_secret(|value| value.len()), 6);
 //! ```
 
-/// **English:** Exposes core 0.4's domain, persistence, and event-workflow API.
-///
-/// **日本語:** コア 0.4 のドメイン、永続化、イベント処理 API を公開します。
 pub use ddd_toolkit_core::*;
 
 #[cfg(feature = "derive")]
-/// **English:** Exposes the four derives; consumers must depend directly on core 0.4.
-///
-/// **日本語:** 四つの derive を公開します。利用側にコア 0.4 の直接依存が必要です。
 pub use ddd_toolkit_macro::*;

@@ -4,10 +4,12 @@ use syn::{Data, DeriveInput, Result};
 
 use crate::path::core_path;
 
-/// **English:** Emits a marker implementation for structs and enums, returning
+/// **English:**<br>
+/// Emits a marker implementation for structs and enums, returning
 /// a syntax error for unions or an unresolved core dependency.
 ///
-/// **日本語:** 構造体と列挙型のマーカー実装を生成し、共用体やコア依存を
+/// **日本語:**<br>
+/// 構造体と列挙型のマーカー実装を生成し、共用体やコア依存を
 /// 解決できない場合は構文エラーを返します。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     match &input.data {

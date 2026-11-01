@@ -1,7 +1,9 @@
-//! **English:** Tests expansion branches directly, including diagnostics that do not
+//! **English:**<br>
+//! Tests expansion branches directly, including diagnostics that do not
 //! run inside the coverage-instrumented process when invoked through trybuild.
 //!
-//! **日本語:** trybuild 経由ではカバレッジ計測プロセス内で実行されない診断も含め、
+//! **日本語:**<br>
+//! trybuild 経由ではカバレッジ計測プロセス内で実行されない診断も含め、
 //! マクロ展開の分岐を直接検証します。
 
 use crate::{aggregate_root, entity, value_object};

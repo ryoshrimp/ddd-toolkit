@@ -1,5 +1,7 @@
 # ddd-toolkit-macro
 
+English | [日本語](README.ja.md)
+
 [![docs.rs](https://img.shields.io/docsrs/ddd-toolkit-macro)](https://docs.rs/ddd-toolkit-macro)
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit-macro.svg)](#license)

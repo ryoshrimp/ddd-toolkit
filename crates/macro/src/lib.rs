@@ -1,4 +1,5 @@
-//! **English:** Derive value objects, identity-based entities, domain-event markers,
+//! **English:**<br>
+//! Derive value objects, identity-based entities, domain-event markers,
 //! and aggregate event queues for `ddd-toolkit-core`.
 //!
 //! Add both `ddd-toolkit-macro` and `ddd-toolkit-core` to your dependencies.
@@ -10,7 +11,8 @@
 //! equality, [`DomainEvent`] for event types, and [`AggregateRoot`] for a draining
 //! event queue. Do not separately derive traits that a macro already implements.
 //!
-//! **日本語:** `ddd-toolkit-core` 向けに、値オブジェクト、識別子で比較する
+//! **日本語:**<br>
+//! `ddd-toolkit-core` 向けに、値オブジェクト、識別子で比較する
 //! エンティティ、ドメインイベントのマーカー、集約のイベントキューを導出します。
 //!
 //! 依存関係には `ddd-toolkit-macro` と `ddd-toolkit-core` の両方が必要です。
@@ -21,6 +23,8 @@
 //! フィールドの値で比較する型には [`ValueObject`]、識別子で比較する型には
 //! [`Entity`]、イベント型には [`DomainEvent`]、イベントを取り出して空にする
 //! キューには [`AggregateRoot`] を使います。生成済みのトレイトを重複して導出しないでください。
+//!
+//! # Example / 使用例
 //!
 //! ```rust
 //! use ddd_toolkit_macro::ValueObject;
@@ -42,7 +46,8 @@ mod entity;
 mod path;
 mod value_object;
 
-/// **English:** Implements `ddd_toolkit_core::ValueObject` and value-based
+/// **English:**<br>
+/// Implements `ddd_toolkit_core::ValueObject` and value-based
 /// `Debug`, `Clone`, `PartialEq`, `Eq`, and `Hash`, with corresponding field bounds.
 ///
 /// Accepts nonempty named or tuple structs and nonempty enums, not unions or unit
@@ -74,7 +79,8 @@ mod value_object;
 /// Invalid shapes, duplicate or unknown options, and missing core dependencies
 /// produce compile errors; field types must satisfy the generated trait bounds.
 ///
-/// **日本語:** `ddd_toolkit_core::ValueObject` と値に基づく `Debug`、`Clone`、
+/// **日本語:**<br>
+/// `ddd_toolkit_core::ValueObject` と値に基づく `Debug`、`Clone`、
 /// `PartialEq`、`Eq`、`Hash` を、各フィールドに必要な境界付きで実装します。
 ///
 /// 空でない名前付き・タプル構造体と列挙型に対応し、共用体やユニット構造体は拒否します。
@@ -105,6 +111,8 @@ mod value_object;
 /// 非対応の形状、重複・未知のオプション、コア依存の欠落はコンパイルエラーになります。
 /// フィールド型は生成するトレイトの境界を満たす必要があります。
 ///
+/// # Example / 使用例
+///
 /// ```rust
 /// use ddd_toolkit_macro::ValueObject;
 ///
@@ -133,7 +141,8 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
         .into()
 }
 
-/// **English:** Implements `ddd_toolkit_core::Entity`, a borrowed inherent `id()`
+/// **English:**<br>
+/// Implements `ddd_toolkit_core::Entity`, a borrowed inherent `id()`
 /// accessor, and `PartialEq`, `Eq`, and `Hash` using only the identifier field.
 ///
 /// Requires a named-field struct with exactly one `#[entity(id)]` field. Other
@@ -142,7 +151,8 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 /// is generated. Non-struct inputs, misplaced flags, missing or multiple identifier
 /// fields, unknown options, and missing core dependencies cause compile errors.
 ///
-/// **日本語:** `ddd_toolkit_core::Entity` と識別子を借用する固有の `id()`、
+/// **日本語:**<br>
+/// `ddd_toolkit_core::Entity` と識別子を借用する固有の `id()`、
 /// 識別子フィールドだけを使う `PartialEq`、`Eq`、`Hash` を実装します。
 ///
 /// 名前付き構造体に `#[entity(id)]` フィールドがちょうど一つ必要です。
@@ -150,6 +160,8 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 /// 実装する必要があります。コンストラクターや識別子の検証は生成しません。
 /// 構造体以外、フラグの誤配置、識別子の欠落・複数指定、未知のオプション、
 /// コア依存の欠落はコンパイルエラーになります。
+///
+/// # Example / 使用例
 ///
 /// ```rust
 /// use ddd_toolkit_macro::Entity;
@@ -173,18 +185,22 @@ pub fn derive_entity(input: TokenStream) -> TokenStream {
         .into()
 }
 
-/// **English:** Implements the empty `ddd_toolkit_core::DomainEvent` marker for
+/// **English:**<br>
+/// Implements the empty `ddd_toolkit_core::DomainEvent` marker for
 /// a struct or enum, preserving its generic parameters and where clause.
 ///
 /// Does not add methods, serialization, `Send`, or `Sync` bounds. Event contents
 /// and delivery remain the caller's responsibility. Unions and missing core
 /// dependencies produce compile errors.
 ///
-/// **日本語:** 構造体または列挙型に、空の `ddd_toolkit_core::DomainEvent`
+/// **日本語:**<br>
+/// 構造体または列挙型に、空の `ddd_toolkit_core::DomainEvent`
 /// マーカーを実装し、ジェネリック引数と where 節を維持します。
 ///
 /// メソッド、直列化、`Send`・`Sync` 境界は追加しません。イベントの内容と配信は
 /// 呼び出し側が管理します。共用体やコア依存の欠落はコンパイルエラーになります。
+///
+/// # Example / 使用例
 ///
 /// ```rust
 /// use ddd_toolkit_macro::DomainEvent;
@@ -202,7 +218,8 @@ pub fn derive_domain_event(input: TokenStream) -> TokenStream {
         .into()
 }
 
-/// **English:** Implements `ddd_toolkit_core::AggregateRoot` using a struct's
+/// **English:**<br>
+/// Implements `ddd_toolkit_core::AggregateRoot` using a struct's
 /// `#[aggregate(events)]` vector as its pending event queue.
 ///
 /// Requires a named-field struct that already implements `ddd_toolkit_core::Entity`
@@ -219,7 +236,8 @@ pub fn derive_domain_event(input: TokenStream) -> TokenStream {
 /// Unsupported shapes, missing or duplicate queues, unknown or valued flags,
 /// missing trait implementations, and missing core dependencies fail to compile.
 ///
-/// **日本語:** 構造体の `#[aggregate(events)]` ベクターを未処理イベントキュー
+/// **日本語:**<br>
+/// 構造体の `#[aggregate(events)]` ベクターを未処理イベントキュー
 /// として `ddd_toolkit_core::AggregateRoot` を実装します。
 ///
 /// `ddd_toolkit_core::Entity` を実装済みの名前付き構造体（例: [`Entity`] による導出）
@@ -234,6 +252,8 @@ pub fn derive_domain_event(input: TokenStream) -> TokenStream {
 /// 更新は生成しません。キューの拡張には `Vec::push` と同じメモリ確保・容量制限があります。
 /// 非対応の形状、キューの欠落・重複、未知または値付きフラグ、必要なトレイト実装や
 /// コア依存の欠落はコンパイルエラーになります。
+///
+/// # Example / 使用例
 ///
 /// ```rust
 /// use ddd_toolkit_core::AggregateRoot as _;

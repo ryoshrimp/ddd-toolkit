@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Japanese README covering all four derives, validation, serialization, and aggregate events.
+
+### Changed
+
+- Placed rustdoc language labels on separate lines from their text.
+
 ## [0.4.0] - 2026-11-01
 
 ### Added
