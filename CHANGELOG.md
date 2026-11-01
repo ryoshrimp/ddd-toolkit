@@ -35,6 +35,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Separate functional tests from ignored trybuild UI suites: workspace tests and
+  the feature matrix no longer require rust-src or matching diagnostic snapshots.
+  A dedicated UI script/CI job preserves all core feature variants and macro
+  compile-fail/compile-pass checks; the required test gate and Release verification
+  still require diagnostics to pass. Document both execution paths (#32).
 - Reorganize the English and Japanese READMEs around the intended audience,
   non-goals, experimental 0.x stability and GitHub Issues feedback. Start with
   four derives and a runnable quick start, then link to the order tutorial and

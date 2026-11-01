@@ -9,15 +9,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
+  functional-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rust-src
       - uses: Swatinem/rust-cache@v2
-      - run: ./scripts/check-rust-test-environment.sh
       - run: cargo test --workspace --all-features --locked
       - run: cargo build -p ddd-toolkit --examples --all-features --locked
       - name: Run facade examples
@@ -29,13 +26,33 @@ jobs:
           cargo run -p ddd-toolkit --example reliable_delivery --all-features --locked
       - run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
-  feature-matrix:
+  ui-diagnostics:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rust-src
+      - uses: Swatinem/rust-cache@v2
+      - run: ./scripts/check-ui-tests.sh
+
+  # Preserve the existing required status check, even for failed/skipped jobs.
+  test:
+    if: ${{ always() }}
+    needs: [functional-tests, ui-diagnostics]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require functional tests and UI diagnostics
+        env:
+          FUNCTIONAL_RESULT: ${{ needs.functional-tests.result }}
+          UI_RESULT: ${{ needs.ui-diagnostics.result }}
+        run: test "$FUNCTIONAL_RESULT" = success && test "$UI_RESULT" = success
+
+  feature-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: ./scripts/check-feature-matrix.sh
 

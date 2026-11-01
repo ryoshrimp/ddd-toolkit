@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Run before trybuild suites: diagnostics depend on both rustc and rust-src.
+# UI-only preflight (called by check-ui-tests.sh), not needed for functional tests.
+# Diagnostics depend on both rustc and rust-src.
 set -euo pipefail
 rustc --version --verbose
 cargo --version --verbose
