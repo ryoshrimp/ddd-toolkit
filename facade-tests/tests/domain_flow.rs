@@ -1,131 +1,74 @@
-//! A small but complete example wiring an aggregate, a repository, and an
-//! event dispatcher together using only `ddd_toolkit::` paths - proves the
-//! toolkit actually composes end-to-end for a real consumer, and exercises
-//! the `DispatchError<E>` partial-failure path from the facade side.
+mod support;
 
-use std::{
-    future::Future,
-    pin::pin,
-    task::{Context, Poll, Waker},
-};
+use ddd_toolkit::{AggregateRoot as _, DomainEventPublisher, Repository, dispatch_events};
+use support::Store;
 
-use ddd_toolkit::{
-    domain::{AggregateRoot, DomainEvent, Entity},
-    mock::repository::InMemoryStore,
-    port::PortError,
-    port::event::{DispatchError, EventDispatcher},
-    port::repository::{Delete, Load, Save},
-};
+#[derive(Debug, Clone, PartialEq, ddd_toolkit::DomainEvent)]
+struct Placed(u64);
 
-fn block_on<F: Future>(future: F) -> F::Output {
-    let mut future = pin!(future);
-    let mut cx = Context::from_waker(Waker::noop());
-    loop {
-        if let Poll::Ready(output) = future.as_mut().poll(&mut cx) {
-            return output;
-        }
-    }
-}
-
-#[derive(ddd_toolkit::EntityId, Clone, PartialEq, Debug)]
-struct OrderId(String);
-
-#[derive(Debug, Clone, PartialEq)]
-struct OrderPlaced {
-    order_id: String,
-}
-
-impl DomainEvent for OrderPlaced {}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, ddd_toolkit::Entity, ddd_toolkit::AggregateRoot)]
 struct Order {
-    id: OrderId,
-    total_cents: u32,
-    events: Vec<OrderPlaced>,
+    #[entity(id)]
+    id: u64,
+    total: u32,
+    #[aggregate(events)]
+    events: Vec<Placed>,
 }
 
-impl Order {
-    fn new(id: &str, total_cents: u32) -> Self {
-        Self {
-            id: OrderId(id.to_string()),
-            total_cents,
-            events: Vec::new(),
+#[test]
+fn repository_save_and_publication_are_separate() {
+    let mut store = Store::new();
+    let mut order = Order {
+        id: 1,
+        total: 4200,
+        events: vec![],
+    };
+    order.record_event(Placed(1));
+    store.save(&order).unwrap();
+    assert!(store.exists(&1).unwrap());
+    let mut loaded = store.find_by_id(&1).unwrap().unwrap();
+    assert_eq!(loaded.total, 4200);
+    assert!(loaded.pull_events().is_empty());
+    assert_eq!(order.pull_events(), vec![Placed(1)]);
+    store.delete(&1).unwrap();
+    assert!(store.find_by_id(&1).unwrap().is_none());
+}
+
+struct Publisher {
+    accepted: Vec<Placed>,
+    fail_at: Option<usize>,
+}
+impl DomainEventPublisher for Publisher {
+    type Event = Placed;
+    type Error = &'static str;
+    fn publish(&mut self, event: &Placed) -> Result<(), Self::Error> {
+        if self.fail_at == Some(self.accepted.len()) {
+            return Err("broker down");
         }
-    }
-}
-
-impl Entity for Order {
-    type Id = OrderId;
-
-    fn id(&self) -> &Self::Id {
-        &self.id
-    }
-}
-
-impl AggregateRoot for Order {
-    type Event = OrderPlaced;
-
-    fn record(&mut self, event: Self::Event) {
-        self.events.push(event);
-    }
-
-    fn take_events(&mut self) -> Vec<Self::Event> {
-        std::mem::take(&mut self.events)
+        self.accepted.push(event.clone());
+        Ok(())
     }
 }
 
 #[test]
-fn order_round_trips_through_in_memory_store_via_facade() {
-    let store = InMemoryStore::new();
-    let mut order = Order::new("order-1", 4200);
-    order.record(OrderPlaced {
-        order_id: "order-1".to_string(),
-    });
-
-    block_on(store.save(&mut order)).expect("save should succeed");
-
-    let loaded = block_on(store.load(&OrderId("order-1".to_string())))
-        .expect("load should succeed")
-        .expect("order should be found");
-    assert_eq!(loaded.total_cents, 4200);
-
-    block_on(store.delete(&OrderId("order-1".to_string()))).expect("delete should succeed");
-    let after_delete =
-        block_on(store.load(&OrderId("order-1".to_string()))).expect("load should succeed");
-    assert!(after_delete.is_none());
-
+fn dispatch_failure_restores_all_events_and_retry_may_duplicate() {
+    let mut order = Order {
+        id: 1,
+        total: 4200,
+        events: vec![Placed(1), Placed(2)],
+    };
+    let mut publisher = Publisher {
+        accepted: vec![],
+        fail_at: Some(1),
+    };
     assert_eq!(
-        store.take_recorded_events(),
-        vec![OrderPlaced {
-            order_id: "order-1".to_string()
-        }]
+        dispatch_events(&mut order, &mut publisher),
+        Err("broker down")
     );
-}
-
-struct PartiallyFailingDispatcher;
-
-impl EventDispatcher<OrderPlaced> for PartiallyFailingDispatcher {
-    async fn dispatch(&self, events: Vec<OrderPlaced>) -> Result<(), DispatchError<OrderPlaced>> {
-        Err(DispatchError::new(
-            events,
-            PortError::unavailable("broker down"),
-        ))
-    }
-}
-
-#[test]
-fn event_dispatch_failure_reports_undelivered_events_via_facade() {
-    let dispatcher = PartiallyFailingDispatcher;
-    let events = vec![OrderPlaced {
-        order_id: "order-1".to_string(),
-    }];
-
-    let error = block_on(dispatcher.dispatch(events)).expect_err("dispatch should fail");
-
-    assert_eq!(
-        error.undelivered,
-        vec![OrderPlaced {
-            order_id: "order-1".to_string()
-        }]
-    );
+    assert_eq!(order.events, vec![Placed(1), Placed(2)]);
+    assert_eq!(publisher.accepted, vec![Placed(1)]);
+    publisher.fail_at = None;
+    dispatch_events(&mut order, &mut publisher).unwrap();
+    assert!(order.pull_events().is_empty());
+    assert_eq!(publisher.accepted, vec![Placed(1), Placed(1), Placed(2)]);
 }

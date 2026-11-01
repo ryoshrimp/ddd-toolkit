@@ -1,70 +1,75 @@
-//! Permanent regression test for `ddd-toolkit`'s `serde` feature: the
-//! generated `Serialize`/`Deserialize` impls reference `::serde` by a bare
-//! path, which only resolves if this crate depends on `serde` directly (see
-//! `[dev-dependencies]` in Cargo.toml), and requires `ddd-toolkit`'s own
-//! `serde` feature to be enabled.
-
-use ddd_toolkit::domain::{EnumVo as _, ValidationError};
-
-#[derive(ddd_toolkit::ValueObject, Clone, PartialEq, Debug)]
-#[vo(validate = "validate_email")]
+// Serde generation is opt-in per value object and uses core's serde re-export.
+// This consumer intentionally has no direct serde dependency.
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_email, error = &'static str, serde)]
 struct Email(String);
 
-fn validate_email(s: &str) -> Result<(), ValidationError> {
-    if s.contains('@') {
+fn validate_email(value: &str) -> Result<(), &'static str> {
+    if value.contains('@') {
         Ok(())
     } else {
-        Err(ValidationError::new("Email", "missing @"))
+        Err("missing @")
     }
 }
 
 #[test]
-fn value_object_round_trips_through_json_via_facade() {
-    let email = Email::try_from("a@b.com".to_string()).expect("valid email");
+fn validated_value_object_round_trips_through_json() {
+    let email = Email::try_new("a@b.com".to_owned()).unwrap();
     let json = serde_json::to_string(&email).unwrap();
     assert_eq!(json, "\"a@b.com\"");
-
-    let back: Email = serde_json::from_str(&json).unwrap();
-    assert_eq!(email, back);
+    assert_eq!(serde_json::from_str::<Email>(&json).unwrap(), email);
 }
 
 #[test]
-fn value_object_deserialize_reruns_validation_via_facade() {
-    let err = serde_json::from_str::<Email>("\"not-an-email\"").unwrap_err();
-    assert!(err.to_string().contains("missing @"));
+fn deserialization_runs_validation() {
+    let error = serde_json::from_str::<Email>("\"invalid\"").unwrap_err();
+    assert!(error.to_string().contains("value object validation failed"));
 }
 
-#[derive(ddd_toolkit::EntityId, Clone, PartialEq, Debug)]
-struct UserId(String);
-
-#[test]
-fn entity_id_round_trips_through_json_via_facade() {
-    let id = UserId::try_from("u-1".to_string()).expect("valid id");
-    let json = serde_json::to_string(&id).unwrap();
-    let back: UserId = serde_json::from_str(&json).unwrap();
-    assert_eq!(id, back);
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(serde)]
+struct Address {
+    city: String,
+    postal_code: u32,
 }
 
-#[derive(ddd_toolkit::EnumVo, Debug, Clone, Copy, PartialEq)]
-#[vo(rename_all = "snake_case")]
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(serde)]
 enum Status {
-    Active,
-    Closed,
+    Pending,
+    Ready { count: u32 },
+    Code(u32),
 }
 
 #[test]
-fn enum_vo_round_trips_through_json_via_facade() {
-    for status in Status::variants() {
-        let json = serde_json::to_string(status).unwrap();
-        let back: Status = serde_json::from_str(&json).unwrap();
-        assert_eq!(*status, back);
-    }
-}
-
-#[test]
-fn enum_vo_serializes_renamed_form_via_facade() {
+fn named_value_object_and_externally_tagged_enum_round_trip() {
+    let address = Address::new("Tokyo".to_owned(), 100);
+    let json = serde_json::to_string(&address).unwrap();
+    assert_eq!(serde_json::from_str::<Address>(&json).unwrap(), address);
     assert_eq!(
-        serde_json::to_string(&Status::Closed).unwrap(),
-        "\"closed\""
+        serde_json::to_string(&Status::new_pending()).unwrap(),
+        "\"Pending\""
+    );
+    let ready = Status::new_ready(3);
+    let json = serde_json::to_string(&ready).unwrap();
+    assert_eq!(json, "{\"Ready\":{\"count\":3}}");
+    assert_eq!(serde_json::from_str::<Status>(&json).unwrap(), ready);
+}
+
+// Upstream 0.4.0 serializes a single tuple field as a sequence, but its
+// generated serde deserializer expects a newtype variant instead.
+#[test]
+fn upstream_single_field_enum_json_limitation_is_visible() {
+    let json = serde_json::to_string(&Status::new_code(7)).unwrap();
+    assert_eq!(json, "{\"Code\":[7]}");
+    let error = serde_json::from_str::<Status>(&json).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("invalid type: sequence, expected u32")
+    );
+    assert_eq!(
+        serde_json::from_str::<Status>("{\"Code\":7}").unwrap(),
+        Status::new_code(7)
     );
 }

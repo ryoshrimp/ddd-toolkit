@@ -1,70 +1,71 @@
-//! Domain-Driven Design building blocks for Rust, plus derive macros for
-//! the common cases, behind a single dependency.
+//! **English:** Re-exports the traits and helpers from `ddd-toolkit-core` 0.4,
+//! including [`Entity`], [`ValueObject`], [`AggregateRoot`], [`Repository`],
+//! [`AsyncRepository`], event publishing, CQRS, and event-sourcing contracts.
+//! Storage adapters and async runtimes are supplied by the application.
 //!
-//! This crate is a facade: it re-exports
-//! [`ddd-toolkit-core`](https://docs.rs/ddd-toolkit-core) in full, plus,
-//! behind the `derive` feature (on by default),
-//! [`ddd-toolkit-macro`](https://docs.rs/ddd-toolkit-macro)'s derives.
-//! Everything below is reachable directly under `ddd_toolkit::`, whichever
-//! of the two it originates in.
+//! With the default `derive` feature, the `ValueObject`, `Entity`, `DomainEvent`,
+//! and `AggregateRoot` derive macros are also available at this crate's root.
+//! Macro 0.4 requires consumers to add `ddd-toolkit-core = "0.4.0"` directly,
+//! even when invoking derives through this facade. Trait-only usage does not.
 //!
-//! - [`domain`] - the domain-layer traits: [`domain::Entity`],
-//!   [`domain::AggregateRoot`], [`domain::ValueObject`]/[`domain::Wrapped`],
-//!   [`domain::EntityId`], [`domain::SecretVo`], [`domain::EnumVo`],
-//!   [`domain::DomainEvent`]. With `derive` enabled,
-//!   `#[derive(ValueObject, EntityId, SecretVo, EnumVo)]` generates the
-//!   boilerplate for those four.
-//! - [`port`] - the ports a domain depends on: repository (`Load`/`Save`/
-//!   `Delete`), [`port::event::EventDispatcher`], `port::clock::Clock`
-//!   (behind `chrono`), [`port::id::IdGenerator`].
-//! - [`adapter`] - real adapters for those ports, behind the `chrono`/`uuid`
-//!   features.
-//! - [`mock`] - in-memory/fixed adapters, useful as test doubles or a
-//!   starting point for a real backend.
-//! - [`application`] - [`application::usecase::UseCase`].
+//! The optional `serde` feature enables core's serde support and the serde
+//! derives needed by generated deserializers. Serialization is opt-in per value
+//! object with `#[value_object(serde)]`; put this flag last when combining options.
+//! In macro 0.4.0, single-field tuple enum variants cannot round-trip their own
+//! JSON; use named variants instead. [`Secret`] requires no feature and redacts
+//! formatting and zeroizes its contents on drop without a feature flag.
 //!
-//! # Features
+//! **日本語:** `ddd-toolkit-core` 0.4 のトレイトとヘルパーを再公開します。
+//! [`Entity`]、[`ValueObject`]、[`AggregateRoot`]、[`Repository`]、
+//! [`AsyncRepository`]、イベント発行、CQRS、イベントソーシングの契約を含みます。
+//! ストレージのアダプターと非同期ランタイムはアプリケーションが提供します。
 //!
-//! | Feature   | Default | Enables |
-//! |-----------|---------|---------|
-//! | `derive`  | yes | `#[derive(ValueObject, EntityId, SecretVo, EnumVo)]` |
-//! | `chrono`  | no  | `port::clock::Clock` and its [`adapter`]/[`mock`] implementations |
-//! | `uuid`    | no  | the `uuid`-backed [`port::id::IdGenerator`] adapter |
-//! | `zeroize` | no  | `#[vo(zeroize)]` support on [`domain::SecretVo`] (also needs the `zeroize` crate as a direct dependency - see its docs) |
-//! | `serde`   | no  | `Serialize`/`Deserialize` on [`domain::ValueObject`]/[`domain::EntityId`]/[`domain::EnumVo`] derives, not [`domain::SecretVo`] (also needs the `serde` crate as a direct dependency - see its docs) |
+//! 既定の `derive` feature では `ValueObject`、`Entity`、`DomainEvent`、
+//! `AggregateRoot` の derive マクロもルートから利用できます。マクロ 0.4 は
+//! ファサード経由でも利用側に `ddd-toolkit-core = "0.4.0"` の直接依存を要求します。
+//! トレイトだけを使用する場合、直接依存は不要です。
 //!
-//! # Examples
+//! 任意の `serde` feature はコアの serde 対応と生成された逆直列化に必要な serde の
+//! derive を有効にします。直列化は型ごとに `#[value_object(serde)]` で指定し、
+//! 他のオプションと併用するときはこのフラグを最後に置きます。マクロ 0.4.0 では
+//! 1フィールドのタプル型 enum variant は自身の JSON 出力を逆変換できないため、
+//! 名前付き variant を使ってください。全 derive に直列化が自動適用されるわけではありません。
+//! [`Secret`] は feature 指定なしで使え、書式出力を秘匿化して破棄時に内容をゼロ化します。
 //!
-//! ```
-//! use ddd_toolkit::domain::{SecretVo, ValidationError, Wrapped};
+//! # Example / 使用例
 //!
-//! #[derive(ddd_toolkit::ValueObject, Clone, PartialEq, Debug)]
-//! #[vo(validate = "validate_email")]
+//! **English:** Validation returns an application-defined error; construction
+//! uses `try_new` rather than the removed `TryFrom` implementation.
+//!
+//! **日本語:** 検証はアプリケーション定義のエラーを返します。廃止された
+//! `TryFrom` 実装の代わりに `try_new` で構築します。
+//!
+//! ```rust
+//! # #[cfg(feature = "derive")] {
+//! #[derive(ddd_toolkit::ValueObject)]
+//! #[value_object(validate = validate_email, error = &'static str)]
 //! struct Email(String);
 //!
-//! fn validate_email(s: &str) -> Result<(), ValidationError> {
-//!     if s.contains('@') {
-//!         Ok(())
-//!     } else {
-//!         Err(ValidationError::new("Email", "missing @"))
-//!     }
+//! fn validate_email(value: &str) -> Result<(), &'static str> {
+//!     if value.contains('@') { Ok(()) } else { Err("missing @") }
 //! }
 //!
-//! #[derive(ddd_toolkit::SecretVo, Clone, PartialEq)]
-//! struct ApiKey(String);
-//!
-//! let email = Email::try_from("a@b.com".to_string()).unwrap();
+//! let email = Email::try_new("a@b.com".to_owned()).unwrap();
 //! assert_eq!(email.as_inner(), "a@b.com");
-//!
-//! let key = ApiKey::try_new("sekret".to_string()).unwrap();
-//! assert_eq!(format!("{key:?}"), "ApiKey(***)"); // never leaks the secret
+//! assert_eq!(Email::try_new("invalid".to_owned()), Err("missing @"));
+//! # }
+//! let key = ddd_toolkit::Secret::new("sekret".to_owned());
+//! assert_eq!(format!("{key:?}"), "[REDACTED]");
+//! assert_eq!(key.expose_secret(|value| value.len()), 6);
 //! ```
-//!
-//! See this crate's README for a longer walkthrough, including
-//! [`domain::EntityId`] and wiring an [`domain::AggregateRoot`] through a
-//! [`port::repository`]/[`port::event::EventDispatcher`] pair.
 
+/// **English:** Exposes core 0.4's domain, persistence, and event-workflow API.
+///
+/// **日本語:** コア 0.4 のドメイン、永続化、イベント処理 API を公開します。
 pub use ddd_toolkit_core::*;
 
 #[cfg(feature = "derive")]
+/// **English:** Exposes the four derives; consumers must depend directly on core 0.4.
+///
+/// **日本語:** 四つの derive を公開します。利用側にコア 0.4 の直接依存が必要です。
 pub use ddd_toolkit_macro::*;

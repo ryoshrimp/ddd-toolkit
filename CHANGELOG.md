@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-01
+
+### Changed
+
+- **Breaking:** upgraded `ddd-toolkit-core` and `ddd-toolkit-macro` to 0.4.0.
+  Core traits and helpers are now re-exported at the crate root instead of
+  under `domain`/`port`/`adapter`/`mock`/`application`.
+- **Breaking:** re-exported derives are now `ValueObject`, `Entity`,
+  `DomainEvent`, and `AggregateRoot`. Macro 0.4 requires consumers to depend
+  directly on `ddd-toolkit-core`, even when using derives via this facade.
+- **Breaking:** value objects use `new` / `try_new` and
+  `#[value_object(validate = path, error = ErrorType)]`, not generated
+  conversions or `#[vo(...)]`. Do not duplicate generated standard derives.
+- `serde` enables core's serde feature and serde's derive support required
+  by the generated deserializers. Serialization is opt-in per value object
+  with `#[value_object(serde)]`; consumers do not need a direct serde dependency.
+- Replaced legacy integration tests and examples with current repository,
+  sync/async publication, multi-aggregate, value-object, and secret usage.
+  The feature matrix also runs doctests for each supported combination.
+
+### Known upstream limitations
+
+- Macro 0.4.0 requires the `serde` flag to appear last when sharing an attribute
+  with validation options. Single-field tuple enum variants also have
+  mismatched JSON serialization/deserialization shapes; prefer named variants
+  for round trips. These constraints are documented and covered by tests.
+
+### Removed
+
+- **Breaking:** `chrono`, `uuid`, and `zeroize` features. Core no longer
+  supplies storage/clock/ID adapters or test doubles; `Secret<T>` provides
+  unconditional redaction and zeroization instead of `SecretVo`.
+- **Breaking:** legacy exports including `EntityId`, `Wrapped`, `SecretVo`,
+  `EnumVo`, `ValidationError`, `UseCase`, `Load`/`Save`/`Delete`,
+  `EventDispatcher`, and `PortError`. See README for the migration guide.
+
 ## [0.2.0] - 2026-07-21
 
 ### Added
@@ -134,7 +170,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `zeroize`-feature compile break. `scripts/check-feature-matrix.sh` checks
   the facade compiles under every individual feature combination.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.5...v0.2.0
 [0.1.5]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.2...v0.1.3
