@@ -18,12 +18,58 @@ publishes them in order: `ddd-toolkit-core`, `ddd-toolkit-macro`, `ddd-toolkit`.
    shared `Cargo.lock`. Commit it with the manifests.
 4. Run the checks in `CONTRIBUTING.md`, then merge the PR.
 
-## One-time GitHub setup
+## One-time Trusted Publishing setup
 
-- Create the `crates-io` deployment environment. Restrict it to `main` and
-  optionally require approval.
-- Configure its `CARGO_REGISTRY_TOKEN` secret with a crates.io token authorized
-  to publish all three crates. Existing crate ownership must permit publishing.
+Publishing uses GitHub Actions OIDC, not a stored crates.io API token.
+
+1. Create the GitHub `crates-io` deployment environment. Restrict deployment
+   branches to `main`; enable required reviewers if supported by your plan.
+2. As an owner on crates.io, open the **Trusted Publishing** settings for
+   **each** of `ddd-toolkit-core`, `ddd-toolkit-macro`, and `ddd-toolkit`.
+   Add the same GitHub publisher to all three:
+
+   | Field | Value |
+   | --- | --- |
+   | Repository owner | `ryoshrimp` |
+   | Repository name | `ddd-toolkit` |
+   | Workflow filename | `release.yml` (not the full path) |
+   | Environment | `crates-io` |
+
+   The environment must be specified on crates.io as well as in the workflow.
+   With matching publisher settings, the workflow identity can publish all
+   three crates using the temporary token. These crates are already published;
+   a brand-new crate still needs an initial publication before setup.
+3. After migration, revoke any old API token dedicated to this workflow on
+   crates.io and remove its `CARGO_REGISTRY_TOKEN` GitHub secret. Check other
+   uses before revoking a shared token. No persistent registry secret is needed.
+
+These account-side settings must be configured by a maintainer; changing the
+workflow file does not configure crates.io or GitHub environment protections.
+There is intentionally no fallback to a long-lived token.
+
+### Security model
+
+Compared with the previous stored-token workflow:
+
+- There is no long-lived publishing secret to leak, rotate, or retain in backups.
+- crates.io verifies the repository, workflow filename, and environment using
+  GitHub's signed OIDC identity. Each crate explicitly trusts that identity.
+- The exchanged publishing token expires after 30 minutes. The official auth
+  action also revokes it in its post-job cleanup. Authentication happens after
+  verification and toolchain installation, immediately before publication.
+- Only the `publish` job has `id-token: write`. The job is restricted to manual
+  runs on `main`, uses the protected environment, does not restore build caches,
+  and does not persist checkout credentials. Release actions are pinned to full
+  commit SHAs; review and update these pins periodically.
+
+This reduces credential exposure; it does not make a compromised workflow safe.
+Code/build scripts running in the publishing job can still misuse the temporary
+credential while it is valid. Protect `main`, review changes to release workflows
+and scripts/dependencies, and enforce environment protections. The branch check
+inside YAML alone is not a substitute for those external protections.
+
+References: [crates.io Trusted Publishing](https://crates.io/docs/trusted-publishing),
+[official authentication action](https://github.com/rust-lang/crates-io-auth-action).
 
 ## Release with one operation
 
@@ -43,8 +89,14 @@ Equivalent local commands (use a clean, committed tree):
 
 ```sh
 python3 scripts/release.py            # dry-run by default
-python3 scripts/release.py --publish  # irreversible; token required
+python3 scripts/release.py --publish  # irreversible; local cargo credentials required
 ```
+
+The local publish command does not perform GitHub OIDC authentication; it uses
+locally configured Cargo credentials. Prefer the GitHub workflow for releases.
+Never copy the workflow's temporary token to local files or logs. If a release
+outlasts the temporary token, rerun the workflow to obtain a fresh one; versions
+already published will be skipped.
 
 Cargo verifies published packages using registry dependencies, not workspace
 paths. A dry-run of dependent crates may fail when it requires a new core/macro
