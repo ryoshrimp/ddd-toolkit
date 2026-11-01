@@ -1,0 +1,5 @@
+error: aggregate requires the events flag
+ --> tests/ui/aggregate_empty_attribute.rs:5:5
+  |
+5 |     #[aggregate()]
+  |     ^^^^^^^^^^^^^^

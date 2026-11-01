@@ -1,0 +1,90 @@
+error[E0277]: `NotClone` doesn't implement `Debug`
+ --> tests/ui/value_object_trait_bound.rs:5:10
+  |
+5 | #[derive(ValueObject)]
+  |          ^^^^^^^^^^^ the trait `Debug` is not implemented for `NotClone`
+  |
+  = note: this error originates in the derive macro `ValueObject` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotClone` with `#[derive(Debug)]`
+  |
+3 + #[derive(Debug)]
+4 | struct NotClone;
+  |
+
+error[E0277]: the trait bound `NotClone: Clone` is not satisfied
+ --> tests/ui/value_object_trait_bound.rs:5:10
+  |
+5 | #[derive(ValueObject)]
+  |          ^^^^^^^^^^^ the trait `Clone` is not implemented for `NotClone`
+  |
+  = note: this error originates in the derive macro `ValueObject` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotClone` with `#[derive(Clone)]`
+  |
+3 + #[derive(Clone)]
+4 | struct NotClone;
+  |
+
+error[E0277]: can't compare `NotClone` with `NotClone`
+ --> tests/ui/value_object_trait_bound.rs:5:10
+  |
+5 | #[derive(ValueObject)]
+  |          ^^^^^^^^^^^ no implementation for `NotClone == NotClone`
+  |
+  = help: the trait `PartialEq` is not implemented for `NotClone`
+  = note: this error originates in the derive macro `ValueObject` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotClone` with `#[derive(PartialEq)]`
+  |
+3 + #[derive(PartialEq)]
+4 | struct NotClone;
+  |
+
+error[E0277]: the trait bound `NotClone: Eq` is not satisfied
+ --> tests/ui/value_object_trait_bound.rs:5:10
+  |
+5 | #[derive(ValueObject)]
+  |          ^^^^^^^^^^^ the trait `Eq` is not implemented for `NotClone`
+  |
+  = note: this error originates in the derive macro `ValueObject` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotClone` with `#[derive(Eq)]`
+  |
+3 + #[derive(Eq)]
+4 | struct NotClone;
+  |
+
+error[E0277]: the trait bound `NotClone: Hash` is not satisfied
+ --> tests/ui/value_object_trait_bound.rs:5:10
+  |
+5 | #[derive(ValueObject)]
+  |          ^^^^^^^^^^^ the trait `Hash` is not implemented for `NotClone`
+  |
+  = note: this error originates in the derive macro `ValueObject` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotClone` with `#[derive(Hash)]`
+  |
+3 + #[derive(Hash)]
+4 | struct NotClone;
+  |
+
+error[E0599]: the method `clone` exists for struct `Wrapped`, but its trait bounds were not satisfied
+  --> tests/ui/value_object_trait_bound.rs:10:19
+   |
+ 3 | struct NotClone;
+   | --------------- doesn't satisfy `NotClone: Clone`
+...
+ 6 | struct Wrapped(NotClone);
+   | -------------- method `clone` not found for this struct because it doesn't satisfy `Wrapped: Clone`
+...
+10 |     let _ = value.clone();
+   |                   ^^^^^ method cannot be called on `Wrapped` due to unsatisfied trait bounds
+   |
+note: trait bound `NotClone: Clone` was not satisfied
+  --> tests/ui/value_object_trait_bound.rs:5:10
+   |
+ 5 | #[derive(ValueObject)]
+   |          ^^^^^^^^^^^ type parameter would need to implement `Clone`
+   = help: consider manually implementing the trait to avoid undesired bounds
+   = note: this error originates in the derive macro `ValueObject` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotClone` with `#[derive(Clone)]`
+   |
+ 3 + #[derive(Clone)]
+ 4 | struct NotClone;
+   |

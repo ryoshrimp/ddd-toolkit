@@ -1,0 +1,5 @@
+error: aggregate event queue must have type Vec<Event>
+  --> tests/ui/aggregate_queue_fake_vec.rs:15:13
+   |
+15 |     events: fake::Vec<u64>,
+   |             ^^^^^^^^^^^^^^

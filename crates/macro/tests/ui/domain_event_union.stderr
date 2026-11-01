@@ -1,0 +1,5 @@
+error: DomainEvent can only be derived for a struct or enum
+ --> tests/ui/domain_event_union.rs:4:7
+  |
+4 | union InvalidEvent {
+  |       ^^^^^^^^^^^^

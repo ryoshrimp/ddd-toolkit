@@ -1,0 +1,5 @@
+error: unknown value_object attribute
+ --> tests/ui/value_object_unknown_attribute.rs:4:16
+  |
+4 | #[value_object(unknown)]
+  |                ^^^^^^^

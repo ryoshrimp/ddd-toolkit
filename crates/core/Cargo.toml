@@ -1,0 +1,26 @@
+[package]
+name = "ddd-toolkit-core"
+version = "0.4.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+description = "Core traits and helpers for Domain-Driven Design: entities, value objects, aggregates, persistence, CQRS, and event-driven workflows."
+repository = "https://github.com/ryoshrimp/ddd-toolkit"
+documentation = "https://docs.rs/ddd-toolkit-core"
+readme = "README.md"
+keywords = ["ddd", "domain-driven-design", "entity", "value-object", "aggregate"]
+categories = ["rust-patterns", "data-structures"]
+exclude = [".github"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+serde = { version = "1", optional = true }
+zeroize = "1.9.1"
+
+[features]
+serde = ["dep:serde"]
+
+[dev-dependencies]
+trybuild = "1.0.121"

@@ -1,0 +1,5 @@
+error: AggregateRoot requires exactly one #[aggregate(events)] field
+ --> tests/ui/aggregate_duplicate_queue.rs:7:5
+  |
+7 |     #[aggregate(events)]
+  |     ^^^^^^^^^^^^^^^^^^^^

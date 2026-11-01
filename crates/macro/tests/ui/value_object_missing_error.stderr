@@ -1,0 +1,5 @@
+error: validate and error must be specified together
+ --> tests/ui/value_object_missing_error.rs:8:1
+  |
+8 | #[value_object(validate = validate)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -1,0 +1,68 @@
+error[E0277]: can't compare `NotHash` with `NotHash`
+ --> tests/ui/entity_trait_bound.rs:5:10
+  |
+5 | #[derive(Entity)]
+  |          ^^^^^^ no implementation for `NotHash == NotHash`
+  |
+  = help: the trait `PartialEq` is not implemented for `NotHash`
+  = note: this error originates in the derive macro `Entity` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotHash` with `#[derive(PartialEq)]`
+  |
+3 + #[derive(PartialEq)]
+4 | struct NotHash;
+  |
+
+error[E0277]: the trait bound `NotHash: Eq` is not satisfied
+ --> tests/ui/entity_trait_bound.rs:5:10
+  |
+5 | #[derive(Entity)]
+  |          ^^^^^^ the trait `Eq` is not implemented for `NotHash`
+  |
+  = note: this error originates in the derive macro `Entity` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotHash` with `#[derive(Eq)]`
+  |
+3 + #[derive(Eq)]
+4 | struct NotHash;
+  |
+
+error[E0277]: the trait bound `NotHash: Hash` is not satisfied
+ --> tests/ui/entity_trait_bound.rs:5:10
+  |
+5 | #[derive(Entity)]
+  |          ^^^^^^ the trait `Hash` is not implemented for `NotHash`
+  |
+  = note: this error originates in the derive macro `Entity` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotHash` with `#[derive(Hash)]`
+  |
+3 + #[derive(Hash)]
+4 | struct NotHash;
+  |
+
+error[E0277]: the trait bound `NotHash: Hash` is not satisfied
+  --> tests/ui/entity_trait_bound.rs:14:27
+   |
+14 |     std::hash::Hash::hash(&item, &mut hasher);
+   |     --------------------- ^^^^^ the trait `Hash` is not implemented for `NotHash`
+   |     |
+   |     required by a bound introduced by this call
+   |
+help: the trait `Hash` is conditionally implemented for `Item`
+  --> tests/ui/entity_trait_bound.rs:5:10
+   |
+ 5 | #[derive(Entity)]
+   |          ^^^^^^ unsatisfied requirement introduced here: `NotHash: Hash`
+note: required for `Item` to implement `Hash`
+  --> tests/ui/entity_trait_bound.rs:6:8
+   |
+ 5 | #[derive(Entity)]
+   |          ------ type parameter would need to implement `Hash`
+ 6 | struct Item {
+   |        ^^^^
+   = help: consider manually implementing `Hash` to avoid undesired bounds caused by "imperfect derives"
+   = note: to learn more, visit <https://github.com/rust-lang/rust/issues/26925>
+   = note: this error originates in the derive macro `Entity` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `NotHash` with `#[derive(Hash)]`
+   |
+ 3 + #[derive(Hash)]
+ 4 | struct NotHash;
+   |

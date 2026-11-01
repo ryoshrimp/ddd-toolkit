@@ -1,0 +1,5 @@
+error: aggregate event queue must have type Vec<Event>
+ --> tests/ui/aggregate_queue_not_vec.rs:6:13
+  |
+6 |     events: Option<u64>,
+  |             ^^^^^^^^^^^

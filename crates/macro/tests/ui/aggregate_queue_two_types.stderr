@@ -1,0 +1,35 @@
+error: aggregate event queue must have exactly one event type
+ --> tests/ui/aggregate_queue_two_types.rs:6:13
+  |
+6 |     events: Vec<u64, u64>,
+  |             ^^^^^^^^^^^^^
+
+error[E0658]: use of unstable library feature `allocator_api`
+ --> tests/ui/aggregate_queue_two_types.rs:6:22
+  |
+6 |     events: Vec<u64, u64>,
+  |                 -----^^^
+  |                 |
+  |                 help: consider wrapping the inner types in tuple: `(u64, u64)`
+  |
+  = note: see issue #32838 <https://github.com/rust-lang/rust/issues/32838> for more information
+
+error[E0277]: the trait bound `u64: Allocator` is not satisfied
+ --> tests/ui/aggregate_queue_two_types.rs:6:13
+  |
+6 |     events: Vec<u64, u64>,
+  |             ^^^^^^^^^^^^^ the nightly-only, unstable trait `Allocator` is not implemented for `u64`
+  |
+  = help: the following other types implement trait `Allocator`:
+            &A
+            &mut A
+            Arc<T, A>
+            Box<T, A>
+            Rc<T, A>
+            System
+            std::alloc::Global
+note: required by a bound in `Vec`
+ --> $RUST/alloc/src/vec/mod.rs
+  |
+  | pub struct Vec<T, #[unstable(feature = "allocator_api", issue = "32838")] A: Allocator = Global> {
+  |                                                                              ^^^^^^^^^ required by this bound in `Vec`

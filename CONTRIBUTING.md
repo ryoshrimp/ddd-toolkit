@@ -2,14 +2,15 @@
 
 Thanks for your interest in contributing!
 
-This repo is the facade over
-[`ddd-toolkit-core`](https://github.com/ryoshrimp/ddd-toolkit-core) and
-[`ddd-toolkit-macro`](https://github.com/ryoshrimp/ddd-toolkit-macro), pulled
-in here as regular crates.io dependencies (see `Cargo.toml`). Changes to core
-domain/port logic or to the derive macros belong in those repos, not here -
-open an issue/PR there instead if that's what you're touching. This repo's
-own contributions are about the facade re-exports, the `facade-tests`
-integration suite, and docs. The consumer test package deliberately depends on
+This monorepo contains three published crates in one Cargo workspace:
+
+- `ddd-toolkit` (root): public facade and feature flags.
+- `ddd-toolkit-core` (`crates/core`): domain traits and helpers.
+- `ddd-toolkit-macro` (`crates/macro`): derive macros.
+
+Changes to all three crates belong here and can be delivered in one PR.
+Workspace dependencies use local paths during development and registry versions
+when published. `facade-tests` is a non-published consumer integration suite. The consumer test package deliberately depends on
 core 0.4 directly: the upstream macros no longer resolve a facade-only
 dependency. Test-local adapters live in `facade-tests/tests/support`; they are
 not part of the facade's public API.
@@ -21,9 +22,10 @@ issue - they help make sure we get the context needed to act on it quickly.
 
 ## Development setup
 
-- Rust 1.85+ (Edition 2024)
-- A plain `git clone` is enough - `ddd-toolkit-core` / `ddd-toolkit-macro` are
-  pulled in as ordinary crates.io dependencies, not submodules.
+- Rust 1.85+ (Edition 2024). Diagnostic snapshots are verified on current stable
+  Rust with `rust-src` installed (`rustup component add rust-src`), as in CI.
+- A plain `git clone` includes core and macro; no sibling repos or submodules
+  are needed.
 
 ## Running checks locally
 
@@ -34,9 +36,15 @@ Before opening a PR, run the same checks CI runs (see
 cargo test --workspace --all-features
 ./scripts/check-feature-matrix.sh
 
-cargo fmt --check
+cargo fmt --all --check
 cargo clippy --workspace --all-features --all-targets -- -D warnings
 ```
+
+## Releasing
+
+See [docs/releasing.md](docs/releasing.md) for the single-operation release
+workflow, version updates, and partial-release recovery. Publishing remains
+separate per crate, but does not require three manual release operations.
 
 ## Submitting changes
 

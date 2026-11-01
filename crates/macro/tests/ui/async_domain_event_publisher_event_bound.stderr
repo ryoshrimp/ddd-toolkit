@@ -1,0 +1,16 @@
+error[E0277]: the trait bound `NotADomainEvent: DomainEvent` is not satisfied
+ --> tests/ui/async_domain_event_publisher_event_bound.rs:9:18
+  |
+9 |     type Event = NotADomainEvent;
+  |                  ^^^^^^^^^^^^^^^ unsatisfied trait bound
+  |
+help: the trait `DomainEvent` is not implemented for `NotADomainEvent`
+ --> tests/ui/async_domain_event_publisher_event_bound.rs:5:1
+  |
+5 | struct NotADomainEvent;
+  | ^^^^^^^^^^^^^^^^^^^^^^
+note: required by a bound in `ddd_toolkit_core::AsyncDomainEventPublisher::Event`
+ --> $WORKSPACE/crates/core/src/async_domain_event_publisher.rs
+  |
+  |     type Event: DomainEvent;
+  |                 ^^^^^^^^^^^ required by this bound in `AsyncDomainEventPublisher::Event`
