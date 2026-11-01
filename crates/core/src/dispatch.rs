@@ -32,7 +32,8 @@ impl<A: AggregateRoot> Drop for EventRestorationGuard<'_, A> {
     }
 }
 
-/// **English:** Publishes the events currently held by `aggregate` through `publisher`.
+/// **English:**<br>
+/// Publishes the events currently held by `aggregate` through `publisher`.
 ///
 /// Events are passed to [`DomainEventPublisher::publish`] in the order returned by
 /// [`AggregateRoot::pull_events`]. If a publish operation returns an error, all events pulled at
@@ -45,7 +46,8 @@ impl<A: AggregateRoot> Drop for EventRestorationGuard<'_, A> {
 /// synchronization; the aggregate and publisher must be mutably borrowed by the caller for the
 /// duration of the dispatch.
 ///
-/// **日本語:** `aggregate` が現在保持しているイベントを `publisher` 経由で発行します。
+/// **日本語:**<br>
+/// `aggregate` が現在保持しているイベントを `publisher` 経由で発行します。
 ///
 /// イベントは [`AggregateRoot::pull_events`] が返した順序で [`DomainEventPublisher::publish`]
 /// に渡されます。発行処理がエラーを返すと、この呼び出しの開始時に取り出したすべての

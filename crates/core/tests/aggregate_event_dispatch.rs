@@ -61,10 +61,10 @@ impl DomainEventPublisher for TestPublisher {
             panic!("publisher panic at attempt {attempt}");
         }
 
-        if let Some((failure_at, error)) = &self.fail_at {
-            if *failure_at == attempt {
-                return Err(error.clone());
-            }
+        if let Some((failure_at, error)) = &self.fail_at
+            && *failure_at == attempt
+        {
+            return Err(error.clone());
         }
 
         Ok(())
@@ -141,10 +141,10 @@ impl DomainEventPublisher for InteriorPublisher {
         let attempt = self.observed.len();
         self.observed.push((event.id, event.state.get()));
 
-        if let Some((failure_at, error)) = &self.fail_at {
-            if *failure_at == attempt {
-                return Err(error.clone());
-            }
+        if let Some((failure_at, error)) = &self.fail_at
+            && *failure_at == attempt
+        {
+            return Err(error.clone());
         }
 
         Ok(())

@@ -1,8 +1,7 @@
 [package]
 name = "ddd-toolkit-macro"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2024"
-rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 description = "Derive macros for ddd-toolkit-core's ValueObject, Entity, DomainEvent, and AggregateRoot traits."
 repository = "https://github.com/ryoshrimp/ddd-toolkit"

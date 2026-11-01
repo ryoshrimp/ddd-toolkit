@@ -35,9 +35,11 @@ impl Drop for AttemptGuard<'_> {
     }
 }
 
-/// **English:** Coordinates asynchronous aggregate persistence and event dispatch. Each operation may be attempted once; dropping an in-progress future consumes that attempt.
+/// **English:**<br>
+/// Coordinates asynchronous aggregate persistence and event dispatch. Each operation may be attempted once; dropping an in-progress future consumes that attempt.
 ///
-/// **日本語:** 非同期の集約永続化とイベント配信を調整します。各操作は一度だけ試行でき、実行中の future を破棄すると試行は消費済みになります。
+/// **日本語:**<br>
+/// 非同期の集約永続化とイベント配信を調整します。各操作は一度だけ試行でき、実行中の future を破棄すると試行は消費済みになります。
 pub struct AsyncLifecycleContext<'storage, A, R, P>
 where
     A: AggregateRoot + Send + 'storage,
@@ -62,9 +64,11 @@ where
     R::Error: Send + 'storage,
     P::Error: Send + 'storage,
 {
-    /// **English:** Creates a lifecycle context borrowing the aggregate, repository, and publisher mutably.
+    /// **English:**<br>
+    /// Creates a lifecycle context borrowing the aggregate, repository, and publisher mutably.
     ///
-    /// **日本語:** 集約、リポジトリ、パブリッシャーを可変借用するライフサイクルコンテキストを作成します。
+    /// **日本語:**<br>
+    /// 集約、リポジトリ、パブリッシャーを可変借用するライフサイクルコンテキストを作成します。
     pub fn new(
         aggregate: &'storage mut A,
         repository: &'storage mut R,
@@ -79,9 +83,11 @@ where
         }
     }
 
-    /// **English:** Attempts repository persistence once; adapter errors are returned and the attempt cannot be retried.
+    /// **English:**<br>
+    /// Attempts repository persistence once; adapter errors are returned and the attempt cannot be retried.
     ///
-    /// **日本語:** リポジトリへの保存を一度試行します。アダプターエラーを返し、再試行はできません。
+    /// **日本語:**<br>
+    /// リポジトリへの保存を一度試行します。アダプターエラーを返し、再試行はできません。
     pub fn save<'ctx>(
         &'ctx mut self,
     ) -> Pin<Box<dyn Future<Output = Result<(), LifecycleOperationError<R::Error>>> + Send + 'ctx>>
@@ -110,9 +116,11 @@ where
         })
     }
 
-    /// **English:** Attempts event dispatch once; adapter errors are returned and the attempt cannot be retried.
+    /// **English:**<br>
+    /// Attempts event dispatch once; adapter errors are returned and the attempt cannot be retried.
     ///
-    /// **日本語:** イベント配信を一度試行します。アダプターエラーを返し、再試行はできません。
+    /// **日本語:**<br>
+    /// イベント配信を一度試行します。アダプターエラーを返し、再試行はできません。
     pub fn dispatch<'ctx>(
         &'ctx mut self,
     ) -> Pin<Box<dyn Future<Output = Result<(), LifecycleOperationError<P::Error>>> + Send + 'ctx>>
@@ -143,9 +151,11 @@ where
         })
     }
 
-    /// **English:** Consumes the context and succeeds only when both save and dispatch succeeded.
+    /// **English:**<br>
+    /// Consumes the context and succeeds only when both save and dispatch succeeded.
     ///
-    /// **日本語:** コンテキストを消費し、保存と配信の両方が成功した場合にのみ成功します。
+    /// **日本語:**<br>
+    /// コンテキストを消費し、保存と配信の両方が成功した場合にのみ成功します。
     pub fn complete(self) -> Result<(), LifecycleCompletionError> {
         match (self.save_state, self.dispatch_state) {
             (OperationState::Succeeded, OperationState::Succeeded) => Ok(()),
@@ -161,9 +171,11 @@ where
     }
 }
 
-/// **English:** Defines asynchronous work performed with a mutable asynchronous lifecycle context.
+/// **English:**<br>
+/// Defines asynchronous work performed with a mutable asynchronous lifecycle context.
 ///
-/// **日本語:** 非同期ライフサイクルコンテキストを使って実行する非同期処理を定義します。
+/// **日本語:**<br>
+/// 非同期ライフサイクルコンテキストを使って実行する非同期処理を定義します。
 pub trait AsyncLifecycleCallback<A, R, P>
 where
     A: AggregateRoot + Send,
@@ -193,9 +205,11 @@ where
         Self::Error: Send + 'callback;
 }
 
-/// **English:** Asynchronously handles a command against an aggregate using a lifecycle callback.
+/// **English:**<br>
+/// Asynchronously handles a command against an aggregate using a lifecycle callback.
 ///
-/// **日本語:** ライフサイクルコールバックを使って集約に対するコマンドを非同期に処理します。
+/// **日本語:**<br>
+/// ライフサイクルコールバックを使って集約に対するコマンドを非同期に処理します。
 pub trait AsyncCommandHandler {
     type Command;
     type Aggregate: AggregateRoot;
@@ -236,9 +250,11 @@ pub trait AsyncCommandHandler {
             + 'a;
 }
 
-/// **English:** Asynchronously creates an aggregate from a command and runs the lifecycle callback.
+/// **English:**<br>
+/// Asynchronously creates an aggregate from a command and runs the lifecycle callback.
 ///
-/// **日本語:** コマンドから集約を非同期に作成し、ライフサイクルコールバックを実行します。
+/// **日本語:**<br>
+/// コマンドから集約を非同期に作成し、ライフサイクルコールバックを実行します。
 pub trait AsyncAggregateCreator {
     type Command;
     type Aggregate: AggregateRoot;
@@ -277,9 +293,11 @@ pub trait AsyncAggregateCreator {
             + 'a;
 }
 
-/// **English:** Handles a query asynchronously without requiring aggregate lifecycle operations.
+/// **English:**<br>
+/// Handles a query asynchronously without requiring aggregate lifecycle operations.
 ///
-/// **日本語:** 集約ライフサイクル操作を伴わずにクエリを非同期処理します。
+/// **日本語:**<br>
+/// 集約ライフサイクル操作を伴わずにクエリを非同期処理します。
 pub trait AsyncQueryHandler {
     type Query;
     type Result;

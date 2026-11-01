@@ -34,12 +34,14 @@ impl<A: AggregateRoot> Drop for EventRestorationGuard<'_, A> {
     }
 }
 
-/// **English:** Asynchronously publishes the events currently held by `aggregate`, in the order
+/// **English:**<br>
+/// Asynchronously publishes the events currently held by `aggregate`, in the order
 /// returned by [`AggregateRoot::pull_events`]. On success, the events are removed. If publishing
 /// fails, all pulled events are recorded back into the aggregate before the publisher error is
 /// returned; earlier successful publishes are not undone, so a retry can publish duplicates.
 ///
-/// **日本語:** `aggregate` が保持するイベントを [`AggregateRoot::pull_events`] の返す順序で非同期に
+/// **日本語:**<br>
+/// `aggregate` が保持するイベントを [`AggregateRoot::pull_events`] の返す順序で非同期に
 /// 発行します。成功時はイベントを取り除きます。発行に失敗した場合、パブリッシャーのエラーを
 /// 返す前に取り出した全イベントを集約へ記録し直します。それ以前に成功した発行は取り消されないため、
 /// 再試行すると重複発行される可能性があります。

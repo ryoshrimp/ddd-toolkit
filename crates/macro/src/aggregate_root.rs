@@ -4,10 +4,12 @@ use syn::{Data, DeriveInput, Fields, GenericArgument, PathArguments, Result, Typ
 
 use crate::path::core_path;
 
-/// **English:** Generates append-and-drain aggregate methods for one marked vector;
+/// **English:**<br>
+/// Generates append-and-drain aggregate methods for one marked vector;
 /// reports invalid struct shapes, queue types, or queue attributes as syntax errors.
 ///
-/// **日本語:** 指定された一つのベクターに追加・取り出しを行う集約メソッドを生成し、
+/// **日本語:**<br>
+/// 指定された一つのベクターに追加・取り出しを行う集約メソッドを生成し、
 /// 不正な構造体形状、キュー型、キュー属性を構文エラーにします。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     for attr in &input.attrs {

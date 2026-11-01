@@ -1,5 +1,7 @@
 # ddd-toolkit-macro
 
+English | [日本語](README.ja.md)
+
 [![docs.rs](https://img.shields.io/docsrs/ddd-toolkit-macro)](https://docs.rs/ddd-toolkit-macro)
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit-macro.svg)](#license)
@@ -13,6 +15,9 @@ Maintained in the [ddd-toolkit monorepo](https://github.com/ryoshrimp/ddd-toolki
 For development and releases, see the root repository's contribution guide.
 
 ## Installation
+
+Tested with the latest stable Rust (edition 2024). No minimum supported Rust
+version (MSRV) is specified.
 
 ```sh
 cargo add ddd-toolkit-core ddd-toolkit-macro

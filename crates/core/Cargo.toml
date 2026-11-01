@@ -1,8 +1,7 @@
 [package]
 name = "ddd-toolkit-core"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2024"
-rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 description = "Core traits and helpers for Domain-Driven Design: entities, value objects, aggregates, persistence, CQRS, and event-driven workflows."
 repository = "https://github.com/ryoshrimp/ddd-toolkit"

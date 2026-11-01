@@ -2,17 +2,19 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::Result;
 
-/// **English:** Resolves the calling crate's `ddd-toolkit-core` dependency,
+/// **English:**<br>
+/// Resolves the calling crate's `ddd-toolkit-core` dependency,
 /// preserving a dependency rename; returns a call-site error when it is absent.
 ///
-/// **日本語:** 呼び出し元の `ddd-toolkit-core` 依存を別名も維持して解決し、
+/// **日本語:**<br>
+/// 呼び出し元の `ddd-toolkit-core` 依存を別名も維持して解決し、
 /// 依存がない場合は呼び出し位置を示すエラーを返します。
 pub fn core_path() -> Result<TokenStream> {
     let package = "ddd-toolkit-core";
-    if let Ok(found) = proc_macro_crate::crate_name(package) {
-        if let Some(path) = path_for_found_crate(package, found) {
-            return Ok(path);
-        }
+    if let Ok(found) = proc_macro_crate::crate_name(package)
+        && let Some(path) = path_for_found_crate(package, found)
+    {
+        return Ok(path);
     }
 
     Err(syn::Error::new(

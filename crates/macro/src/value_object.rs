@@ -13,10 +13,12 @@ struct Attributes {
     serde: bool,
 }
 
-/// **English:** Expands a struct or enum into value-object implementations;
+/// **English:**<br>
+/// Expands a struct or enum into value-object implementations;
 /// returns a syntax error for unsupported shapes or invalid attributes.
 ///
-/// **日本語:** 構造体・列挙型から値オブジェクト実装を生成し、非対応の形状や
+/// **日本語:**<br>
+/// 構造体・列挙型から値オブジェクト実装を生成し、非対応の形状や
 /// 不正な属性には構文エラーを返します。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     let attrs = parse_attributes(&input)?;
@@ -162,16 +164,20 @@ fn expand_enum(
         }
 
         impl #impl_generics #name #ty_generics #where_clause {
-            /// **English:** Borrows the enum itself, including its current variant.
+            /// **English:**<br>
+            /// Borrows the enum itself, including its current variant.
             ///
-            /// **日本語:** 現在のバリアントを含む列挙型自身を借用します。
+            /// **日本語:**<br>
+            /// 現在のバリアントを含む列挙型自身を借用します。
             pub fn as_inner(&self) -> &Self {
                 self
             }
 
-            /// **English:** Transfers ownership of this enum without changing its variant.
+            /// **English:**<br>
+            /// Transfers ownership of this enum without changing its variant.
             ///
-            /// **日本語:** バリアントを変更せずに列挙型の所有権を移します。
+            /// **日本語:**<br>
+            /// バリアントを変更せずに列挙型の所有権を移します。
             pub fn into_inner(self) -> Self {
                 self
             }
@@ -226,10 +232,12 @@ fn enum_constructors(variants: &[EnumVariant<'_>], attrs: &Attributes) -> TokenS
         let construct = enum_construct(variant, &arguments);
         match (&attrs.validator, &attrs.error) {
             (Some(validator), Some(error)) => quote! {
-                /// **English:** Constructs this variant after validating the candidate;
+                /// **English:**<br>
+                /// Constructs this variant after validating the candidate;
                 /// propagates the validator's error or panic.
                 ///
-                /// **日本語:** 候補を検証してこのバリアントを構築し、検証関数の
+                /// **日本語:**<br>
+                /// 候補を検証してこのバリアントを構築し、検証関数の
                 /// エラーやパニックを伝播します。
                 pub fn #method(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
                     let candidate = #construct;
@@ -238,9 +246,11 @@ fn enum_constructors(variants: &[EnumVariant<'_>], attrs: &Attributes) -> TokenS
                 }
             },
             (None, None) => quote! {
-                /// **English:** Constructs this variant from its fields without validation.
+                /// **English:**<br>
+                /// Constructs this variant from its fields without validation.
                 ///
-                /// **日本語:** 検証せずにフィールドからこのバリアントを構築します。
+                /// **日本語:**<br>
+                /// 検証せずにフィールドからこのバリアントを構築します。
                 pub fn #method(#(#arguments: #types),*) -> Self {
                     #construct
                 }
@@ -292,17 +302,21 @@ fn enum_accessors(variants: &[EnumVariant<'_>]) -> TokenStream {
             quote! { Some((#(#references,)*)) }
         };
         quote! {
-            /// **English:** Tests whether this value has the corresponding variant.
+            /// **English:**<br>
+            /// Tests whether this value has the corresponding variant.
             ///
-            /// **日本語:** この値が対応するバリアントかどうかを判定します。
+            /// **日本語:**<br>
+            /// この値が対応するバリアントかどうかを判定します。
             pub fn #is_method(&self) -> bool {
                 matches!(self, #is_pattern)
             }
 
-            /// **English:** Returns the variant's field references as a tuple, or
+            /// **English:**<br>
+            /// Returns the variant's field references as a tuple, or
             /// `Some(())` for a unit variant; returns `None` for a different variant.
             ///
-            /// **日本語:** バリアントのフィールド参照のタプルを返します。
+            /// **日本語:**<br>
+            /// バリアントのフィールド参照のタプルを返します。
             /// ユニットなら `Some(())`、異なるバリアントなら `None` を返します。
             pub fn #as_method(&self) -> #return_type {
                 match self {
@@ -528,9 +542,11 @@ fn serde_impl_enum(
     let (helper_impl, _, helper_where) = original.split_for_impl();
     let definitions = variants.iter().map(enum_variant_definition);
     let helper_definition = quote! {
-        /// **English:** Mirrors event-free value-object variants for serde decoding.
+        /// **English:**<br>
+        /// Mirrors event-free value-object variants for serde decoding.
         ///
-        /// **日本語:** serde の復号用に値オブジェクトのバリアント構成を保持します。
+        /// **日本語:**<br>
+        /// serde の復号用に値オブジェクトのバリアント構成を保持します。
         pub enum Enum #helper_impl { #(#definitions),* } #helper_where
     };
 
@@ -695,10 +711,12 @@ fn expand_single(
     let constructor = match (&attrs.validator, &attrs.error) {
         (Some(validator), Some(error)) => quote! {
             impl #impl_generics #name #ty_generics #where_clause {
-                /// **English:** Validates the inner value before wrapping it, returning
+                /// **English:**<br>
+                /// Validates the inner value before wrapping it, returning
                 /// the validator's error on rejection; validator panics propagate.
                 ///
-                /// **日本語:** 内包値を検証してから包み、拒否された場合は検証エラーを
+                /// **日本語:**<br>
+                /// 内包値を検証してから包み、拒否された場合は検証エラーを
                 /// 返します。検証関数のパニックは伝播します。
                 pub fn try_new(inner: #inner_ty) -> ::core::result::Result<Self, #error> {
                     #validator(&inner)?;
@@ -708,9 +726,11 @@ fn expand_single(
         },
         (None, None) => quote! {
             impl #impl_generics #name #ty_generics #where_clause {
-                /// **English:** Wraps the supplied inner value without validation.
+                /// **English:**<br>
+                /// Wraps the supplied inner value without validation.
                 ///
-                /// **日本語:** 指定された内包値を検証せずに包みます。
+                /// **日本語:**<br>
+                /// 指定された内包値を検証せずに包みます。
                 pub fn new(inner: #inner_ty) -> Self {
                     #construct
                 }
@@ -753,16 +773,20 @@ fn expand_single(
         }
 
         impl #impl_generics #name #ty_generics #where_clause {
-            /// **English:** Borrows the wrapped field without consuming this wrapper.
+            /// **English:**<br>
+            /// Borrows the wrapped field without consuming this wrapper.
             ///
-            /// **日本語:** ラッパーを消費せずに内包フィールドを借用します。
+            /// **日本語:**<br>
+            /// ラッパーを消費せずに内包フィールドを借用します。
             pub fn as_inner(&self) -> &#inner_ty {
                 &self.#member
             }
 
-            /// **English:** Consumes this wrapper and moves out its field without validation.
+            /// **English:**<br>
+            /// Consumes this wrapper and moves out its field without validation.
             ///
-            /// **日本語:** ラッパーを消費し、検証せずに内包フィールドを取り出します。
+            /// **日本語:**<br>
+            /// ラッパーを消費し、検証せずに内包フィールドを取り出します。
             pub fn into_inner(self) -> #inner_ty {
                 self.#member
             }
@@ -785,16 +809,15 @@ fn expand_multi(
         Fields::Unnamed(fields) => fields.unnamed.iter().collect(),
         Fields::Unit => unreachable!("unit fields are rejected before expansion"),
     };
-    if attrs.validator.is_some() {
-        if let Some(field) = field_list
+    if attrs.validator.is_some()
+        && let Some(field) = field_list
             .iter()
             .find(|field| matches!(field.vis, syn::Visibility::Public(_)))
-        {
-            return Err(syn::Error::new_spanned(
-                field,
-                "validated ValueObject fields must not be public",
-            ));
-        }
+    {
+        return Err(syn::Error::new_spanned(
+            field,
+            "validated ValueObject fields must not be public",
+        ));
     }
 
     let members: Vec<Member> = field_list
@@ -826,10 +849,12 @@ fn expand_multi(
     let construct = construct_self(named, &members, &arguments);
     let constructor = match (&attrs.validator, &attrs.error) {
         (Some(validator), Some(error)) => quote! {
-            /// **English:** Builds fields in declaration order and validates the resulting
+            /// **English:**<br>
+            /// Builds fields in declaration order and validates the resulting
             /// struct, propagating the validator's error or panic.
             ///
-            /// **日本語:** 宣言順のフィールドから構造体を作って検証し、検証関数の
+            /// **日本語:**<br>
+            /// 宣言順のフィールドから構造体を作って検証し、検証関数の
             /// エラーやパニックを伝播します。
             pub fn try_new(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
                 let candidate = #construct;
@@ -838,9 +863,11 @@ fn expand_multi(
             }
         },
         (None, None) => quote! {
-            /// **English:** Builds this struct from fields in declaration order without validation.
+            /// **English:**<br>
+            /// Builds this struct from fields in declaration order without validation.
             ///
-            /// **日本語:** 宣言順のフィールドから検証せずに構造体を構築します。
+            /// **日本語:**<br>
+            /// 宣言順のフィールドから検証せずに構造体を構築します。
             pub fn new(#(#arguments: #types),*) -> Self {
                 #construct
             }
@@ -854,9 +881,11 @@ fn expand_multi(
             .zip(types.iter())
             .map(|((argument, member), ty)| {
                 quote! {
-                    /// **English:** Borrows this field, keeping ownership in the value object.
+                    /// **English:**<br>
+                    /// Borrows this field, keeping ownership in the value object.
                     ///
-                    /// **日本語:** 値オブジェクトに所有権を残してこのフィールドを借用します。
+                    /// **日本語:**<br>
+                    /// 値オブジェクトに所有権を残してこのフィールドを借用します。
                     pub fn #argument(&self) -> &#ty {
                         &self.#member
                     }
@@ -894,16 +923,20 @@ fn expand_multi(
         impl #impl_generics #name #ty_generics #where_clause {
             #constructor
 
-            /// **English:** Borrows this multi-field struct as its own inner value.
+            /// **English:**<br>
+            /// Borrows this multi-field struct as its own inner value.
             ///
-            /// **日本語:** 複数フィールド構造体自身を内包値として借用します。
+            /// **日本語:**<br>
+            /// 複数フィールド構造体自身を内包値として借用します。
             pub fn as_inner(&self) -> &Self {
                 self
             }
 
-            /// **English:** Returns this multi-field struct by value without revalidation.
+            /// **English:**<br>
+            /// Returns this multi-field struct by value without revalidation.
             ///
-            /// **日本語:** 再検証せずに複数フィールド構造体自身を値として返します。
+            /// **日本語:**<br>
+            /// 再検証せずに複数フィールド構造体自身を値として返します。
             pub fn into_inner(self) -> Self {
                 self
             }
@@ -1261,16 +1294,20 @@ fn serde_impl_multi(
             quote! { pub #ident: #ty }
         });
         quote! {
-            /// **English:** Holds named fields decoded before value-object validation.
+            /// **English:**<br>
+            /// Holds named fields decoded before value-object validation.
             ///
-            /// **日本語:** 値オブジェクトの検証前に復号された名前付きフィールドを保持します。
+            /// **日本語:**<br>
+            /// 値オブジェクトの検証前に復号された名前付きフィールドを保持します。
             pub struct Fields #helper_impl { #(#defs),* } #helper_where
         }
     } else {
         quote! {
-            /// **English:** Holds tuple fields decoded before value-object construction.
+            /// **English:**<br>
+            /// Holds tuple fields decoded before value-object construction.
             ///
-            /// **日本語:** 値オブジェクト構築前に復号されたタプルフィールドを保持します。
+            /// **日本語:**<br>
+            /// 値オブジェクト構築前に復号されたタプルフィールドを保持します。
             pub struct Fields #helper_impl (#(pub #types),*) #helper_where;
         }
     };

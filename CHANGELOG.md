@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-01
+
+### Added
+
+- Japanese README with installation, examples, feature requirements, and migration notes.
+
 ### Changed
 
+- Clarified that testing targets the latest stable Rust without a specified MSRV;
+  removed the unverified Rust 1.85 minimum declaration and MSRV badges.
+- Grouped rustdoc prose by language and placed language labels on separate lines.
+- Re-exported APIs inherit their original documentation without duplicate language sections.
 - Consolidated core, derive macros, and facade tests into one Cargo workspace.
   Crate names, versions, and public APIs are unchanged.
 - Added a single release workflow that publishes missing crate versions in
@@ -181,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `zeroize`-feature compile break. `scripts/check-feature-matrix.sh` checks
   the facade compiles under every individual feature combination.
 
-[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/commits/main
+[0.3.1]: https://crates.io/crates/ddd-toolkit/0.3.1
 [0.3.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.5...v0.2.0
 [0.1.5]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.4...v0.1.5
