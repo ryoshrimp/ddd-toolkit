@@ -21,10 +21,10 @@ enum OrderError {
     AlreadyConfirmed,
 }
 
-// The aggregate is the boundary that protects these rules. Private fields prevent
-// callers from bypassing its methods. Derives supply toolkit traits, NOT rules.
-// 集約のメソッドがルールを守る。非公開フィールドへの直接変更は許さない。
-// derive が提供するのはtraitの実装であり、業務ルールそのものではない。
+// Aggregate methods enforce business rules; derives implement toolkit traits.
+// Private fields restrict direct access to this module; main also uses the methods.
+// 集約のメソッドで業務ルールを実装し、deriveでtoolkitのtraitを実装する。
+// 非公開フィールドに直接アクセスできるのは同じモジュール内。mainも変更はメソッド経由。
 #[derive(Clone, ddd_toolkit::Entity, ddd_toolkit::AggregateRoot)]
 struct Order {
     #[entity(id)]
@@ -100,7 +100,7 @@ fn main() {
     let saved = orders.find_by_id(&1).unwrap().unwrap();
     assert!(saved.confirmed);
     assert_eq!(saved.total_yen, 4200);
-    assert!(saved.events.is_empty()); // A snapshot, not an event store.
+    assert!(saved.events.is_empty()); // Persisted order state excludes pending notifications.
     assert_eq!(order.events.len(), 1); // Saving did not consume the original queue.
 
     let mut notifications = Notifications::default();

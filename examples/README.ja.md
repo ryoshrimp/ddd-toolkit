@@ -4,9 +4,10 @@
 
 ## 初めての方へ
 
-最初は **[getting_started.rs](getting_started.rs)** だけを読んでください。
-Rust の構造体・enum・trait・`Result` の基礎は前提ですが、DDD の事前知識、DB、
-非同期処理の知識は不要です。失敗時の再配信からではなく、業務の言葉から始めます。
+**[getting_started.rs](getting_started.rs)** では、注文の例を通して、業務ルールを
+コードで表し、保存・通知につなぐ流れを学びます。
+Rust の構造体・enum・trait・`Result` の基礎が前提です。DDD、DB、非同期処理の
+事前知識は不要です。リポジトリのルートで次を実行してください。
 
 ```sh
 cargo run -p ddd-toolkit --example getting_started --locked
@@ -27,7 +28,7 @@ getting_started: order #1 confirmed; saved total=4200 yen; notifications=1
 守りたい約束は「価格は正」「空の注文は確定できない」「確定後は変更・再確定できない」。
 `Order::add_item` と `Order::confirm` にこのルールを置きます。
 呼び出し側ごとに検証すると、別の入口から変更したときにルールが抜けるためです。
-`derive` はルールを生成しません。ルールは開発者が業務に合わせて実装します。
+`derive` で toolkit のトレイトを実装し、業務メソッドは開発者がルールに合わせて記述します。
 
 ### 用語とコードの対応
 
@@ -41,16 +42,17 @@ getting_started: order #1 confirmed; saved total=4200 yen; notifications=1
 | アプリケーション層 | 業務メソッド、保存、通知の順序を調整する部分 | `main` |
 | アダプター | 契約を具体的な保存先や通知先につなぐ実装 | `MemoryOrders`、`Notifications` |
 
-DDD はこのクレートのtraitを全部使うことではなく、業務の言葉・境界・ルールをモデルに
-反映する考え方です。集約は複数エンティティを含むこともありますが、この例は1つです。
-値オブジェクト（IDではなく値で区別する型）や複数集約は、入門ではまだ扱いません。
-実システムの金額型、税、商品明細、在庫、配送、決済もこの教材の範囲外です。
+DDD は業務の言葉・境界・ルールをモデルに反映する考え方です。
+この例の集約は1つのエンティティで構成され、金額は整数の円で表します。
+値オブジェクト（IDではなく値で区別する型）、複数集約、実システムの金額型、税、
+商品明細、在庫、配送、決済はこの教材の範囲外です。
 
 ### コードの読む順番
 
 1. **`OrderError` と `Order` のメソッド**: 業務の約束を確認します。
-   フィールドが非公開なので、利用側は直接 `confirmed` を書き換えずメソッドを呼びます。
-   `main` は同じファイル内のため検証用に状態を参照しますが、変更はメソッド経由です。
+   状態の変更を `add_item` と `confirm` に集め、`main` もこのメソッドを呼びます。
+   Rust の非公開フィールドはモジュール外からの直接アクセスを防ぎます。
+   この例の `main` は同じモジュールにあり、検証用にフィールドを参照しています。
 2. **`main` の前半**: 空の注文の拒否 → 商品追加 → 確定。
    `assert_eq!` は期待結果の確認であり、業務ルールの実装ではありません。
 3. **保存 → 通知**: `save` は注文の状態を保存します。`record_event` は通知を保留するだけ。
@@ -59,27 +61,33 @@ DDD はこのクレートのtraitを全部使うことではなく、業務の�
 4. **末尾のアダプター**: 最後に戻って読めば十分です。`Infallible` はこのメモリ実装に
    アダプター由来のエラーがないという型であり、実DBが失敗しないという意味ではありません。
 
-自分で試すなら、商品価格や `confirm` の順番を変えてみてください。
-空の確定・0円追加・確定後の変更が拒否され、合計やイベント数が変わらないことをassertで
-確かめられます。例では前提が決まっているため `unwrap` を使いますが、利用者入力や
-外部I/Oのある本番アプリケーションではエラーを呼び出し元へ返すなどの処理が必要です。
+### 自分で試す
+
+- 商品価格を変え、合計金額のassertと出力も新しい期待値に合わせてください。
+- 商品追加前に `confirm` を呼び、`EmptyOrder` が返ることを確かめてください。
+- 確定後に `add_item` や `confirm` を呼び、`AlreadyConfirmed` が返り、合計と
+  イベント数が変わらないことを確かめてください。
+
+この固定シナリオでは、成功を期待する操作に `unwrap` を使います。利用者入力や
+外部I/Oのあるアプリケーションでは、エラーを呼び出し元へ返すなどの処理が必要です。
 
 ### 次に何を読むか
 
-| 順番 | 例 | 学ぶこと / 先に知っておくこと |
+| 順番 | 例 | 学ぶこと |
 | --- | --- | --- |
-| 1 | [getting_started.rs](getting_started.rs) | 業務ルール、保存、通知。まずこれだけで十分 |
+| 1 | [getting_started.rs](getting_started.rs) | 業務ルール、保存、通知 |
 | 2 | [cqrs.rs](cqrs.rs) | 更新の命令と参照の質問を分ける。Specificationは真偽の条件、Policyは拒否理由付きの制約 |
 | 3 | [dispatch_retry.rs](dispatch_retry.rs) | **発展: 配信の部分失敗と重複** |
 | 任意 | [event_sourcing.rs](event_sourcing.rs) | **発展: 状態ではなく事実の履歴から復元**。revision、snapshot、upcasterを学ぶ |
 | 任意 | [reliable_delivery.rs](reliable_delivery.rs) | **発展: asyncと障害対策**。outbox、projection、checkpoint、重複排除を学ぶ |
 
-各ファイルは独立したプログラムです。同じ `Order` という名前でも入門例のモデルを
-そのまま継承するわけではありません。後続例はAPIを絞って学ぶための小さなモデルです。
-`cqrs` と `dispatch_retry` の共通部品は [support/mod.rs](support/mod.rs) にあります。
-CQRSの例は注文金額の調整を題材にし、入門の確定フローとは別です。
-CQRS は「更新と参照の責務を分ける」ことであり、別DBや非同期処理を必須にしません。
-ライフサイクルコールバックは保存・配信の順番を明示する仕組みで、DBトランザクションではありません。
+各ファイルは独立したプログラムで、題材に合わせたモデルを定義しています。
+`cqrs` と `dispatch_retry` は、金額と保留イベントを持つ `Order` とアダプターを
+[support/mod.rs](support/mod.rs) で共有します。
+
+CQRS は更新と参照の責務を分ける設計です。この例では、コマンドとクエリが同じ
+Repository を使います。ライフサイクルコールバックで保存・配信の順番を明示します。
+保存と配信は別操作で、DBトランザクションとしての原子性はありません。
 
 ## 全例の実行と期待結果
 
@@ -90,20 +98,19 @@ CQRS は「更新と参照の責務を分ける」ことであり、別DBや非�
 ```sh
 cargo build -p ddd-toolkit --examples --all-features --locked
 cargo run -p ddd-toolkit --example getting_started --features derive --locked
-cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked
 cargo run -p ddd-toolkit --example cqrs --features derive --locked
+cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked
 cargo run -p ddd-toolkit --example event_sourcing --features derive --locked
 cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 ```
 
 - [getting_started.rs](getting_started.rs): 注文の業務ルール → 確定 → 保存 → 通知。
   合計4200円、通知1件。空注文・0円・確定後の変更を拒否します。
-- [dispatch_retry.rs](dispatch_retry.rs): 注文を保存し、最初のイベントを配信した後に失敗させ、復元された
-  バッチを再試行します。配信結果は `[1, 1, 2]`。保存は保留イベントを消費せず、
-  配信失敗も保存をロールバックしません。
 - [cqrs.rs](cqrs.rs): 加算ゼロを Specification、合計5000超過を Policy で拒否し、
   明示的なライフサイクルコールバックで保存・配信します。クエリ結果は4200です。
-  簡単なクエリは Repository の状態を読み、別DBを必須としません。保存と配信は別操作です。
+- [dispatch_retry.rs](dispatch_retry.rs): 注文を保存し、最初のイベントを配信した後に
+  失敗させ、復元されたバッチを再試行します。配信結果は `[1, 1, 2]`。
+  保存は保留イベントを消費せず、配信失敗も保存をロールバックしません。
 - [event_sourcing.rs](event_sourcing.rs): v1イベントをロード時にアップキャストして再生し、
   スナップショットを保存した後、`ExpectedRevision` を指定して追記します。古いリビジョンでの
   追記は状態を変えずに拒否します。スナップショット＋後続イベントも全履歴再生も結果は5、
@@ -121,7 +128,7 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 - **revision / ExpectedRevision**: ストリーム（1集約のイベント列）の位置 / 書き込み前に
   期待する位置。同時更新で他の書き込みが先に進んでいれば拒否して上書きを防ぎます。
 - **replay / snapshot / upcaster**: 過去イベントの適用による復元 / 途中状態のキャッシュ /
-  旧イベント形式を現在の形式へ変換する処理。Counterはこの仕組みだけを示す教材です。
+  旧イベント形式を現在の形式へ変換する処理。例ではCounterの加算履歴を扱います。
 - **outbox**: 状態保存と同じトランザクションで、後で送る通知を記録する置き場。
 - **projection**: イベントから作る参照用の状態。例では入金イベントから残高を作ります。
 - **checkpoint**: 読み手の処理位置の記録。位置だけでは二重適用を防げないため、
@@ -129,8 +136,9 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 - **at-least-once**: 同じ通知が複数回届き得る配信。入金を二度加算しないよう、
   同じイベントを繰り返しても効果が増えない（冪等な）適用を行います。
 
-イベント通知とイベントソーシングは別です。通知を使うからといって履歴から状態を
-復元する設計やアウトボックスまで必須になるわけではありません。必要な段階で選んでください。
+イベント通知は業務上の事実を他の処理へ伝え、イベントソーシングはその履歴から状態を
+復元します。アウトボックスは状態保存と通知の間で障害が起きる場合に備える仕組みです。
+それぞれの役割を踏まえ、アプリケーションに必要なものを選んでください。
 
 ## アダプターの責任範囲
 

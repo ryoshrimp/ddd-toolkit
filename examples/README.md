@@ -4,9 +4,10 @@ English | [日本語](README.ja.md)
 
 ## Start here
 
-Read **[getting_started.rs](getting_started.rs)** first. It assumes basic Rust
-structs, enums, traits and `Result`, but no DDD, database or async experience.
-Start with the business language, not delivery failures.
+**[getting_started.rs](getting_started.rs)** uses an order to show how to express
+business rules in code, save state and notify a subscriber.
+It assumes basic Rust structs, enums, traits and `Result`, but no DDD, database
+or async experience. Run this command from the repository root:
 
 ```sh
 cargo run -p ddd-toolkit --example getting_started --locked
@@ -27,8 +28,8 @@ No email is actually sent: an in-memory notification lets us check the result.
 The business rules are: prices must be positive, an empty order cannot be
 confirmed, and a confirmed order cannot be changed or confirmed again.
 `Order::add_item` and `Order::confirm` own these rules so that another caller
-cannot accidentally skip validation. Derives supply traits, **not business rules**;
-those are your responsibility.
+has a consistent entry point for validation. Derives implement toolkit traits;
+you write the business methods to enforce the rules.
 
 ### Vocabulary mapped to code
 
@@ -42,17 +43,18 @@ those are your responsibility.
 | Application layer | Coordinates business methods, persistence and notification | `main` |
 | Adapter | Connects a contract to a concrete storage or notification destination | `MemoryOrders`, `Notifications` |
 
-DDD means modeling business language, boundaries and rules, not using every trait
-in this crate. An aggregate can contain multiple entities; ours contains just one.
-Value objects (types distinguished by value rather than identity) and multiple
-aggregates are outside this introduction, as are production money types, taxes,
-line items, stock, shipping and payments.
+DDD means modeling business language, boundaries and rules.
+This example's aggregate contains one entity and represents prices in whole yen.
+Value objects (types distinguished by value rather than identity), multiple
+aggregates, production money types, taxes, line items, stock, shipping and payments
+are outside this introduction.
 
 ### Reading order
 
-1. **`OrderError` and the `Order` methods**: find the business rules. Private fields
-   keep consumers from directly setting `confirmed`. `main` is in the same file
-   and reads state for assertions, but changes it through the methods.
+1. **`OrderError` and the `Order` methods**: find the business rules. State changes
+   go through `add_item` and `confirm`, including those made by `main`.
+   Rust's private fields prevent direct access from outside the module.
+   Here, `main` is in the same module and reads fields for assertions.
 2. **The first half of `main`**: reject an empty order, add items, confirm.
    Assertions check results; they do not implement the business rules.
 3. **Save, then notify**: `save` stores order state. `record_event` only queues a
@@ -62,28 +64,34 @@ line items, stock, shipping and payments.
 4. **Adapters at the bottom**: come back to these last. `Infallible` means this
    memory adapter has no adapter errors, not that a real database cannot fail.
 
-Try changing item prices or the order of calls to `confirm`. Assertions verify
-that empty confirmation, zero prices and post-confirmation changes are rejected
-without changing the total or emitting extra events. `unwrap` keeps this fixed
-scenario readable; applications with user input or external I/O need to handle
-errors, for example by returning them to the caller.
+### Try it yourself
+
+- Change an item price and update the total's assertion and output to match.
+- Call `confirm` before adding items and check that it returns `EmptyOrder`.
+- Call `add_item` or `confirm` after confirmation and check that it returns
+  `AlreadyConfirmed` without changing the total or event count.
+
+This fixed scenario uses `unwrap` for operations expected to succeed. Applications
+with user input or external I/O need to handle errors, for example by returning
+them to the caller.
 
 ### Where to go next
 
-| Order | Example | Lesson / prerequisites |
+| Order | Example | Lesson |
 | --- | --- | --- |
-| 1 | [getting_started.rs](getting_started.rs) | Business rules, persistence, notification. Enough to start |
+| 1 | [getting_started.rs](getting_started.rs) | Business rules, persistence, notification |
 | 2 | [cqrs.rs](cqrs.rs) | Separate update commands from read queries. A Specification tests a condition; a Policy enforces a constraint with a rejection reason |
 | 3 | [dispatch_retry.rs](dispatch_retry.rs) | **Advanced: partial delivery failure and duplicates** |
 | Optional | [event_sourcing.rs](event_sourcing.rs) | **Advanced: reconstruct state from facts**. Revisions, snapshots and upcasters |
 | Optional | [reliable_delivery.rs](reliable_delivery.rs) | **Advanced: async and failure recovery**. Outbox, projection, checkpoint and deduplication |
 
-Each file is an independent program. A later `Order` does not extend the tutorial
-model: later examples deliberately narrow the model to focus on API contracts.
-`cqrs` and `dispatch_retry` share [support/mod.rs](support/mod.rs). The CQRS example adjusts
-an order total; it is not the tutorial's confirmation workflow. CQRS separates
-update and read responsibilities; it does not require another database or async.
-A lifecycle callback makes save/dispatch ordering explicit, not transactional.
+Each file is an independent program with a model suited to its topic.
+`cqrs` and `dispatch_retry` share an `Order` with a total and pending events,
+along with adapters, in [support/mod.rs](support/mod.rs).
+
+CQRS separates update and read responsibilities. Here, commands and queries use
+the same repository. A lifecycle callback makes save/dispatch ordering explicit.
+Save and dispatch remain separate operations without database transaction atomicity.
 
 ## Run all examples and check results
 
@@ -94,8 +102,8 @@ No new dependency, database, broker, or async runtime is required.
 ```sh
 cargo build -p ddd-toolkit --examples --all-features --locked
 cargo run -p ddd-toolkit --example getting_started --features derive --locked
-cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked
 cargo run -p ddd-toolkit --example cqrs --features derive --locked
+cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked
 cargo run -p ddd-toolkit --example event_sourcing --features derive --locked
 cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 ```
@@ -103,13 +111,13 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 - [getting_started.rs](getting_started.rs): business rules → confirmation → save →
   notify. Total 4200 yen, one notification. Rejects empty orders, zero prices and
   changes after confirmation.
-- [dispatch_retry.rs](dispatch_retry.rs): saves an order, fails after publishing the first event,
-  then retries the restored batch. Expected deliveries: `[1, 1, 2]`. Saving does
-  not drain pending events; publication failure does not roll back the save.
 - [cqrs.rs](cqrs.rs): rejects zero increments (Specification) and totals above
   5000 (Policy), then saves and dispatches using an explicit lifecycle callback.
-  The query returns 4200. This simple query reads repository state; CQRS does not
-  require a separate database. Save and publish are still separate operations.
+  The query returns 4200.
+- [dispatch_retry.rs](dispatch_retry.rs): saves an order, fails after publishing
+  the first event, then retries the restored batch. Expected deliveries:
+  `[1, 1, 2]`. Saving does not drain pending events; publication failure does not
+  roll back the save.
 - [event_sourcing.rs](event_sourcing.rs): loads a legacy v1 event through an
   upcaster, replays it, saves a snapshot, then appends using `ExpectedRevision`.
   A stale append is rejected without mutation. Snapshot plus tail and full replay
@@ -131,7 +139,7 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
   prevents overwriting a concurrent change.
 - **Replay / snapshot / upcaster**: rebuilding state by applying past events / a
   cached intermediate state / a conversion from an old event format to the current
-  format. The Counter deliberately illustrates only these mechanics.
+  format. The example uses a Counter's history of increments.
 - **Outbox**: pending notifications stored in the same transaction as state.
 - **Projection**: read-side state built from events; here, a balance from credits.
 - **Checkpoint**: a reader's processing position. A position alone cannot prevent
@@ -139,9 +147,10 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
 - **At-least-once**: delivery may repeat a notification. Idempotent application
   prevents repeated credits from increasing the balance more than once.
 
-Event notification is not event sourcing. Publishing a notification does not
-require rebuilding state from history or adopting an outbox. Choose these only
-when needed.
+Event notification communicates business facts to other processing; event sourcing
+rebuilds state from their history. An outbox handles failures between saving state
+and sending notifications. Choose each mechanism according to the application's
+needs.
 
 ## Adapter boundaries
 

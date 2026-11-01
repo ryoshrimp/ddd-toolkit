@@ -69,15 +69,15 @@ the current signatures, even on a single-threaded executor. See the
 ## Runnable examples
 
 **New to DDD? Start with the [order tutorial](examples/README.md#start-here)**:
-learn business rules, aggregates, persistence and notification before exploring
-failure recovery. The guide maps terminology to code and explains reading order.
+express an order's business rules in code, then save the aggregate and send a
+notification. The guide maps terminology to code and explains reading order.
 From a checkout, run five assertion-checked examples using only `ddd_toolkit::` APIs:
 
 | Example | Demonstrates | Command |
 | --- | --- | --- |
 | [Getting started](examples/getting_started.rs) | Draft → add items → confirm → save → notify | `cargo run -p ddd-toolkit --example getting_started --features derive --locked` |
-| [Delivery retries (advanced)](examples/dispatch_retry.rs) | Aggregate, repository, dispatch failure and duplicate retry | `cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked` |
 | [CQRS](examples/cqrs.rs) | Command/query handlers, Specification and Policy | `cargo run -p ddd-toolkit --example cqrs --features derive --locked` |
+| [Delivery retries (advanced)](examples/dispatch_retry.rs) | Aggregate, repository, dispatch failure and duplicate retry | `cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked` |
 | [Event sourcing](examples/event_sourcing.rs) | ExpectedRevision, upcasting, replay and snapshots | `cargo run -p ddd-toolkit --example event_sourcing --features derive --locked` |
 | [Reliable delivery](examples/reliable_delivery.rs) | Async outbox, idempotent projection and checkpoints | `cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked` |
 
@@ -88,7 +88,7 @@ production adapters. The async demo polls only immediately-ready futures, not I/
 
 ## Example
 
-With both dependencies shown above:
+After adding the dependency with `derive` enabled as shown above:
 
 ```rust
 #[derive(ddd_toolkit::ValueObject)]

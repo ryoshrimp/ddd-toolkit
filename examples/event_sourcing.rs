@@ -8,8 +8,8 @@
 //! リビジョンは0始まり。期待した位置と異なる書き込みは競合として拒否する。
 //! A snapshot is a cache; an upcaster converts legacy event data on load.
 //! スナップショットは途中状態のキャッシュ、upcasterは旧イベント形式の変換。
-//! Neither event sourcing nor snapshots are required just to publish domain events.
-//! 通知を使うだけならイベントソーシングもスナップショットも必須ではない。
+//! The event store retains the full history alongside the snapshot.
+//! スナップショット保存後も、イベントストアは全履歴を保持する。
 use ddd_toolkit::{
     AggregateReplay, AggregateRoot as _, AggregateSnapshot, AppendError, AppendResult,
     CurrentRevision, EventStore, EventUpcaster, ExpectedRevision, LoadResult, NoStream,

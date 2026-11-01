@@ -1,9 +1,9 @@
 //! Retry event dispatch after a partial failure; observe duplicate delivery.
-//! 発展編（最初は getting_started.rs）: 保存後の配信が部分失敗するとどうなるか。
+//! 保存後に配信が部分失敗したときの再試行と、重複配信を確認する。
 //!
 //! Run: cargo run -p ddd-toolkit --example dispatch_retry --locked
 //! Read main first, then support/mod.rs for the in-memory adapters.
-//! main → support/mod.rs の順に読む。これは業務モデルより配信契約に絞った例。
+//! main → support/mod.rs の順に読み、保存・配信・再試行の流れを追う。
 //! Expected: the restored batch retries event 1, producing deliveries [1, 1, 2].
 //! 結果: 先頭の配信成功は取り消せないため、バッチ再試行で [1, 1, 2] となる。
 mod support;

@@ -1,13 +1,13 @@
-//! After getting_started.rs: separate an update command from a read query (CQRS).
-//! 入門の次: 注文金額を増やす命令と、金額を読む質問の責務を分ける。
+//! CQRS: separate a command that adjusts an order total from a query that reads it.
+//! CQRS: 注文金額を増やす命令と、金額を読む質問の責務を分ける。
 //!
 //! Run: cargo run -p ddd-toolkit --example cqrs --locked
 //! Read main → AddToOrder::handle → SaveThenDispatch → Total, then support/mod.rs.
 //! main → 命令の処理 → 保存/配信の順序 → クエリ → 共通アダプターの順に読む。
 //! Expected: reject zero / totals above 5000, then query a total of 4200.
-//! 0の加算と上限超過を拒否し、200を加算して4200を参照する。別DBは不要。
-//! This deliberately smaller model is independent of the confirmation tutorial.
-//! 入門の確定モデルとは独立したAPI教材。エラー変換の詳細は後から読んでよい。
+//! 0の加算と上限超過を拒否し、200を加算して4200を参照する。
+//! Commands and queries share a repository; support/mod.rs defines the Order model.
+//! 命令とクエリはRepositoryを共有する。Orderの定義はsupport/mod.rsを参照。
 mod support;
 
 use ddd_toolkit::{
