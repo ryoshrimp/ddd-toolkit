@@ -5,6 +5,20 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.4.5] - 2026-11-02
+
+### Changed
+
+- Clarify synchronous/asynchronous dispatch restoration on publisher panic and
+  async future cancellation in English and Japanese rustdoc, including unpolled
+  futures, irreversible publication side effects, duplicate retries, and limits
+  for `panic=abort` or panics during restoration. Runtime behavior and public APIs
+  are unchanged (#29).
+- Separate functional tests from ignored trybuild UI suites; the dedicated UI
+  script and CI/Release gates retain all diagnostic checks (#32).
+
 ## [0.4.4] - 2026-11-01
 
 ### Changed
