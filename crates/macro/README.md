@@ -157,7 +157,19 @@ The attribute can be combined with `validate` and `error` in the same
 
 Single-field structs serialize as their inner value, multi-field named structs
 as structs, multi-field tuple structs as tuples, and enums as externally tagged
-variants. Tuple variants retain tuple serialization even with one field.
+variants. Single-field tuple variants use Serde's newtype format (`Code(7)` →
+`{"Code":7}`); other tuple variants retain tuple serialization. Container fields
+keep their own shape (`Codes(vec![7, 8])` → `{"Codes":[7,8]}`).
+
+**Breaking in macro 0.5.0 / facade 0.4.0:** older serializers added an extra tuple
+wrapper, e.g. `{"Code":[7]}` or `{"Codes":[[7,8]]}`. Remove exactly that outer
+array for affected variants in saved records before upgrading readers. Identify
+old records using schema/version metadata rather than unwrapping every array.
+No automatic legacy fallback is provided: container-valued fields can make the
+formats ambiguous. Coordinate reader/writer upgrades or pin macro 0.4 / facade
+0.3 until migration is ready. Other Serde formats also change from tuple to
+newtype variants and need format-specific migration.
+
 Deserialization runs the configured validator; validation errors become
 `value object validation failed` rather than preserving the original error text.
 

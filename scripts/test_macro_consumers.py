@@ -18,7 +18,7 @@ struct Id(u64);
 
 #[derive(macros::ValueObject)]
 #[value_object(serde)]
-enum State { Ready { count: u64 } }
+enum State { Ready { count: u64 }, Code(u64), Codes(Vec<u64>) }
 
 #[derive(Debug, Clone, PartialEq, macros::DomainEvent)]
 enum Event { Created }
@@ -45,9 +45,15 @@ fn derives_and_serde_work() {
     let json = serde_json::to_string(&id).unwrap();
     assert_eq!(json, "7");
     assert_eq!(serde_json::from_str::<Id>(&json).unwrap(), id);
-    let state = State::new_ready(7);
-    let json = serde_json::to_string(&state).unwrap();
-    assert_eq!(serde_json::from_str::<State>(&json).unwrap(), state);
+    for (state, expected) in [
+        (State::new_ready(7), r#"{"Ready":{"count":7}}"#),
+        (State::new_code(7), r#"{"Code":7}"#),
+        (State::new_codes(vec![7]), r#"{"Codes":[7]}"#),
+    ] {
+        let json = serde_json::to_string(&state).unwrap();
+        assert_eq!(json, expected);
+        assert_eq!(serde_json::from_str::<State>(&json).unwrap(), state);
+    }
     let mut order = Order { id: 7, events: vec![] };
     order.record_event(Event::Created);
     assert_eq!(order.pull_events(), vec![Event::Created]);

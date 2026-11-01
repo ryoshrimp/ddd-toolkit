@@ -26,14 +26,14 @@ For traits and helpers without derive macros:
 
 ```toml
 [dependencies]
-ddd-toolkit = { version = "0.3", default-features = false }
+ddd-toolkit = { version = "0.4", default-features = false }
 ```
 
 For derive macros (enabled by default):
 
 ```toml
 [dependencies]
-ddd-toolkit = "0.3"
+ddd-toolkit = "0.4"
 ```
 
 Derives work with the facade as the only toolkit dependency. Generated paths
@@ -152,10 +152,24 @@ When combining serde and validation in one attribute, place the `serde` flag
 last (`#[value_object(validate = check, error = Error, serde)]`): macro 0.4.1
 rejects a flag followed by other options.
 
-**Macro 0.4.1 limitation:** a single-field tuple enum variant such as
-`Code(u32)` serializes to `{"Code":[7]}`, but its generated deserializer expects
-`{"Code":7}`. It cannot round-trip its own JSON. Use a named variant such as
-`Code { value: u32 }` when JSON round-tripping is required.
+Single-field tuple enum variants use Serde's newtype format: `Code(u32)` emits
+`{"Code":7}` and round-trips. A container field retains its own shape, so
+`Codes(Vec<u32>)` emits `{"Codes":[7,8]}`. Unit, named, and multi-field tuple
+variants retain their existing formats.
+
+### Migrating serialized enums from macro 0.4
+
+Facade 0.4.0 / macro 0.5.0 intentionally change the output format, not in a patch
+release. Older serializers emitted an extra tuple wrapper (`{"Code":[7]}`),
+although their deserializers already expected the newtype format. Before loading
+saved data, remove exactly one outer array layer for each affected single-field
+tuple variant: `{"Code":[7]}` → `{"Code":7}`, or `{"Codes":[[7,8]]}` →
+`{"Codes":[7,8]}`. Use your schema/version metadata to identify old records; do
+not unwrap all arrays. There is no automatic legacy-format fallback because
+container-valued fields can make the two representations ambiguous. Coordinate
+producer/consumer upgrades or pin facade 0.3 / macro 0.4 until migration is ready.
+The same newtype-vs-tuple change applies to other Serde formats; migrate them
+using their format-specific APIs.
 
 Clippy 1.99 also reports `clippy::redundant_field_names` in macro 0.4.1's
 named value-object constructors. With `-D warnings`, consuming modules may need

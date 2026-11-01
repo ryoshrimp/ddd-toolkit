@@ -44,6 +44,7 @@ fn value_object_expands_all_shapes_with_validation_and_serde() {
         quote!(
             enum Value<T> {
                 Unit,
+                Newtype(T),
                 Tuple(T, u32),
                 Named { value: T },
             }
