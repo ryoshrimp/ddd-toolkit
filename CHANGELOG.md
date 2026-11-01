@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with validation options. Single-field tuple enum variants also have
   mismatched JSON serialization/deserialization shapes; prefer named variants
   for round trips. These constraints are documented and covered by tests.
+- Clippy 1.99 flags redundant field names emitted by macro 0.4.0 for named
+  value-object constructors. The affected integration test crates allow only
+  `clippy::redundant_field_names` until the upstream generator is fixed;
+  CI continues to deny other warnings.
 
 ### Removed
 

@@ -1,3 +1,8 @@
+// Macro 0.4.0 emits `field: field` in named ValueObject constructors.
+// Clippy 1.99 checks those external macro spans; keep coverage until upstream
+// generates shorthand fields. This allowance is limited to this test crate.
+#![allow(clippy::redundant_field_names)]
+
 // Derives are invoked through the facade; core is a direct dependency because
 // macro 0.4 resolves its generated paths from the consumer's Cargo.toml.
 use ddd_toolkit::AggregateRoot as _;

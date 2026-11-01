@@ -153,6 +153,10 @@ rejects a flag followed by other options.
 `Code(u32)` serializes to `{"Code":[7]}`, but its generated deserializer expects
 `{"Code":7}`. It cannot round-trip its own JSON. Use a named variant such as
 `Code { value: u32 }` when JSON round-tripping is required.
+
+Clippy 1.99 also reports `clippy::redundant_field_names` in macro 0.4.0's
+named value-object constructors. With `-D warnings`, consuming modules may need
+an allowance for that specific lint until the upstream generator is fixed.
 `Secret<T>` is available without a feature flag and is not automatically serialized.
 Calling `Secret::into_inner` transfers zeroization responsibility to the caller.
 
