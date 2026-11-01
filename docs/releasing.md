@@ -16,7 +16,10 @@ publishes them in order: `ddd-toolkit-core`, `ddd-toolkit-macro`, `ddd-toolkit`.
 3. Update the relevant changelogs (`CHANGELOG.md`, `crates/core/CHANGELOG.md`,
    `crates/macro/CHANGELOG.md`) and run `cargo check --workspace` to refresh the
    shared `Cargo.lock`. Commit it with the manifests.
-4. Run the checks in `CONTRIBUTING.md`, then merge the PR.
+4. Run the checks in `CONTRIBUTING.md`, then merge the PR. Run both functional
+   workspace tests/feature matrix and `./scripts/check-ui-tests.sh` (latest stable
+   with matching `rust-src`); functional tests alone intentionally skip trybuild.
+   Release verification requires both paths before publishing.
 
 ### Generated-code compatibility gate
 
