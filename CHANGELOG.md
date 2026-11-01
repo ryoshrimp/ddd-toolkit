@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- CI rustdoc check that denies documentation warnings across the workspace with
+  all features enabled, without generating dependency documentation, plus local
+  reproduction instructions in `CONTRIBUTING.md` (#30).
 - Opt-in `#[value_object(trait_only)]` and `#[entity(trait_only)]` derive modes
   generate only the domain trait implementation, preserving handwritten
   constructors, accessors, and standard trait implementations. Default derive
