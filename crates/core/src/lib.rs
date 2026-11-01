@@ -118,6 +118,7 @@ mod domain_service;
 mod entity;
 mod event_consumption;
 mod event_delivery_metadata;
+mod event_restoration_guard;
 mod event_store;
 mod event_versioning;
 mod outbox_lifecycle;

@@ -70,8 +70,7 @@ impl<T: Zeroize> Secret<T> {
     ///
     /// 呼び出し側は値を読み取ったりコピーしたりできますが、そのコピーはこのラッパーではゼロ化しません。
     pub fn as_inner(&self) -> &T {
-        // ManuallyDrop<T> is repr(transparent) over T.
-        unsafe { &*(&self.value as *const ManuallyDrop<T> as *const T) }
+        &self.value
     }
 
     /// **English:**<br>
@@ -98,7 +97,8 @@ impl<T: Zeroize> Secret<T> {
     /// ```
     pub fn into_inner(self) -> T {
         let mut this = ManuallyDrop::new(self);
-        // Prevent Secret::drop from running after taking the value.
+        // SAFETY: The value is still initialized and taken exactly once. The outer
+        // ManuallyDrop prevents Secret::drop from accessing or dropping it afterward.
         unsafe { ManuallyDrop::take(&mut this.value) }
     }
 
@@ -120,10 +120,10 @@ impl<T: Zeroize> Secret<T> {
 
 impl<T: Zeroize> Drop for Secret<T> {
     fn drop(&mut self) {
-        unsafe {
-            (&mut *(&mut self.value as *mut ManuallyDrop<T> as *mut T)).zeroize();
-            ManuallyDrop::drop(&mut self.value);
-        }
+        self.value.zeroize();
+        // SAFETY: The value is initialized and has not been taken. Drop runs once,
+        // and ManuallyDrop prevents an automatic second drop of the inner value.
+        unsafe { ManuallyDrop::drop(&mut self.value) };
     }
 }
 

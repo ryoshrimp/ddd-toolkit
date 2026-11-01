@@ -5,6 +5,21 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-11-01
+
+### Changed
+
+- Document boxed `Send` future allocation/dynamic-dispatch trade-offs, the intent
+  of type erasure and explicit bounds, and the exclusion of `!Send` futures even
+  on single-threaded executors, in English and Japanese (#15).
+- Replace `Secret` reference/zeroization pointer casts with safe `ManuallyDrop`
+  dereferencing; retain and explain the necessary unsafe take/drop operations.
+  Regression tests verify zeroize-before-drop exactly once and `into_inner`
+  without wrapper zeroization or double drop (#16).
+- Share the synchronous/asynchronous event restoration guard as a private module
+  without changing APIs, FIFO order, successful consumption, or restoration on
+  error, panic, and async cancellation. Add async publisher-future panic coverage (#17).
+
 ## [0.4.3] - 2026-11-01
 
 ### Fixed

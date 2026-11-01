@@ -4,10 +4,10 @@
 
 - Macro **0.5.x** supports core **>=0.4.1, <0.5.0** for direct external consumers.
   The tested lower bound is the exact crates.io release **0.4.1**; the other
-  endpoint is the current workspace core (0.4.3). Intermediate patch releases
+  endpoint is the current workspace core (0.4.4). Intermediate patch releases
   must preserve the same contracts. This is not a Rust MSRV guarantee: tests
   run on latest stable with matching rust-src.
-- The current facade **0.4.1** selects core **^0.4.3** and macro **^0.5.1**.
+- The current facade **0.4.2** selects core **^0.4.4** and macro **^0.5.1**.
   Prefer this facade combination unless you need separate dependencies.
   The facade re-exports/derives are additionally tested against core 0.4.1
   using its actual sources and a staged manifest with only core selection
@@ -26,7 +26,7 @@
 
 Core 0.4.0 and earlier, core 0.5 and later, and unrelated macro minor lines are
 outside this contract, even if some programs happen to compile. Upgrade to the
-current facade, or select core 0.4.3 and macro 0.5.1 explicitly. Macro 0.4.x has
+current facade, or select core 0.4.4 and macro 0.5.1 explicitly. Macro 0.4.x has
 the older single-field enum serialization format; migrating to 0.5.x requires
 reviewing persisted data as described in the macro changelog. A later minor
 line must declare its own tested core interval.
@@ -51,8 +51,8 @@ match; their supported combinations must. See [the release checklist](releasing.
 ## 日本語
 
 macro 0.5.x の直接利用は core >=0.4.1, <0.5.0 をサポートします。最低版は
-crates.io の正確な 0.4.1、現行版は workspace の 0.4.3 で検証します。
-facade 0.4.1 の公開依存は core ^0.4.3 / macro ^0.5.1 です。最低版テストでは
+crates.io の正確な 0.4.1、現行版は workspace の 0.4.4 で検証します。
+facade 0.4.2 の公開依存は core ^0.4.4 / macro ^0.5.1 です。最低版テストでは
 実際の facade ソースと依存選択のみ変更した manifest を使い、公開依存条件と区別します。
 直接利用・facade・依存名変更・serde 有無を独立 workspace で検証し、feature 統合での
 見かけ上の成功を防ぎます。両方への依存がある場合は直接の core が優先されます。
@@ -60,6 +60,6 @@ facade 0.4.1 の公開依存は core ^0.4.3 / macro ^0.5.1 です。最低版テ
 `__private::serde`（serde 有効時）と生成コードが使うトレイトの契約は、内部名でも
 patch で非互換に変更しません。0.x の非互換変更は該当クレートの minor を更新し、
 必要な macro/facade の依存条件・バージョン・検証範囲も更新します。番号の統一は不要です。
-範囲外の組み合わせは未サポートです。現行 facade、または core 0.4.3 / macro 0.5.1 に
+範囲外の組み合わせは未サポートです。現行 facade、または core 0.4.4 / macro 0.5.1 に
 移行してください。macro 0.4.x から 0.5.x では単一フィールド enum の保存形式に注意し、
 CHANGELOG の移行手順に従ってください。
