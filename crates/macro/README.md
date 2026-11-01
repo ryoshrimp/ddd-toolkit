@@ -127,6 +127,12 @@ Validated struct fields cannot be unrestricted `pub`. This does not prevent all
 bypasses: direct construction within the defining module, restricted field
 visibility, and direct enum variant construction can bypass validation.
 
+### Core compatibility
+
+Macro 0.5.x supports core >=0.4.1, <0.5.0. Prefer the current facade for a
+coordinated combination. See the [compatibility contract](../../docs/macro-compatibility.md)
+for tested versions, dependency renames and generated-code API stability.
+
 ### Serialization
 
 Enable serde support on the **core** dependency:

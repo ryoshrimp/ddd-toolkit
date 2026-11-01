@@ -1,6 +1,8 @@
 """Exercise derive resolution in separate Cargo workspaces (no feature unification)."""
 
 import os
+import re
+import shutil
 from pathlib import Path
 import subprocess
 import tempfile
@@ -61,13 +63,45 @@ fn derives_and_serde_work() {
 '''
 
 
+PLAIN_SOURCE = '''
+#![allow(dead_code)]
+#[derive(macros::ValueObject)]
+struct Id { value: u64 }
+#[derive(macros::ValueObject)]
+enum State { Ready { count: u64 }, Code(u64) }
+#[derive(Debug, Clone, PartialEq, macros::DomainEvent)]
+struct Event;
+#[derive(Debug, macros::Entity, macros::AggregateRoot)]
+struct Order {
+    #[entity(id)]
+    id: u64,
+    #[aggregate(events)]
+    events: Vec<Event>,
+}
+#[test]
+fn contracts_work_without_serde() {
+    fn value_object<T: api::ValueObject>() {}
+    fn aggregate<T: api::AggregateRoot>() {}
+    value_object::<Id>();
+    value_object::<State>();
+    aggregate::<Order>();
+    let mut order = Order { id: 1, events: vec![] };
+    api::AggregateRoot::record_event(&mut order, Event);
+    assert_eq!(api::AggregateRoot::pull_events(&mut order), vec![Event]);
+    assert_eq!(Id::new(7).into_inner(), 7);
+    assert_eq!(State::new_ready(7), State::Ready { count: 7 });
+}
+'''
+MINIMUM_CORE = "0.4.1"
+
+
 def dependency(alias, package, path, features=()):
     return (f'{alias} = {{ package = "{package}", path = "{path.as_posix()}", '
             f'features = {list(features)!r} }}\n'.replace("'", '"'))
 
 
 class MacroConsumerTests(unittest.TestCase):
-    def check_consumer(self, dependencies, source, package="consumer", error=None, integration=None):
+    def check_consumer(self, dependencies, source, package="consumer", error=None, integration=None, offline=True):
         with tempfile.TemporaryDirectory(prefix="ddd-consumer-") as tmp:
             root = Path(tmp)
             (root / "src").mkdir()
@@ -82,8 +116,11 @@ class MacroConsumerTests(unittest.TestCase):
                 (root / "tests/consumer.rs").write_text(integration, encoding="utf-8")
             env = os.environ.copy()
             env["CARGO_TARGET_DIR"] = str(ROOT / "target/macro-consumers")
+            command = ["cargo", "test", "--manifest-path", str(root / "Cargo.toml")]
+            if offline:
+                command.append("--offline")
             result = subprocess.run(
-                ["cargo", "test", "--offline", "--manifest-path", str(root / "Cargo.toml")],
+                command,
                 env=env, capture_output=True, text=True, timeout=180,
             )
             if error:
@@ -110,6 +147,65 @@ class MacroConsumerTests(unittest.TestCase):
                     macros = "macros"
                 deps += 'serde_json = "1"\n'
                 self.check_consumer(deps, SOURCE.replace("api::", f"{alias}::").replace("macros::", f"{macros}::"))
+
+    def test_minimum_core_compatibility(self):
+        # Test the released lower bound, never a copy of the current core.
+        # Stage the actual facade source/manifest, changing only core selection
+        # and paths so facade re-exports also exercise that lower bound.
+        with tempfile.TemporaryDirectory(prefix="ddd-minimum-facade-") as tmp:
+            facade = Path(tmp)
+            shutil.copytree(ROOT / "src", facade / "src")
+            manifest = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
+            manifest = manifest.replace(
+                'members = ["crates/core", "crates/macro", "facade-tests"]', 'members = []',
+            )
+            manifest = re.sub(
+                r'ddd-toolkit-core = \{ version = "[^"]+", path = "crates/core" \}',
+                f'ddd-toolkit-core = {{ version = "={MINIMUM_CORE}" }}', manifest,
+            )
+            manifest = manifest.replace('path = "crates/macro"',
+                                        f'path = "{(ROOT / "crates/macro").as_posix()}"')
+            self.assertIn(f'version = "={MINIMUM_CORE}"', manifest)
+            (facade / "Cargo.toml").write_text(manifest, encoding="utf-8")
+            for kind, alias in [
+                ("core", "ddd_toolkit_core"), ("core", "renamed_core"),
+                ("facade", "ddd_toolkit"), ("facade", "renamed_facade"),
+            ]:
+                for serde_enabled in (False, True):
+                    with self.subTest(kind=kind, alias=alias, serde=serde_enabled):
+                        features = ["serde"] if serde_enabled else []
+                        if kind == "core":
+                            deps = (f'{alias} = {{ package = "ddd-toolkit-core", '
+                                    f'version = "={MINIMUM_CORE}", features = {features!r} }}\n').replace("'", '"')
+                            deps += dependency("macros", "ddd-toolkit-macro", ROOT / "crates/macro")
+                            macros = "macros"
+                            if serde_enabled:
+                                deps += 'serde = { version = "1", features = ["derive"] }\n'
+                        else:
+                            deps = dependency(alias, "ddd-toolkit", facade, features)
+                            macros = alias
+                        if serde_enabled:
+                            deps += 'serde_json = "1"\n'
+                        source = SOURCE if serde_enabled else PLAIN_SOURCE
+                        self.check_consumer(
+                            deps, source.replace("api::", f"{alias}::").replace("macros::", f"{macros}::"),
+                            offline=False,
+                        )
+
+    def test_current_core_without_serde(self):
+        for kind, alias in [
+            ("core", "ddd_toolkit_core"), ("core", "renamed_core"),
+            ("facade", "ddd_toolkit"), ("facade", "renamed_facade"),
+        ]:
+            with self.subTest(kind=kind, alias=alias):
+                if kind == "core":
+                    deps = dependency(alias, "ddd-toolkit-core", ROOT / "crates/core")
+                    deps += dependency("macros", "ddd-toolkit-macro", ROOT / "crates/macro")
+                    macros = "macros"
+                else:
+                    deps = dependency(alias, "ddd-toolkit", ROOT)
+                    macros = alias
+                self.check_consumer(deps, PLAIN_SOURCE.replace("api::", f"{alias}::").replace("macros::", f"{macros}::"))
 
     def test_serde_feature_boundary(self):
         # Each case is a separate workspace: macro dev-dependencies cannot

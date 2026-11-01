@@ -95,6 +95,13 @@ Each published crate has `README.md` (English) and `README.ja.md` (Japanese),
 with links between them. Keep API descriptions, feature requirements, limitations,
 and code examples in sync when updating either version.
 
+## Core/macro compatibility
+
+See [the compatibility contract](docs/macro-compatibility.md) for supported
+versions, generated-code API stability and isolated minimum/current-core tests.
+Changing a hidden helper used by generated code requires the same compatibility
+review as changing a public trait.
+
 ## Releasing
 
 See [docs/releasing.md](docs/releasing.md) for the single-operation release
