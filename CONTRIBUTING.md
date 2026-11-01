@@ -10,10 +10,12 @@ This monorepo contains three published crates in one Cargo workspace:
 
 Changes to all three crates belong here and can be delivered in one PR.
 Workspace dependencies use local paths during development and registry versions
-when published. `facade-tests` is a non-published consumer integration suite. The consumer test package deliberately depends on
-core 0.4 directly: the upstream macros no longer resolve a facade-only
-dependency. Test-local adapters live in `facade-tests/tests/support`; they are
-not part of the facade's public API.
+when published. `facade-tests` is a non-published integration suite depending
+only on the facade. `scripts/test_macro_consumers.py` creates isolated Cargo
+workspaces for facade/core dependencies, renames, self-references, priority, and
+missing-dependency diagnostics so feature unification cannot mask regressions.
+It runs with the Python tests in CI. Test-local adapters live in
+`facade-tests/tests/support`; they are not part of the facade's public API.
 
 ## Reporting bugs / requesting features
 
@@ -36,6 +38,7 @@ Before opening a PR, run the same checks CI runs (see
 ```sh
 cargo test --workspace --all-features
 ./scripts/check-feature-matrix.sh
+python3 -m unittest discover -s scripts -p 'test_*.py'
 
 cargo fmt --all --check
 cargo clippy --workspace --all-features --all-targets -- -D warnings

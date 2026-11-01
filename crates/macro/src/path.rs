@@ -3,38 +3,34 @@ use quote::quote;
 use syn::Result;
 
 /// **English:**<br>
-/// Resolves the calling crate's `ddd-toolkit-core` dependency,
-/// preserving a dependency rename; returns a call-site error when it is absent.
+/// Resolves a direct `ddd-toolkit-core` dependency first, then `ddd-toolkit`,
+/// preserving dependency renames; reports an error if neither is available.
 ///
 /// **日本語:**<br>
-/// 呼び出し元の `ddd-toolkit-core` 依存を別名も維持して解決し、
-/// 依存がない場合は呼び出し位置を示すエラーを返します。
+/// 直接依存の `ddd-toolkit-core`、次に `ddd-toolkit` を別名も維持して解決し、
+/// どちらも存在しない場合はエラーを返します。
 pub fn core_path() -> Result<TokenStream> {
-    let package = "ddd-toolkit-core";
-    if let Ok(found) = proc_macro_crate::crate_name(package)
-        && let Some(path) = path_for_found_crate(package, found)
-    {
-        return Ok(path);
+    for package in ["ddd-toolkit-core", "ddd-toolkit"] {
+        if let Ok(found) = proc_macro_crate::crate_name(package) {
+            return Ok(path_for_found_crate(package, found));
+        }
     }
 
     Err(syn::Error::new(
         Span::call_site(),
-        "DDD derives require a ddd or ddd-core dependency",
+        "DDD derives require a ddd-toolkit-core or ddd-toolkit dependency; add one to [dependencies] in Cargo.toml",
     ))
 }
 
-fn path_for_found_crate(package: &str, found: proc_macro_crate::FoundCrate) -> Option<TokenStream> {
-    match found {
-        proc_macro_crate::FoundCrate::Itself if package == "ddd" => None,
-        proc_macro_crate::FoundCrate::Itself => {
-            let ident = Ident::new(&package.replace('-', "_"), Span::call_site());
-            Some(quote!(::#ident))
-        }
-        proc_macro_crate::FoundCrate::Name(name) => {
-            let ident = Ident::new(&name, Span::call_site());
-            Some(quote!(::#ident))
-        }
-    }
+fn path_for_found_crate(package: &str, found: proc_macro_crate::FoundCrate) -> TokenStream {
+    let name = match found {
+        // Use the library name, not `crate`: derives can also run in this
+        // package's integration tests and doctests. Libraries alias themselves.
+        proc_macro_crate::FoundCrate::Itself => package.replace('-', "_"),
+        proc_macro_crate::FoundCrate::Name(name) => name,
+    };
+    let ident = Ident::new(&name, Span::call_site());
+    quote!(::#ident)
 }
 
 #[cfg(test)]
@@ -43,23 +39,25 @@ mod tests {
     use proc_macro_crate::FoundCrate;
 
     #[test]
-    fn skips_facade_itself_and_falls_back_to_core() {
-        assert!(path_for_found_crate("ddd", FoundCrate::Itself).is_none());
-        assert_eq!(
-            path_for_found_crate("ddd-core", FoundCrate::Itself)
-                .unwrap()
-                .to_string(),
-            ":: ddd_core"
-        );
+    fn uses_library_names_for_self_references() {
+        for (package, expected) in [
+            ("ddd-toolkit-core", ":: ddd_toolkit_core"),
+            ("ddd-toolkit", ":: ddd_toolkit"),
+        ] {
+            assert_eq!(
+                path_for_found_crate(package, FoundCrate::Itself).to_string(),
+                expected,
+            );
+        }
     }
 
     #[test]
-    fn preserves_renamed_facade_dependency() {
-        assert_eq!(
-            path_for_found_crate("ddd", FoundCrate::Name("facade".into()))
-                .unwrap()
-                .to_string(),
-            ":: facade"
-        );
+    fn preserves_renamed_dependencies() {
+        for package in ["ddd-toolkit-core", "ddd-toolkit"] {
+            assert_eq!(
+                path_for_found_crate(package, FoundCrate::Name("renamed".into())).to_string(),
+                ":: renamed",
+            );
+        }
     }
 }

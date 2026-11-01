@@ -72,8 +72,9 @@ mod value_object;
 /// `#[value_object(serde)]` additionally generates serialization through the core
 /// crate's serde re-export; enable the core crate's `serde` feature. Single-field
 /// structs serialize as their inner value, named structs as structs, tuple structs
-/// as tuples, and enums as externally tagged variants (tuple variants remain tuple
-/// variants even with one field). Deserialization runs validation when configured,
+/// as tuples, and enums as externally tagged variants. Single-field tuple variants
+/// use Serde's newtype format; other tuple variants use tuple format.
+/// Deserialization runs validation when configured,
 /// mapping its errors to `value object validation failed`. Serialization generation
 /// is selected by this attribute, not by a feature on the macro crate.
 /// Invalid shapes, duplicate or unknown options, and missing core dependencies
@@ -105,7 +106,8 @@ mod value_object;
 /// `#[value_object(serde)]` はコアの serde 再公開を使う直列化実装も生成します。
 /// コアの `serde` feature を有効にしてください。単一フィールドは内包値、名前付き
 /// 構造体は構造体、タプル構造体はタプル、列挙型は外部タグ形式で直列化します。
-/// タプルバリアントは単一フィールドでもタプル形式です。逆直列化時も設定された検証を
+/// 単一フィールドのタプルバリアントは Serde の newtype 形式、その他はタプル形式です。
+/// 逆直列化時も設定された検証を
 /// 実行し、検証エラーを `value object validation failed` に変換します。
 /// 直列化の生成はマクロクレートの feature ではなく、この属性で選択します。
 /// 非対応の形状、重複・未知のオプション、コア依存の欠落はコンパイルエラーになります。

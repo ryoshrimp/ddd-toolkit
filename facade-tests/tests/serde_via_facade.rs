@@ -44,6 +44,10 @@ enum Status {
     Pending,
     Ready { count: u32 },
     Code(u32),
+    Codes(Vec<u32>),
+    Pair(u32, bool),
+    EmptyTuple(),
+    EmptyNamed {},
 }
 
 #[test]
@@ -61,20 +65,58 @@ fn named_value_object_and_externally_tagged_enum_round_trip() {
     assert_eq!(serde_json::from_str::<Status>(&json).unwrap(), ready);
 }
 
-// Upstream 0.4.0 serializes a single tuple field as a sequence, but its
-// generated serde deserializer expects a newtype variant instead.
 #[test]
-fn upstream_single_field_enum_json_limitation_is_visible() {
-    let json = serde_json::to_string(&Status::new_code(7)).unwrap();
-    assert_eq!(json, "{\"Code\":[7]}");
-    let error = serde_json::from_str::<Status>(&json).unwrap_err();
-    assert!(
-        error
-            .to_string()
-            .contains("invalid type: sequence, expected u32")
+fn enum_json_shapes_follow_serde_and_round_trip() {
+    for (value, expected) in [
+        (Status::new_pending(), r#""Pending""#),
+        (Status::new_ready(3), r#"{"Ready":{"count":3}}"#),
+        (Status::new_code(7), r#"{"Code":7}"#),
+        (Status::new_codes(vec![7, 8]), r#"{"Codes":[7,8]}"#),
+        (Status::new_codes(vec![]), r#"{"Codes":[]}"#),
+        (Status::new_pair(7, true), r#"{"Pair":[7,true]}"#),
+        (Status::new_emptytuple(), r#"{"EmptyTuple":[]}"#),
+        (Status::new_emptynamed(), r#"{"EmptyNamed":{}}"#),
+    ] {
+        let json = serde_json::to_string(&value).unwrap();
+        assert_eq!(json, expected);
+        assert_eq!(serde_json::from_str::<Status>(&json).unwrap(), value);
+    }
+}
+
+#[test]
+fn legacy_tuple_wrapper_is_not_accepted_as_a_newtype_value() {
+    // Migration must remove exactly the old outer tuple layer. Automatically
+    // unwrapping sequences would misinterpret valid container-valued newtypes.
+    assert!(serde_json::from_str::<Status>(r#"{"Code":[7]}"#).is_err());
+    assert!(serde_json::from_str::<Status>(r#"{"Codes":[[7,8]]}"#).is_err());
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_code, error = &'static str, serde)]
+enum ValidatedStatus {
+    Code(u32),
+}
+
+fn validate_code(value: &ValidatedStatus) -> Result<(), &'static str> {
+    match value {
+        ValidatedStatus::Code(0) => Err("code must be positive"),
+        _ => Ok(()),
+    }
+}
+
+#[test]
+fn newtype_enum_deserialization_still_validates() {
+    let value = ValidatedStatus::try_new_code(7).unwrap();
+    let json = serde_json::to_string(&value).unwrap();
+    assert_eq!(json, r#"{"Code":7}"#);
+    assert_eq!(
+        serde_json::from_str::<ValidatedStatus>(&json).unwrap(),
+        value
     );
     assert_eq!(
-        serde_json::from_str::<Status>("{\"Code\":7}").unwrap(),
-        Status::new_code(7)
+        ValidatedStatus::try_new_code(0),
+        Err("code must be positive")
     );
+    let error = serde_json::from_str::<ValidatedStatus>(r#"{"Code":0}"#).unwrap_err();
+    assert!(error.to_string().contains("value object validation failed"));
 }

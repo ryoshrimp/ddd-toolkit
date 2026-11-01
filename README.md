@@ -26,22 +26,19 @@ For traits and helpers without derive macros:
 
 ```toml
 [dependencies]
-ddd-toolkit = { version = "0.3", default-features = false }
+ddd-toolkit = { version = "0.4", default-features = false }
 ```
 
 For derive macros (enabled by default):
 
 ```toml
 [dependencies]
-ddd-toolkit = "0.3"
-ddd-toolkit-core = "0.4.1"
+ddd-toolkit = "0.4"
 ```
 
-**Important:** macro 0.4 requires a direct `ddd-toolkit-core` dependency
-in the consuming crate, including when derives are invoked through this
-facade. A renamed core dependency is supported. The previous facade-only
-installation no longer suffices for derives; re-exporting macros does not
-change their dependency resolution.
+Derives work with the facade as the only toolkit dependency. Generated paths
+prefer a direct `ddd-toolkit-core` dependency when present, otherwise they use
+the facade's re-exports. Both core and facade dependencies may be renamed.
 
 Facade 0.3.0 adopts core/macro 0.4.0 and contains breaking API changes
 from facade 0.2. See the migration guide below and [CHANGELOG.md](CHANGELOG.md).
@@ -136,7 +133,7 @@ may deliver duplicates. Application adapters define transaction guarantees.
 
 | Feature | Default | Enables |
 |---------|---------|---------|
-| `derive` | yes | `ValueObject`, `Entity`, `DomainEvent`, `AggregateRoot` derives; consumers also need core directly |
+| `derive` | yes | `ValueObject`, `Entity`, `DomainEvent`, `AggregateRoot` derives; no direct core dependency required |
 | `serde` | no | Core's serde re-export and serde derive support for `#[value_object(serde)]`; independent of `derive` |
 
 To serialize a value object, enable the facade's `serde` feature and opt in on
@@ -155,10 +152,24 @@ When combining serde and validation in one attribute, place the `serde` flag
 last (`#[value_object(validate = check, error = Error, serde)]`): macro 0.4.1
 rejects a flag followed by other options.
 
-**Macro 0.4.1 limitation:** a single-field tuple enum variant such as
-`Code(u32)` serializes to `{"Code":[7]}`, but its generated deserializer expects
-`{"Code":7}`. It cannot round-trip its own JSON. Use a named variant such as
-`Code { value: u32 }` when JSON round-tripping is required.
+Single-field tuple enum variants use Serde's newtype format: `Code(u32)` emits
+`{"Code":7}` and round-trips. A container field retains its own shape, so
+`Codes(Vec<u32>)` emits `{"Codes":[7,8]}`. Unit, named, and multi-field tuple
+variants retain their existing formats.
+
+### Migrating serialized enums from macro 0.4
+
+Facade 0.4.0 / macro 0.5.0 intentionally change the output format, not in a patch
+release. Older serializers emitted an extra tuple wrapper (`{"Code":[7]}`),
+although their deserializers already expected the newtype format. Before loading
+saved data, remove exactly one outer array layer for each affected single-field
+tuple variant: `{"Code":[7]}` → `{"Code":7}`, or `{"Codes":[[7,8]]}` →
+`{"Codes":[7,8]}`. Use your schema/version metadata to identify old records; do
+not unwrap all arrays. There is no automatic legacy-format fallback because
+container-valued fields can make the two representations ambiguous. Coordinate
+producer/consumer upgrades or pin facade 0.3 / macro 0.4 until migration is ready.
+The same newtype-vs-tuple change applies to other Serde formats; migrate them
+using their format-specific APIs.
 
 Clippy 1.99 also reports `clippy::redundant_field_names` in macro 0.4.1's
 named value-object constructors. With `-D warnings`, consuming modules may need
@@ -183,7 +194,7 @@ Calling `Secret::into_inner` transfers zeroization responsibility to the caller.
   and `EventDispatcher` with event publisher contracts. `PortError` is gone;
   adapters choose their own error types.
 - Remove `chrono`, `uuid`, and `zeroize` feature requests.
-- Add a direct core dependency for derives and opt in to serde per value object.
+- Opt in to serde per value object; a facade-only dependency supports derives.
 
 More details are in the [API docs](https://docs.rs/ddd-toolkit). The
 [`facade-tests`](facade-tests/tests) integration suite covers custom repositories,

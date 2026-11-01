@@ -589,6 +589,11 @@ fn serde_impl_enum(
                     #serde::ser::SerializeStructVariant::end(state)
                 },
             }
+        } else if bindings.len() == 1 {
+            let binding = &bindings[0];
+            quote! {
+                #pattern => #serde::Serializer::serialize_newtype_variant(serializer, #type_label, #index as u32, #variant_label, #binding),
+            }
         } else {
             let fields = bindings.iter().map(|binding| {
                 quote! { #serde::ser::SerializeTupleVariant::serialize_field(&mut state, #binding)?; }

@@ -5,7 +5,27 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2026-11-01
+
+### Fixed
+
+- Derives now support facade-only and renamed facade dependencies, preferring
+  direct core dependencies when present. Missing-dependency errors use current
+  package names (#11). Isolated Cargo consumer tests cover resolution and serde.
+- Single-field tuple enum value objects now round-trip scalar and container
+  fields using Serde's newtype variant format; deserialization still validates (#21).
+
+### Changed
+
+- **Breaking:** upgraded to macro 0.5.0 (core remains 0.4.2).
+  `Code(7)` now serializes as `{"Code":7}`, not `{"Code":[7]}`. Migrate saved
+  single-field variants by removing exactly one outer tuple wrapper, including
+  `{"Codes":[[7,8]]}` → `{"Codes":[7,8]}`. Identify old records by schema/version;
+  there is no ambiguous container-format fallback. Coordinate reader/writer
+  upgrades or pin facade 0.3 / macro 0.4. See the README migration notes.
+- **破壊的変更:** 単一フィールドタプルバリアントは newtype 形式になります。
+  保存済みの対象データは外側の配列を1段除去し、送受信側を調整して更新してください。
+  コンテナーとの曖昧さを避けるため旧形式への自動フォールバックはありません。
 
 ## [0.3.1] - 2026-11-01
 

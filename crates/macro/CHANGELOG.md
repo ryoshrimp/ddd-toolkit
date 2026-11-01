@@ -5,7 +5,28 @@ All notable changes to this crate are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.0] - 2026-11-01
+
+### Fixed
+
+- Resolve direct core dependencies first, falling back to facade re-exports;
+  preserve both dependency renames and library self-references. Diagnostics now
+  name `ddd-toolkit-core` and `ddd-toolkit` (#11).
+- Single-field tuple enum serialization now matches its generated deserializer;
+  scalar and container fields round-trip, and validation is preserved (#21).
+
+### Changed
+
+- **Breaking (0.5.0):** single-field tuple enum variants call
+  `serialize_newtype_variant` rather than `serialize_tuple_variant`.
+  `{"Code":[7]}` becomes `{"Code":7}`; `{"Codes":[[7,8]]}` becomes
+  `{"Codes":[7,8]}`. Migrate affected saved records using schema/version metadata
+  by removing exactly one outer tuple wrapper. No automatic fallback is provided
+  because container fields can make formats ambiguous. Coordinate readers and
+  writers or pin macro 0.4 / facade 0.3; see the bilingual README migration notes.
+- **破壊的変更 (0.5.0):** 単一フィールドタプルバリアントを newtype 形式に変更します。
+  保存済みの対象レコードの外側の配列を1段除去し、送受信側を調整して更新してください。
+  コンテナーとの曖昧さを避けるため旧形式への自動フォールバックはありません。
 
 ## [0.4.1] - 2026-11-01
 
