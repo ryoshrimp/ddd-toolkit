@@ -135,6 +135,14 @@ Enable serde support on the **core** dependency:
 cargo add ddd-toolkit-core --features serde
 ```
 
+For facade-only usage, run `cargo add ddd-toolkit --features serde` instead.
+If rustc reports that `serde` in `__private` is gated behind the `serde` feature,
+enable that feature on **ddd-toolkit-core** (direct usage) or **ddd-toolkit**
+(facade usage), not on the macro crate. When both are present the direct core
+dependency takes priority. Plain derives without `#[value_object(serde)]` do
+not need serde. Isolated consumer tests cover both successful configurations
+and this missing-feature diagnostic.
+
 Then opt in per value object:
 
 ```rust

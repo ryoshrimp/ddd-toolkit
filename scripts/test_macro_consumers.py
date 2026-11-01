@@ -88,7 +88,8 @@ class MacroConsumerTests(unittest.TestCase):
             )
             if error:
                 self.assertNotEqual(result.returncode, 0)
-                self.assertIn(error, result.stderr)
+                for message in ([error] if isinstance(error, str) else error):
+                    self.assertIn(message, result.stderr)
             else:
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
@@ -109,6 +110,33 @@ class MacroConsumerTests(unittest.TestCase):
                     macros = "macros"
                 deps += 'serde_json = "1"\n'
                 self.check_consumer(deps, SOURCE.replace("api::", f"{alias}::").replace("macros::", f"{macros}::"))
+
+    def test_serde_feature_boundary(self):
+        # Each case is a separate workspace: macro dev-dependencies cannot
+        # silently enable core's serde feature here.
+        for kind in ("core", "facade"):
+            for serde_enabled in (False, True):
+                with self.subTest(kind=kind, serde=serde_enabled):
+                    features = ["serde"] if serde_enabled else []
+                    if kind == "core":
+                        deps = dependency("api", "ddd-toolkit-core", ROOT / "crates/core", features)
+                        deps += dependency("macros", "ddd-toolkit-macro", ROOT / "crates/macro")
+                        macros = "macros"
+                        if serde_enabled:
+                            deps += 'serde = { version = "1", features = ["derive"] }\n'
+                    else:
+                        deps = dependency("api", "ddd-toolkit", ROOT, features)
+                        macros = "api"
+                    plain = f'#[derive({macros}::ValueObject)]\nstruct Plain(u64);\n'
+                    self.check_consumer(deps, plain)
+                    source = plain + f'#[derive({macros}::ValueObject)]\n#[value_object(serde)]\nstruct Id(u64);'
+                    self.check_consumer(
+                        deps, source,
+                        error=None if serde_enabled else (
+                            'cannot find `serde` in `__private`',
+                            'the item is gated behind the `serde` feature',
+                        ),
+                    )
 
     def test_core_takes_priority(self):
         # Both dependencies exist; core must be preferred even for facade derives.
