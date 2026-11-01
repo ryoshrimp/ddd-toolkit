@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A bilingual public-contract map linking every user-facing facade re-export and
+  derive macro to existing runnable examples or contract tests, including sync/async
+  modes, feature requirements, and tests-only contracts such as UnitOfWork and
+  ProcessManager. Both READMEs link to the map (#27).
 - A beginner-friendly order tutorial covering business rules, aggregate boundaries,
   persistence and event notification, with bilingual reading paths, a DDD glossary,
   expected output and exercises. Guides and source comments describe each example's

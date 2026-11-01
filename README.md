@@ -21,7 +21,9 @@ Feedback on APIs, documentation, and use cases is welcome via
 
 Start with the [four derives and quick start](#four-derives), continue with the
 [order tutorial](examples/README.md#start-here), then explore [Advanced](#advanced)
-when you need additional contracts.
+when you need additional contracts. Use the
+[public contract map](docs/public-contracts.md) to find examples and contract tests
+by API name, including sync/async modes and feature requirements.
 
 ## Package and toolchain
 
