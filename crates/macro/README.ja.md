@@ -36,8 +36,58 @@ cargo add ddd-toolkit-core ddd-toolkit-macro
 | `DomainEvent` | 構造体または列挙型 | コアの `DomainEvent` マーカー |
 | `AggregateRoot` | コアの `Entity` を実装し、`#[aggregate(events)]` フィールドをちょうど一つ持つ名前付き構造体 | `record_event` と `pull_events` を備えたコアの `AggregateRoot` |
 
-マクロが生成するトレイトを重複して実装・derive しないでください。
+既定モードでは、マクロが生成するトレイトを重複して実装・derive しないでください。
 フィールドの型は、生成するトレイトに必要な境界を満たす必要があります。
+
+### trait_only モード
+
+既存 API やトレイトの実装方針を維持するには `#[value_object(trait_only)]`、
+または構造体レベルの `#[entity(trait_only)]` を指定します。
+
+```rust
+use ddd_toolkit::{Entity, ValueObject};
+
+#[derive(ValueObject)]
+#[value_object(trait_only)]
+struct Email(String);
+
+impl Email {
+    fn try_new(value: String) -> Result<Self, &'static str> {
+        if value.contains('@') { Ok(Self(value)) } else { Err("missing @") }
+    }
+    fn as_inner(&self) -> &str { &self.0 }
+}
+
+#[derive(PartialEq, Eq, Entity)]
+#[entity(trait_only)]
+struct Account {
+    #[entity(id)]
+    id: u64,
+    state: u32,
+}
+
+impl Account {
+    fn id(&self) -> u64 { self.id }
+}
+```
+
+- `ValueObject` はドメイントレイトの実装（`as_inner`／`into_inner`）だけを生成します。
+  `Inner` の型は既定モードと同じです。`new`／`try_new`／バリアントのコンストラクター、
+  固有メソッド、標準トレイト、serde 実装は生成しません。
+- `Entity` はドメイントレイトの実装（`Id`／`id`）だけを生成します。
+  `#[entity(id)]` フィールドは引き続きちょうど一つ必要です。固有の `id()` や
+  ID 比較の `PartialEq`／`Eq`／`Hash` は生成しません。この例では構造比較を維持し、
+  同じ ID でも状態が異なれば非等価になります。既存固有メソッドは異なるシグネチャでも
+  共存でき、`Entity::id(&account)` でトレイトのメソッドを明示的に呼べます。
+- 既存コンストラクター、検証、getter、秘匿用 `Debug`、`Clone` を実装しない方針などを
+  維持できます。フィールドに新しいトレイト境界は追加しません。
+  オプション未指定時の生成 API・意味は不変です。個別メソッドの生成選択は非対応です。
+- `validate`／`error`／`serde` との併用は無視せずエラーにします。
+  検証とシリアライズは利用側で実装してください。
+
+これは生成コードの制限であり、公開フィールド、列挙型の直接構築、利用側の
+デシリアライズなどを含めた不変条件の保護を保証しません。`Inner`、識別子の対応付け、
+借用・所有権変換の動作自体を変更したい場合はドメイントレイトを手動実装してください。
 
 ## 値オブジェクト
 

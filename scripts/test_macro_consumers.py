@@ -92,6 +92,100 @@ fn contracts_work_without_serde() {
     assert_eq!(State::new_ready(7), State::Ready { count: 7 });
 }
 '''
+TRAIT_ONLY_SOURCE = '''
+#![allow(dead_code)]
+mod domain {
+    #[derive(api::ValueObject)]
+    #[value_object(trait_only)]
+    pub struct Name(String);
+
+    impl Name {
+        pub fn try_new(value: String) -> Result<Self, &'static str> {
+            if value.is_empty() { Err("empty") } else { Ok(Self(value)) }
+        }
+        pub fn as_inner(&self) -> &str { &self.0 }
+        pub fn into_inner(self) -> String { self.0 }
+    }
+    impl std::fmt::Debug for Name {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.write_str("[redacted]")
+        }
+    }
+    impl Clone for Name {
+        fn clone(&self) -> Self { Self(self.0.clone()) }
+    }
+    impl PartialEq for Name {
+        fn eq(&self, other: &Self) -> bool { self.0 == other.0 }
+    }
+    impl Eq for Name {}
+    impl std::hash::Hash for Name {
+        fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+            std::hash::Hash::hash(&self.0, state);
+        }
+    }
+
+    // These fields deliberately implement neither Debug nor Clone nor Hash.
+    pub struct Opaque;
+    #[derive(api::ValueObject)]
+    #[value_object(trait_only)]
+    pub struct Token(Opaque);
+    impl Token { pub fn checked() -> Self { Self(Opaque) } }
+
+    #[derive(PartialEq, Eq, api::Entity)]
+    #[entity(trait_only)]
+    pub struct Order {
+        #[entity(id)]
+        key: u64,
+        state: u32,
+    }
+    impl Order {
+        pub fn new(key: u64, state: u32) -> Self { Self { key, state } }
+        pub fn id(&self) -> u64 { self.key }
+    }
+}
+
+#[derive(api::ValueObject)]
+#[value_object(trait_only)]
+struct Named<T> { value: T }
+#[derive(api::ValueObject)]
+#[value_object(trait_only)]
+struct Pair<T>(T, u32);
+#[derive(api::ValueObject)]
+#[value_object(trait_only)]
+struct Record<T> { value: T, count: u32 }
+#[derive(api::ValueObject)]
+#[value_object(trait_only)]
+enum Choice<T> { Unit, Tuple(T), Named { value: T } }
+#[derive(api::Entity)]
+#[entity(trait_only)]
+struct GenericEntity<T> where T: Eq {
+    #[entity(id)]
+    key: T,
+}
+
+#[test]
+fn existing_api_and_policies_are_preserved() {
+    use api::ValueObject;
+    assert!(domain::Name::try_new(String::new()).is_err());
+    let name = domain::Name::try_new("ok".into()).unwrap();
+    assert_eq!(format!("{name:?}"), "[redacted]");
+    assert_eq!(name.as_inner(), "ok");
+    assert_eq!(ValueObject::as_inner(&name), "ok");
+    assert_eq!(ValueObject::into_inner(name.clone()), "ok");
+    assert_eq!(name.into_inner(), "ok");
+    let _ = ValueObject::into_inner(domain::Token::checked());
+    assert_eq!(*ValueObject::as_inner(&Named { value: 3 }), 3);
+    assert_eq!(ValueObject::into_inner(Pair(3, 4)).1, 4);
+    assert_eq!(ValueObject::as_inner(&Record { value: 3, count: 4 }).count, 4);
+    assert!(matches!(ValueObject::into_inner(Choice::Tuple(3)), Choice::Tuple(3)));
+    let left = domain::Order::new(7, 1);
+    let right = domain::Order::new(7, 2);
+    assert_eq!(left.id(), 7);
+    assert_eq!(api::Entity::id(&left), &7);
+    assert!(left != right); // Same ID, different state: structural comparison remains.
+    assert_eq!(api::Entity::id(&GenericEntity { key: 3 }), &3);
+}
+'''
 MINIMUM_CORE = "0.4.1"
 
 
@@ -129,6 +223,27 @@ class MacroConsumerTests(unittest.TestCase):
                     self.assertIn(message, result.stderr)
             else:
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_trait_only_facade_consumer(self):
+        for alias in ("ddd_toolkit", "renamed_facade"):
+            with self.subTest(alias=alias):
+                deps = dependency(alias, "ddd-toolkit", ROOT)
+                source = TRAIT_ONLY_SOURCE.replace("api::", f"{alias}::")
+                self.check_consumer(deps, source)
+
+    def test_trait_only_does_not_add_public_construction_or_standard_traits(self):
+        deps = dependency("api", "ddd-toolkit", ROOT)
+        for expression, diagnostic in [
+            ('domain::Name::new(String::new())', ['error[E0599]', '`new`']),
+            ('domain::Token::new(domain::Opaque)', ['error[E0599]', '`new`']),
+            ('domain::Token::checked().clone()', 'no method named `clone`'),
+            ('format!("{:?}", domain::Token::checked())', "doesn't implement `Debug`"),
+            ('domain::Order::new(1, 2).clone()', 'no method named `clone`'),
+            ('format!("{:?}", domain::Order::new(1, 2))', "doesn't implement `Debug`"),
+        ]:
+            with self.subTest(expression=expression):
+                source = TRAIT_ONLY_SOURCE + f'\nfn forbidden() {{ let _ = {expression}; }}\n'
+                self.check_consumer(deps, source, error=diagnostic)
 
     def test_dependency_resolution(self):
         for kind, alias in [

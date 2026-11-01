@@ -90,6 +90,137 @@ fn value_object_expands_all_shapes_with_validation_and_serde() {
 }
 
 #[test]
+fn trait_only_generates_exactly_one_trait_impl() {
+    for (expand, source, expected_inner) in [
+        (
+            value_object::expand as Expander,
+            "#[value_object(trait_only)] struct V<T>(T);",
+            Some("T"),
+        ),
+        (
+            value_object::expand,
+            "#[value_object(trait_only)] struct V<T> { value: T }",
+            Some("T"),
+        ),
+        (
+            value_object::expand,
+            "#[value_object(trait_only)] struct V<T>(T, u32);",
+            Some("Self"),
+        ),
+        (
+            value_object::expand,
+            "#[value_object(trait_only)] struct V<T> { value: T, count: u32 }",
+            Some("Self"),
+        ),
+        (
+            value_object::expand,
+            "#[value_object(trait_only)] enum V<T> { AB, Ab, Value(T) }",
+            Some("Self"),
+        ),
+        (
+            entity::expand,
+            "#[entity(trait_only)] struct V<T> where T: Eq { #[entity(id)] key: T, state: u32 }",
+            None,
+        ),
+    ] {
+        let output = expand(syn::parse_str(source).unwrap()).unwrap();
+        // Count top-level impl tokens without enabling syn's full AST feature.
+        let impl_count = output
+            .clone()
+            .into_iter()
+            .filter(
+                |token| matches!(token, proc_macro2::TokenTree::Ident(ident) if ident == "impl"),
+            )
+            .count();
+        assert_eq!(impl_count, 1, "{source}");
+        let output = output.to_string();
+        assert!(output.contains("for V"));
+        if let Some(inner) = expected_inner {
+            assert!(output.contains(&format!("type Inner = {inner}")));
+        } else {
+            assert!(output.contains("type Id = T"));
+            assert!(output.contains("where T : Eq"));
+        }
+    }
+}
+
+#[test]
+fn trait_only_rejects_invalid_options_and_shapes() {
+    rejects(
+        value_object::expand,
+        &[
+            (
+                "#[value_object(trait_only, trait_only)] struct V(u32);",
+                "duplicate trait_only",
+            ),
+            (
+                "#[value_object(trait_only = true)] struct V(u32);",
+                "trait_only is a flag",
+            ),
+            (
+                "#[value_object(trait_only, validate = check, error = Error)] struct V(u32);",
+                "cannot be combined",
+            ),
+            (
+                "#[value_object(validate = check, error = Error, trait_only)] struct V(u32);",
+                "cannot be combined",
+            ),
+            (
+                "#[value_object(trait_only, serde)] struct V(u32);",
+                "cannot be combined",
+            ),
+            (
+                "#[value_object(trait_only, error = Error)] struct V(u32);",
+                "cannot be combined",
+            ),
+            (
+                "#[value_object(trait_only)] struct V;",
+                "at least one field",
+            ),
+            (
+                "#[value_object(trait_only)] enum V {}",
+                "at least one variant",
+            ),
+            (
+                "#[value_object(trait_only)] union V { a: u32 }",
+                "struct or enum",
+            ),
+        ],
+    );
+    rejects(
+        entity::expand,
+        &[
+            (
+                "#[entity(trait_only, trait_only)] struct V { #[entity(id)] id: u32 }",
+                "duplicate trait_only",
+            ),
+            (
+                "#[entity(trait_only)] #[entity(trait_only)] struct V { #[entity(id)] id: u32 }",
+                "duplicate trait_only",
+            ),
+            (
+                "#[entity(trait_only = true)] struct V { #[entity(id)] id: u32 }",
+                "trait_only is a flag",
+            ),
+            (
+                "#[entity()] struct V { #[entity(id)] id: u32 }",
+                "requires the trait_only flag",
+            ),
+            ("#[entity(trait_only)] struct V { id: u32 }", "exactly one"),
+            (
+                "#[entity(trait_only)] struct V { #[entity(id)] a: u32, #[entity(id)] b: u32 }",
+                "exactly one",
+            ),
+            ("#[entity(trait_only)] struct V(u32);", "named-field struct"),
+            (
+                "struct V { #[entity(trait_only)] id: u32 }",
+                "unknown entity attribute",
+            ),
+        ],
+    );
+}
+
+#[test]
 fn serde_avoids_existing_deserialization_lifetimes() {
     let input = syn::parse2(quote! {
         #[value_object(serde)]
