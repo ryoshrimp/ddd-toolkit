@@ -22,8 +22,9 @@ issue - they help make sure we get the context needed to act on it quickly.
 
 ## Development setup
 
-- Rust 1.85+ (Edition 2024). Diagnostic snapshots are verified on current stable
-  Rust with `rust-src` installed (`rustup component add rust-src`), as in CI.
+- Use the latest stable Rust (edition 2024), as in CI. No minimum supported Rust
+  version (MSRV) is specified. Diagnostic snapshots are verified with `rust-src`
+  installed (`rustup component add rust-src`).
 - A plain `git clone` includes core and macro; no sibling repos or submodules
   are needed.
 

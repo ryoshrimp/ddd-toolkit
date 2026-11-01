@@ -16,6 +16,9 @@ derive マクロです。値オブジェクト、識別子で比較するエン�
 
 ## インストール
 
+最新の Rust stable（edition 2024）で検証しています。
+最低サポート Rust バージョン（MSRV）は定めていません。
+
 ```sh
 cargo add ddd-toolkit-core ddd-toolkit-macro
 ```

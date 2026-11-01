@@ -5,7 +5,6 @@
 [![crates.io](https://img.shields.io/crates/v/ddd-toolkit-core.svg)](https://crates.io/crates/ddd-toolkit-core)
 [![docs.rs](https://img.shields.io/docsrs/ddd-toolkit-core)](https://docs.rs/ddd-toolkit-core)
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
-[![MSRV](https://img.shields.io/crates/msrv/ddd-toolkit-core)](Cargo.toml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit-core.svg)](#ライセンス)
 
 Rust でドメイン駆動設計を実践するためのコアトレイトとヘルパーです。
@@ -25,7 +24,10 @@ Rust でドメイン駆動設計を実践するためのコアトレイトとヘ
 cargo add ddd-toolkit-core
 ```
 
-**Rust 1.85 以降**（edition 2024）が必要です。デフォルト feature はありません。
+最新の Rust stable（edition 2024）で検証しています。
+最低サポート Rust バージョン（MSRV）は定めていません。
+
+デフォルト feature はありません。
 唯一のオプション feature である `serde` は、生成された実装から serde を利用するための
 内部公開を有効にします。ドメイン型や `Secret` が自動的にシリアライズ可能になるわけではありません。
 秘密値の消去に `zeroize` を使用します。非同期ランタイムへの依存はありません。

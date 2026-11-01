@@ -5,7 +5,6 @@ English | [日本語](README.ja.md)
 [![crates.io](https://img.shields.io/crates/v/ddd-toolkit-core.svg)](https://crates.io/crates/ddd-toolkit-core)
 [![docs.rs](https://img.shields.io/docsrs/ddd-toolkit-core)](https://docs.rs/ddd-toolkit-core)
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
-[![MSRV](https://img.shields.io/crates/msrv/ddd-toolkit-core)](Cargo.toml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit-core.svg)](#license)
 
 Core traits and helpers for Domain-Driven Design in Rust: entities, value
@@ -26,7 +25,10 @@ For development and releases, see the root repository's contribution guide.
 cargo add ddd-toolkit-core
 ```
 
-Requires Rust **1.85 or newer** (edition 2024). There are no default features.
+Tested with the latest stable Rust (edition 2024). No minimum supported Rust
+version (MSRV) is specified.
+
+There are no default features.
 The only optional feature, `serde`, exposes serde internally for generated
 implementations; it does not automatically serialize domain types or `Secret`.
 The crate uses `zeroize` for secret-value cleanup and has no async-runtime

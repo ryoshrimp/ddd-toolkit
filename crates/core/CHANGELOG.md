@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clarified that testing targets the latest stable Rust without a specified MSRV;
+  removed the unverified Rust 1.85 minimum declaration and MSRV badges.
 - Grouped rustdoc prose by language and placed language labels on separate lines.
 - Re-exported APIs inherit their original documentation without duplicate language sections.
 

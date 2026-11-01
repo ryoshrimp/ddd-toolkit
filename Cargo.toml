@@ -2,7 +2,6 @@
 name = "ddd-toolkit"
 version = "0.3.0"
 edition = "2024"
-rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 description = "Domain-Driven Design building blocks for Rust: a facade over ddd-toolkit-core and its derive macros."
 repository = "https://github.com/ryoshrimp/ddd-toolkit"

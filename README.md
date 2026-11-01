@@ -5,7 +5,6 @@ English | [日本語](README.ja.md)
 [![crates.io](https://img.shields.io/crates/v/ddd-toolkit.svg)](https://crates.io/crates/ddd-toolkit)
 [![docs.rs](https://img.shields.io/docsrs/ddd-toolkit)](https://docs.rs/ddd-toolkit)
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
-[![MSRV](https://img.shields.io/crates/msrv/ddd-toolkit)](Cargo.toml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#license)
 
 Domain-Driven Design traits and helpers, re-exported from
@@ -14,7 +13,8 @@ plus the four derives from
 [`ddd-toolkit-macro`](crates/macro) 0.4.0.
 All public items are available at `ddd_toolkit::`.
 
-Requires Rust 1.85 or newer (edition 2024).
+Tested with the latest stable Rust (edition 2024). No minimum supported Rust
+version (MSRV) is specified.
 
 This repository is a Cargo workspace containing the facade, core, and macro
 crates. They remain separate crates.io packages, developed and tested together.

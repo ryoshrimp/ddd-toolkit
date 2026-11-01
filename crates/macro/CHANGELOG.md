@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clarified that testing targets the latest stable Rust without a specified MSRV
+  and removed the unverified Rust 1.85 minimum declaration.
 - Placed rustdoc language labels on separate lines from their text.
 
 ## [0.4.0] - 2026-11-01

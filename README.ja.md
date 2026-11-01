@@ -5,7 +5,6 @@
 [![crates.io](https://img.shields.io/crates/v/ddd-toolkit.svg)](https://crates.io/crates/ddd-toolkit)
 [![docs.rs](https://img.shields.io/docsrs/ddd-toolkit)](https://docs.rs/ddd-toolkit)
 [![CI](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/ryoshrimp/ddd-toolkit/actions/workflows/ci.yml)
-[![MSRV](https://img.shields.io/crates/msrv/ddd-toolkit)](Cargo.toml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#ライセンス)
 
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
@@ -13,7 +12,8 @@
 [`ddd-toolkit-macro`](crates/macro) 0.4.0 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
-Rust 1.85 以降（edition 2024）が必要です。
+最新の Rust stable（edition 2024）で検証しています。
+最低サポート Rust バージョン（MSRV）は定めていません。
 
 このリポジトリは、ファサード・core・macro を含む Cargo ワークスペースです。
 crates.io では別々のパッケージとして公開し、開発とテストを一緒に行います。
