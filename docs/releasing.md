@@ -7,7 +7,7 @@ publishes them in order: `ddd-toolkit-core`, `ddd-toolkit-macro`, `ddd-toolkit`.
 ## Prepare a release PR
 
 1. Update the versions of changed crates in their `Cargo.toml` files.
-   Versions remain independent (currently facade 0.4.0, core 0.4.2, macro 0.5.0);
+   Versions remain independent (currently facade 0.4.1, core 0.4.3, macro 0.5.1);
    publishing is always an explicit operation.
 2. When core or macro changes, update `[workspace.dependencies]` in the root
    manifest. Bump dependent crates as needed so users can receive the update.
@@ -17,6 +17,26 @@ publishes them in order: `ddd-toolkit-core`, `ddd-toolkit-macro`, `ddd-toolkit`.
    `crates/macro/CHANGELOG.md`) and run `cargo check --workspace` to refresh the
    shared `Cargo.lock`. Commit it with the manifests.
 4. Run the checks in `CONTRIBUTING.md`, then merge the PR.
+
+### Generated-code compatibility gate
+
+Review [the supported core/macro matrix](macro-compatibility.md) before changing
+traits or `__private` generated-code helpers. A hidden name is not permission to
+break emitted code in a patch. For a 0.x incompatible change, bump the affected
+crate's minor version, bump macro if its generated code/compatibility range
+changes, and bump facade if its exposed API or required dependencies change.
+Update dependency lower bounds, migration notes, the matrix and consumer tests
+in the same PR; identical version numbers are not required.
+
+The Python checks include exact released minimum-core and current-core consumers,
+direct/facade dependencies, dependency renames, and both serde configurations.
+They must pass in CI and Release verification before publication. A newly raised
+minimum must be tested from an actual released core; if it is not published yet,
+retain an explicitly identified local candidate test and add the registry test
+when available, rather than claiming a substituted local path is released-core
+coverage. Publish core → macro → facade and preserve the documented supported
+range throughout partial release recovery. Out-of-range consumers must migrate
+to the documented current combination.
 
 ## One-time Trusted Publishing setup
 

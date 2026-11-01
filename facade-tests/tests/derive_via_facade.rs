@@ -1,8 +1,3 @@
-// Macro 0.4.0 emits `field: field` in named ValueObject constructors.
-// Clippy 1.99 checks those external macro spans; keep coverage until upstream
-// generates shorthand fields. This allowance is limited to this test crate.
-#![allow(clippy::redundant_field_names)]
-
 // Derives are invoked through the facade without a direct core dependency.
 use ddd_toolkit::AggregateRoot as _;
 
@@ -56,6 +51,96 @@ fn composite_value_objects_and_enum_accessors() {
     assert_eq!(status.as_ready(), Some((&3,)));
     assert!(!status.is_pending());
     assert!(Status::new_pending().is_pending());
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+struct NamedSingle {
+    value: u32,
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+struct RawInner {
+    r#inner: u32,
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = positive, error = &'static str)]
+struct ValidatedSingle {
+    value: u32,
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = positive, error = &'static str)]
+struct NamedInner {
+    inner: u32,
+}
+
+fn positive(value: &u32) -> Result<(), &'static str> {
+    if *value > 0 { Ok(()) } else { Err("zero") }
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = ordered, error = &'static str)]
+struct Range {
+    start: u32,
+    end: u32,
+}
+
+fn ordered(value: &Range) -> Result<(), &'static str> {
+    if value.start <= value.end {
+        Ok(())
+    } else {
+        Err("reversed")
+    }
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+enum NamedVariant {
+    One { count: u32 },
+    Two { start: u32, end: u32 },
+}
+
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = valid_variant, error = &'static str)]
+enum ValidatedVariant {
+    One { count: u32 },
+    Two { start: u32, end: u32 },
+}
+
+fn valid_variant(value: &ValidatedVariant) -> Result<(), &'static str> {
+    match value {
+        ValidatedVariant::One { count } if *count > 0 => Ok(()),
+        ValidatedVariant::Two { start, end } if start <= end => Ok(()),
+        _ => Err("invalid"),
+    }
+}
+
+#[test]
+fn named_constructors_preserve_fields_and_validation() {
+    assert_eq!(NamedSingle::new(4).into_inner(), 4);
+    assert_eq!(RawInner::new(4).into_inner(), 4);
+    assert_eq!(ValidatedSingle::try_new(4).unwrap().into_inner(), 4);
+    assert_eq!(ValidatedSingle::try_new(0), Err("zero"));
+    assert_eq!(NamedInner::try_new(4).unwrap().into_inner(), 4);
+    assert_eq!(NamedInner::try_new(0), Err("zero"));
+    let range = Range::try_new(2, 5).unwrap();
+    assert_eq!((*range.start(), *range.end()), (2, 5));
+    assert_eq!(Range::try_new(5, 2), Err("reversed"));
+    assert_eq!(NamedVariant::new_one(3), NamedVariant::One { count: 3 });
+    assert_eq!(
+        NamedVariant::new_two(2, 5),
+        NamedVariant::Two { start: 2, end: 5 }
+    );
+    assert_eq!(
+        ValidatedVariant::try_new_one(3).unwrap(),
+        ValidatedVariant::One { count: 3 }
+    );
+    assert_eq!(
+        ValidatedVariant::try_new_two(2, 5).unwrap(),
+        ValidatedVariant::Two { start: 2, end: 5 }
+    );
+    assert_eq!(ValidatedVariant::try_new_one(0), Err("invalid"));
+    assert_eq!(ValidatedVariant::try_new_two(5, 2), Err("invalid"));
 }
 
 #[derive(Debug, Clone, PartialEq, ddd_toolkit::DomainEvent)]

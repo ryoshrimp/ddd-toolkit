@@ -127,6 +127,12 @@ Validated struct fields cannot be unrestricted `pub`. This does not prevent all
 bypasses: direct construction within the defining module, restricted field
 visibility, and direct enum variant construction can bypass validation.
 
+### Core compatibility
+
+Macro 0.5.x supports core >=0.4.1, <0.5.0. Prefer the current facade for a
+coordinated combination. See the [compatibility contract](../../docs/macro-compatibility.md)
+for tested versions, dependency renames and generated-code API stability.
+
 ### Serialization
 
 Enable serde support on the **core** dependency:
@@ -134,6 +140,14 @@ Enable serde support on the **core** dependency:
 ```sh
 cargo add ddd-toolkit-core --features serde
 ```
+
+For facade-only usage, run `cargo add ddd-toolkit --features serde` instead.
+If rustc reports that `serde` in `__private` is gated behind the `serde` feature,
+enable that feature on **ddd-toolkit-core** (direct usage) or **ddd-toolkit**
+(facade usage), not on the macro crate. When both are present the direct core
+dependency takes priority. Plain derives without `#[value_object(serde)]` do
+not need serde. Isolated consumer tests cover both successful configurations
+and this missing-feature diagnostic.
 
 Then opt in per value object:
 

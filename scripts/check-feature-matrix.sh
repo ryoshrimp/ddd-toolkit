@@ -3,6 +3,7 @@
 # so workspace-wide checks alone cannot detect broken individual combinations.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
+./scripts/check-rust-test-environment.sh
 
 combos=(
   "--no-default-features"

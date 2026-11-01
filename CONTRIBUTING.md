@@ -36,13 +36,46 @@ Before opening a PR, run the same checks CI runs (see
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
 
 ```sh
-cargo test --workspace --all-features
+./scripts/check-rust-test-environment.sh
+cargo test --workspace --all-features --locked
 ./scripts/check-feature-matrix.sh
 python3 -m unittest discover -s scripts -p 'test_*.py'
 
 cargo fmt --all --check
 cargo clippy --workspace --all-features --all-targets -- -D warnings
 ```
+
+## Diagnostic snapshots (core and macro)
+
+All trybuild suites use the latest stable Rust **with matching `rust-src`**,
+including CI's feature-matrix and Release verification. There is no separate
+pinned UI toolchain: workspace functional tests and UI snapshots are both gates
+on stable. The last reviewed baseline is rustc 1.99.1 with `rust-src`, on Linux
+x86_64; CI logs `rustc -Vv`, `cargo -Vv`, and checks the active sysroot's sources
+via `scripts/check-rust-test-environment.sh`. Install sources for the active
+stable toolchain with `rustup component add rust-src --toolchain stable`.
+
+When a stable update changes diagnostics without a source change:
+
+1. Reproduce with `rustup update stable`, `rustup component add rust-src --toolchain
+   stable`, and `cargo +stable test --workspace --all-features --locked`.
+   Record `rustc +stable -Vv` and `cargo +stable -Vv` in the PR.
+2. Inspect the failure and trybuild's actual output. Distinguish an intended
+   diagnostic/rendering change from a real contract regression. Prefer a
+   targeted `syn::Error` for contracts the derive can inspect syntactically.
+   For example, AggregateRoot checks queue path/argument shape itself, but
+   rustc still rejects malformed `Vec` declarations; their standard-library
+   excerpts must remain in the full snapshots.
+3. Only after inspection, regenerate the **affected suite**, for example
+   `TRYBUILD=overwrite cargo +stable test -p ddd-toolkit-macro --test compile_fail`
+   (use the affected core test target for core snapshots). Never set overwrite
+   globally, in CI, or as a normal test invocation.
+4. Review `git diff -- '*.stderr'` against the actual errors: preserve expected
+   spans, messages and all compiler output, including `$RUST` excerpts. Do not
+   delete unstable-looking lines or weaken/disable tests to get a green run.
+5. Rerun the full locked workspace tests and feature matrix **without** overwrite.
+   Commit the reviewed snapshots, record the new baseline here, and explain
+   compiler-only changes separately from intentional contract changes in the PR.
 
 ## Documentation
 
@@ -61,6 +94,13 @@ sections and repeat them on the rendered API page.
 Each published crate has `README.md` (English) and `README.ja.md` (Japanese),
 with links between them. Keep API descriptions, feature requirements, limitations,
 and code examples in sync when updating either version.
+
+## Core/macro compatibility
+
+See [the compatibility contract](docs/macro-compatibility.md) for supported
+versions, generated-code API stability and isolated minimum/current-core tests.
+Changing a hidden helper used by generated code requires the same compatibility
+review as changing a public trait.
 
 ## Releasing
 

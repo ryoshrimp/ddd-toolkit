@@ -126,6 +126,12 @@ fn main() {
 迂回を防ぐものではありません。定義モジュール内の直接構築、制限付きのフィールド公開、
 列挙型のバリアントの直接構築では検証を迂回できます。
 
+### core の互換性
+
+macro 0.5.x は core >=0.4.1, <0.5.0 に対応します。組み合わせを揃えるには現行の
+facade を推奨します。検証版・依存名変更・生成コード API の安定性は
+[互換性契約](../../docs/macro-compatibility.md) を参照してください。
+
 ### シリアライズ
 
 **コア**の依存で serde 対応を有効にしてください。
@@ -133,6 +139,13 @@ fn main() {
 ```sh
 cargo add ddd-toolkit-core --features serde
 ```
+
+ファサードのみを使う場合は、代わりに `cargo add ddd-toolkit --features serde` を実行します。
+rustc が `__private` 内の `serde` を `serde` feature で無効化されていると報告したら、
+直接利用では **ddd-toolkit-core**、ファサード経由では **ddd-toolkit** の feature を有効に
+してください。マクロクレートの feature ではありません。両方に依存する場合は直接の core
+依存が優先されます。`#[value_object(serde)]` なしの通常の derive に serde は不要です。
+独立 consumer テストで両構成の成功と feature 未有効時の診断を検証します。
 
 そのうえで、値オブジェクトごとに属性を指定します。
 

@@ -224,7 +224,6 @@ pub use unit_of_work::UnitOfWork;
 
 pub use value_object::ValueObject;
 
-#[cfg(feature = "serde")]
 #[doc(hidden)]
 /// **English:**<br>
 /// Internal access to the optional `serde` dependency for generated implementations.
@@ -237,5 +236,6 @@ pub mod __private {
     ///
     /// **日本語:**<br>
     /// マクロが生成したコードで使うために、任意依存の `serde` クレートを再エクスポートします。
+    #[cfg(feature = "serde")]
     pub use serde;
 }
