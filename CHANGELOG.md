@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   constructors, accessors, and standard trait implementations. Default derive
   behavior is unchanged (#34).
 
+### Changed
+
+- Clarify synchronous/asynchronous dispatch restoration on publisher panic and
+  async future cancellation in English and Japanese rustdoc, including unpolled
+  futures, irreversible publication side effects, duplicate retries, and limits
+  for `panic=abort` or panics during restoration. Runtime behavior is unchanged (#29).
+
 ## [0.4.2] - 2026-11-01
 
 ### Changed
