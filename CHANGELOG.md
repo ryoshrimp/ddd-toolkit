@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-11-02
+
 ### Added
 
 - A bilingual public-contract map linking every user-facing facade re-export and
@@ -35,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Upgrade to core 0.4.5 and macro 0.5.2 for clarified dispatch restoration
+  documentation and opt-in trait-only derives. Existing default derive behavior
+  and the supported core/macro compatibility range are unchanged.
 - Separate functional tests from ignored trybuild UI suites: workspace tests and
   the feature matrix no longer require rust-src or matching diagnostic snapshots.
   A dedicated UI script/CI job preserves all core feature variants and macro
@@ -282,6 +287,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the facade compiles under every individual feature combination.
 
 [Unreleased]: https://github.com/ryoshrimp/ddd-toolkit/commits/main
+[0.4.3]: https://crates.io/crates/ddd-toolkit/0.4.3
 [0.3.1]: https://crates.io/crates/ddd-toolkit/0.3.1
 [0.3.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/ryoshrimp/ddd-toolkit/compare/v0.1.5...v0.2.0
