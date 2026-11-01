@@ -270,6 +270,8 @@ class MacroConsumerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="ddd-minimum-facade-") as tmp:
             facade = Path(tmp)
             shutil.copytree(ROOT / "src", facade / "src")
+            # Explicit [[example]] targets must exist when Cargo parses the facade.
+            shutil.copytree(ROOT / "examples", facade / "examples")
             manifest = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
             manifest = manifest.replace(
                 'members = ["crates/core", "crates/macro", "facade-tests"]', 'members = []',

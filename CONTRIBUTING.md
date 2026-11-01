@@ -38,6 +38,12 @@ Before opening a PR, run the same checks CI runs (see
 ```sh
 ./scripts/check-rust-test-environment.sh
 cargo test --workspace --all-features --locked
+cargo build -p ddd-toolkit --examples --all-features --locked
+cargo run -p ddd-toolkit --example getting_started --all-features --locked
+cargo run -p ddd-toolkit --example dispatch_retry --all-features --locked
+cargo run -p ddd-toolkit --example cqrs --all-features --locked
+cargo run -p ddd-toolkit --example event_sourcing --all-features --locked
+cargo run -p ddd-toolkit --example reliable_delivery --all-features --locked
 ./scripts/check-feature-matrix.sh
 python3 -m unittest discover -s scripts -p 'test_*.py'
 

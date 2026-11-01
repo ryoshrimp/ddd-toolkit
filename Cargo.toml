@@ -11,6 +11,26 @@ keywords = ["ddd", "domain-driven-design", "entity", "value-object", "aggregate"
 categories = ["rust-patterns", "data-structures"]
 exclude = [".github", "scripts"]
 
+[[example]]
+name = "getting_started"
+required-features = ["derive"]
+
+[[example]]
+name = "dispatch_retry"
+required-features = ["derive"]
+
+[[example]]
+name = "cqrs"
+required-features = ["derive"]
+
+[[example]]
+name = "event_sourcing"
+required-features = ["derive"]
+
+[[example]]
+name = "reliable_delivery"
+required-features = ["derive"]
+
 [package.metadata.docs.rs]
 all-features = true
 
