@@ -1,10 +1,10 @@
 [package]
 name = "ddd-toolkit"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
-description = "Domain-Driven Design building blocks for Rust: a single-dependency facade over ddd-toolkit-core and its derive macros."
+description = "Domain-Driven Design building blocks for Rust: a facade over ddd-toolkit-core and its derive macros."
 repository = "https://github.com/ryoshrimp/ddd-toolkit"
 documentation = "https://docs.rs/ddd-toolkit"
 readme = "README.md"
@@ -20,22 +20,12 @@ members = ["facade-tests"]
 
 
 [dependencies]
-ddd-toolkit-core = "0.3.0"
-ddd-toolkit-macro = { version = "0.3.0", optional = true }
+ddd-toolkit-core = "0.4.0"
+ddd-toolkit-macro = { version = "0.4.0", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
 
 
 [features]
 default = ["derive"]
 derive = ["dep:ddd-toolkit-macro"]
-chrono = ["ddd-toolkit-core/chrono"]
-uuid = ["ddd-toolkit-core/uuid"]
-zeroize = ["ddd-toolkit-macro/zeroize"]
-serde = ["ddd-toolkit-core/serde", "ddd-toolkit-macro/serde"]
-
-[dev-dependencies]
-# Only for this crate's own crate-root doctest: with `serde` enabled, every
-# `#[derive(ValueObject)]`/etc type (the doctest included) gets `Serialize`/
-# `Deserialize`, which - like `zeroize` - only resolves if this crate itself
-# depends on `serde` directly. A real consumer enabling this feature needs
-# the same in their own `[dependencies]`.
-serde = "1"
+serde = ["ddd-toolkit-core/serde", "dep:serde"]

@@ -1,73 +1,105 @@
-//! Every test in this crate uses only `ddd_toolkit::` paths - this package's
-//! `Cargo.toml` depends on nothing but the `ddd-toolkit` facade, simulating
-//! a real downstream consumer. It exists specifically to catch the class of
-//! bug where a derive macro's generated code only resolves when the caller
-//! also depends on `ddd-toolkit-core` directly.
+// Macro 0.4.0 emits `field: field` in named ValueObject constructors.
+// Clippy 1.99 checks those external macro spans; keep coverage until upstream
+// generates shorthand fields. This allowance is limited to this test crate.
+#![allow(clippy::redundant_field_names)]
 
-use ddd_toolkit::domain::{EnumVo as _, SecretVo as _, ValidationError, Wrapped as _};
+// Derives are invoked through the facade; core is a direct dependency because
+// macro 0.4 resolves its generated paths from the consumer's Cargo.toml.
+use ddd_toolkit::AggregateRoot as _;
 
-#[derive(ddd_toolkit::ValueObject, Clone, PartialEq, Debug)]
-#[vo(validate = "validate_email")]
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_email, error = &'static str)]
 struct Email(String);
 
-fn validate_email(s: &str) -> Result<(), ValidationError> {
-    if s.contains('@') {
+fn validate_email(value: &str) -> Result<(), &'static str> {
+    if value.contains('@') {
         Ok(())
     } else {
-        Err(ValidationError::new("Email", "missing @"))
+        Err("missing @")
     }
 }
 
 #[test]
-fn value_object_round_trips_through_facade() {
-    let email = Email::try_from("a@b.com".to_string()).expect("valid email");
+fn value_object_validation_and_accessors() {
+    fn assert_value_object<T: ddd_toolkit::ValueObject>() {}
+    assert_value_object::<Email>();
+    let email = Email::try_new("a@b.com".to_owned()).unwrap();
     assert_eq!(email.as_inner(), "a@b.com");
-    assert_eq!(email.to_string(), "a@b.com");
-    assert_eq!(email.into_inner(), "a@b.com".to_string());
+    assert_eq!(email.clone().into_inner(), "a@b.com");
+    assert_eq!(Email::try_new("invalid".to_owned()), Err("missing @"));
 }
 
-#[test]
-fn value_object_validation_runs_through_facade() {
-    let err = Email::try_from("not-an-email".to_string()).unwrap_err();
-    assert_eq!(err, ValidationError::new("Email", "missing @"));
+#[derive(ddd_toolkit::ValueObject)]
+struct Address {
+    city: String,
+    postal_code: u32,
 }
 
-#[derive(ddd_toolkit::EntityId, Clone, PartialEq, Debug)]
-struct UserId(String);
+#[derive(ddd_toolkit::ValueObject)]
+struct Coordinates(i32, i32);
 
-#[test]
-fn entity_id_satisfies_bounds_through_facade() {
-    fn assert_entity_id<T: ddd_toolkit::domain::EntityId>() {}
-    assert_entity_id::<UserId>();
-
-    let a = UserId("u-1".to_string());
-    let b = UserId("u-1".to_string());
-    let c = UserId("u-2".to_string());
-    assert_eq!(a, b);
-    assert!(a < c);
-    assert_eq!(a.to_string(), "u-1");
-}
-
-#[derive(ddd_toolkit::SecretVo, Clone, PartialEq)]
-struct ApiKey(String);
-
-#[test]
-fn secret_vo_redacts_debug_through_facade() {
-    let key = ApiKey::try_new("sekret".to_string()).expect("valid secret");
-    assert_eq!(key.expose_secret(), "sekret");
-    assert_eq!(format!("{key:?}"), "ApiKey(***)");
-}
-
-#[derive(ddd_toolkit::EnumVo, Debug, Clone, Copy, PartialEq)]
-#[vo(rename_all = "snake_case")]
+#[derive(ddd_toolkit::ValueObject)]
 enum Status {
-    Active,
-    Closed,
+    Pending,
+    Ready(u32),
 }
 
 #[test]
-fn enum_vo_round_trips_through_facade() {
-    assert_eq!(Status::Active.to_string(), "active");
-    assert_eq!("closed".parse::<Status>(), Ok(Status::Closed));
-    assert_eq!(Status::variants().len(), 2);
+fn composite_value_objects_and_enum_accessors() {
+    let address = Address::new("Tokyo".to_owned(), 100);
+    assert_eq!(address.city(), "Tokyo");
+    assert_eq!(address.postal_code(), &100);
+    assert_eq!(ddd_toolkit::ValueObject::as_inner(&address), &address);
+    let point = Coordinates::new(1, 2);
+    assert_eq!(point.field_0(), &1);
+    assert_eq!(point.field_1(), &2);
+    let status = Status::new_ready(3);
+    assert_eq!(status.as_ready(), Some((&3,)));
+    assert!(!status.is_pending());
+    assert!(Status::new_pending().is_pending());
+}
+
+#[derive(Debug, Clone, PartialEq, ddd_toolkit::DomainEvent)]
+enum Event {
+    Placed,
+    Cancelled,
+}
+
+#[derive(Debug, ddd_toolkit::Entity, ddd_toolkit::AggregateRoot)]
+struct Order {
+    #[entity(id)]
+    id: u64,
+    #[aggregate(events)]
+    events: Vec<Event>,
+}
+
+#[test]
+fn entity_identity_and_aggregate_event_queue() {
+    use std::hash::{DefaultHasher, Hash, Hasher};
+    fn hash(value: &impl Hash) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        value.hash(&mut hasher);
+        hasher.finish()
+    }
+    let mut order = Order {
+        id: 1,
+        events: vec![],
+    };
+    let same_id = Order {
+        id: 1,
+        events: vec![Event::Cancelled],
+    };
+    let other_id = Order {
+        id: 2,
+        events: vec![],
+    };
+    assert_eq!(order.id(), &1);
+    assert_eq!(ddd_toolkit::Entity::id(&order), &1);
+    assert_eq!(order, same_id);
+    assert_ne!(order, other_id);
+    assert_eq!(hash(&order), hash(&same_id));
+    order.record_event(Event::Placed);
+    order.record_event(Event::Cancelled);
+    assert_eq!(order.pull_events(), vec![Event::Placed, Event::Cancelled]);
+    assert!(order.pull_events().is_empty());
 }

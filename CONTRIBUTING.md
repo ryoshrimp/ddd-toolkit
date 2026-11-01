@@ -9,7 +9,10 @@ in here as regular crates.io dependencies (see `Cargo.toml`). Changes to core
 domain/port logic or to the derive macros belong in those repos, not here -
 open an issue/PR there instead if that's what you're touching. This repo's
 own contributions are about the facade re-exports, the `facade-tests`
-integration suite, and docs.
+integration suite, and docs. The consumer test package deliberately depends on
+core 0.4 directly: the upstream macros no longer resolve a facade-only
+dependency. Test-local adapters live in `facade-tests/tests/support`; they are
+not part of the facade's public API.
 
 ## Reporting bugs / requesting features
 

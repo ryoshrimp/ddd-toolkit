@@ -6,167 +6,183 @@
 [![MSRV](https://img.shields.io/crates/msrv/ddd-toolkit)](Cargo.toml)
 [![license](https://img.shields.io/crates/l/ddd-toolkit.svg)](#license)
 
-Domain-Driven Design building blocks for Rust: entities, value objects,
-aggregates, repositories, and event dispatch, plus derive macros for the
-common cases. This crate is a single-dependency facade over
-[`ddd-toolkit-core`](https://github.com/ryoshrimp/ddd-toolkit-core) and
-[`ddd-toolkit-macro`](https://github.com/ryoshrimp/ddd-toolkit-macro) - add
-`ddd-toolkit` and you get both, re-exported under one path.
+Domain-Driven Design traits and helpers, re-exported from
+[`ddd-toolkit-core`](https://github.com/ryoshrimp/ddd-toolkit-core) 0.4.0,
+plus the four derives from
+[`ddd-toolkit-macro`](https://github.com/ryoshrimp/ddd-toolkit-macro) 0.4.0.
+All public items are available at `ddd_toolkit::`.
 
-Reach for `ddd-toolkit-core` directly instead if you want the traits with
-zero macro machinery and full control over every impl.
+Requires Rust 1.85 or newer (edition 2024).
 
 ## Installation
 
-```sh
-cargo add ddd-toolkit
-```
-
-Or add it to `Cargo.toml` directly, enabling the features you need:
+For traits and helpers without derive macros:
 
 ```toml
 [dependencies]
-ddd-toolkit = { version = "0.1", features = ["chrono", "uuid"] }
+ddd-toolkit = { version = "0.3", default-features = false }
 ```
 
-`derive` is on by default; disable default features if you'd rather
-implement `ValueObject`/`EntityId`/`SecretVo`/`EnumVo` by hand. Requires
-Rust 1.85 or newer (edition 2024).
+For derive macros (enabled by default):
+
+```toml
+[dependencies]
+ddd-toolkit = "0.3"
+ddd-toolkit-core = "0.4.0"
+```
+
+**Important:** macro 0.4 requires a direct `ddd-toolkit-core` dependency
+in the consuming crate, including when derives are invoked through this
+facade. A renamed core dependency is supported. The previous facade-only
+installation no longer suffices for derives; re-exporting macros does not
+change their dependency resolution.
+
+Facade 0.3.0 adopts core/macro 0.4.0 and contains breaking API changes
+from facade 0.2. See the migration guide below and [CHANGELOG.md](CHANGELOG.md).
 
 ## What's here
 
-Everything is reachable directly under `ddd_toolkit::`, whichever of the two
-underlying crates it originates in:
+- `Entity`, `ValueObject`, `AggregateRoot`, and `DomainEvent` traits and derives.
+- `Repository` / `AsyncRepository`, `DomainEventPublisher` /
+  `AsyncDomainEventPublisher`, and `dispatch_events` / `dispatch_events_async`.
+- CQRS command/query handlers and lifecycle contexts.
+- Event stores, revision types, aggregate replay, and snapshots.
+- Event consumption, projections, checkpoints, and transactional outbox contracts.
+- Specifications, domain services/policies/factories, process managers,
+  units of work, and event upcasters.
+- `Secret<T>` for redacted formatting and zeroization on drop.
 
-- **`domain`** - `Entity`, `AggregateRoot`, `ValueObject`/`Wrapped`,
-  `EntityId`, `SecretVo`, `EnumVo`, `DomainEvent`, `ValidationError`. With
-  `derive` enabled, `#[derive(ValueObject, EntityId, SecretVo, EnumVo)]`
-  generates the boilerplate for those four.
-- **`port`** - `Load`/`Save`/`Delete` repository traits, `EventDispatcher`
-  (with `DispatchError<E>` reporting undelivered events on partial
-  failure), `Clock` (behind `chrono`), `IdGenerator`.
-- **`adapter`** - real port implementations, gated per feature so you only
-  pull in what you use: `SystemClock` behind `chrono`,
-  `UuidV4Generator`/`UuidV7Generator` behind `uuid`.
-- **`mock`** - test doubles: `InMemoryStore` (a `Load`/`Save`/`Delete`
-  implementation backed by a `HashMap`) and `FixedIdGenerator` build
-  unconditionally; `FixedClock` is behind the `chrono` feature.
-- **`application`** - `UseCase`.
+Core defines contracts, not storage adapters, clock or ID generators, an async
+runtime, or automatic transaction/delivery guarantees. Implement adapters in your
+application. Async ports return boxed `Send` futures without choosing a runtime.
 
 ## Example
 
-```rust
-use ddd_toolkit::domain::{SecretVo, ValidationError, Wrapped};
+With both dependencies shown above:
 
-#[derive(ddd_toolkit::ValueObject, Clone, PartialEq, Debug)]
-#[vo(validate = "validate_email")]
+```rust
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_email, error = &'static str)]
 struct Email(String);
 
-fn validate_email(s: &str) -> Result<(), ValidationError> {
-    if s.contains('@') {
-        Ok(())
-    } else {
-        Err(ValidationError::new("Email", "missing @"))
-    }
+fn validate_email(value: &str) -> Result<(), &'static str> {
+    if value.contains('@') { Ok(()) } else { Err("missing @") }
 }
 
-#[derive(ddd_toolkit::EntityId, Clone, PartialEq, Debug)]
-struct UserId(String);
-
-#[derive(ddd_toolkit::SecretVo, Clone, PartialEq)]
-struct ApiKey(String);
-
 fn main() {
-    let email = Email::try_from("a@b.com".to_string()).unwrap();
+    let email = Email::try_new("a@b.com".to_owned()).unwrap();
     assert_eq!(email.as_inner(), "a@b.com");
+    assert_eq!(Email::try_new("invalid".to_owned()), Err("missing @"));
 
-    let key = ApiKey::try_new("sekret".to_string()).unwrap();
-    assert_eq!(format!("{key:?}"), "ApiKey(***)"); // never leaks the secret
+    let key = ddd_toolkit::Secret::new("sekret".to_owned());
+    assert_eq!(format!("{key:?}"), "[REDACTED]");
+    assert_eq!(key.expose_secret(|value| value.len()), 6);
 }
 ```
 
-`EntityId` generates the same `Wrapped`/`TryFrom`/`Display` impls as
-`ValueObject`, plus `Eq`/`Hash`/`Ord`/`PartialOrd` so the id can be used as a
-map key or sorted. A real aggregate implements `AggregateRoot` to record
-domain events, and is persisted through the `Load`/`Save` ports - here via
-`mock::repository::InMemoryStore`, a drop-in test double:
+`ValueObject` derives `Debug`, `Clone`, `PartialEq`, `Eq`, and `Hash`;
+do not derive these again. Unvalidated structs use `new`; validated structs use
+`try_new`. Named/multi-field structs and data-carrying enums are also supported.
+`Entity` derives equality and hashing using only the `#[entity(id)]` field.
+
+### Aggregate event publication
 
 ```rust
-use ddd_toolkit::domain::{AggregateRoot, DomainEvent, Entity};
-use ddd_toolkit::mock::repository::InMemoryStore;
-use ddd_toolkit::port::repository::{Load, Save};
+use ddd_toolkit::{AggregateRoot as _, DomainEventPublisher, dispatch_events};
 
-#[derive(ddd_toolkit::EntityId, Clone, PartialEq, Debug)]
-struct OrderId(String);
-
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, ddd_toolkit::DomainEvent)]
 struct OrderPlaced;
 
-impl DomainEvent for OrderPlaced {}
-
-#[derive(Debug, Clone)]
+#[derive(ddd_toolkit::Entity, ddd_toolkit::AggregateRoot)]
 struct Order {
-    id: OrderId,
+    #[entity(id)]
+    id: u64,
+    #[aggregate(events)]
     events: Vec<OrderPlaced>,
 }
 
-impl Entity for Order {
-    type Id = OrderId;
+struct Publisher;
 
-    fn id(&self) -> &Self::Id {
-        &self.id
-    }
-}
-
-impl AggregateRoot for Order {
+impl DomainEventPublisher for Publisher {
     type Event = OrderPlaced;
+    type Error = &'static str;
 
-    fn record(&mut self, event: Self::Event) {
-        self.events.push(event);
-    }
-
-    fn take_events(&mut self) -> Vec<Self::Event> {
-        std::mem::take(&mut self.events)
+    fn publish(&mut self, _event: &OrderPlaced) -> Result<(), Self::Error> {
+        Ok(())
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<(), ddd_toolkit::port::PortError> {
-    let store = InMemoryStore::new();
-    let id = OrderId::try_from("order-1".to_string()).unwrap();
-    let mut order = Order { id: id.clone(), events: vec![OrderPlaced] };
-
-    store.save(&mut order).await?; // drains the aggregate's recorded events as a side effect
-    assert!(order.take_events().is_empty());
-
-    let loaded = store.load(&id).await?.expect("just-saved order should be found");
-    assert_eq!(loaded.id, id);
-    Ok(())
+fn main() {
+    let mut order = Order { id: 1, events: vec![] };
+    order.record_event(OrderPlaced);
+    dispatch_events(&mut order, &mut Publisher).unwrap();
+    assert!(order.pull_events().is_empty());
 }
 ```
 
-More usage, including `EventDispatcher` and the `chrono`/`uuid` adapters, is
-covered in the [API docs](https://docs.rs/ddd-toolkit).
+Repository persistence and event publication are separate. `Repository::save`
+borrows the aggregate immutably and does not automatically drain pending events.
+`dispatch_events` drains events on success; on publication failure it restores
+**all** pulled events. Already published events are not rolled back, so retrying
+may deliver duplicates. Application adapters define transaction guarantees.
 
 ## Features
 
-| Feature  | Default | Enables |
-|----------|---------|---------|
-| `derive` | yes     | `#[derive(ValueObject, EntityId, SecretVo, EnumVo)]` via `ddd-toolkit-macro` |
-| `chrono` | no      | `Clock` port + `SystemClock`/`FixedClock` adapters |
-| `uuid`   | no      | `IdGenerator` port + `UuidV4Generator`/`UuidV7Generator` adapters |
-| `zeroize`| no      | `#[vo(zeroize)]` support on `SecretVo` (also requires depending on the `zeroize` crate directly - see its docs) |
-| `serde`  | no      | `Serialize`/`Deserialize` on `ValueObject`/`EntityId`/`EnumVo`, not `SecretVo` (also requires depending on the `serde` crate directly - see its docs) |
+| Feature | Default | Enables |
+|---------|---------|---------|
+| `derive` | yes | `ValueObject`, `Entity`, `DomainEvent`, `AggregateRoot` derives; consumers also need core directly |
+| `serde` | no | Core's serde re-export and serde derive support for `#[value_object(serde)]`; independent of `derive` |
 
-## Crates in this project
+To serialize a value object, enable the facade's `serde` feature and opt in on
+the type:
 
-- **`ddd-toolkit`** (this crate) - the facade; depend on this for normal use.
-- [`ddd-toolkit-core`](https://github.com/ryoshrimp/ddd-toolkit-core) - the
-  domain/port traits and reference (in-memory) adapters, with no macro
-  dependency.
-- [`ddd-toolkit-macro`](https://github.com/ryoshrimp/ddd-toolkit-macro) - the
-  derive macros, usable standalone alongside `ddd-toolkit-core` or through
-  this facade.
+```rust
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(serde)]
+struct UserId(String);
+```
+
+No direct `serde` dependency is required for these generated implementations.
+Validated deserialization runs the validator and maps failure to
+`value object validation failed`. Enums use externally tagged variants.
+When combining serde and validation in one attribute, place the `serde` flag
+last (`#[value_object(validate = check, error = Error, serde)]`): macro 0.4.0
+rejects a flag followed by other options.
+
+**Upstream 0.4.0 limitation:** a single-field tuple enum variant such as
+`Code(u32)` serializes to `{"Code":[7]}`, but its generated deserializer expects
+`{"Code":7}`. It cannot round-trip its own JSON. Use a named variant such as
+`Code { value: u32 }` when JSON round-tripping is required.
+
+Clippy 1.99 also reports `clippy::redundant_field_names` in macro 0.4.0's
+named value-object constructors. With `-D warnings`, consuming modules may need
+an allowance for that specific lint until the upstream generator is fixed.
+`Secret<T>` is available without a feature flag and is not automatically serialized.
+Calling `Secret::into_inner` transfers zeroization responsibility to the caller.
+
+## Migrating from core/macro 0.3
+
+- Replace `domain`, `port`, `adapter`, `mock`, and `application` module paths
+  with root-level imports. Built-in adapters/test doubles and `UseCase` are gone.
+- Replace `EntityId` / `EnumVo` derives with suitable `ValueObject` types;
+  `Wrapped` is replaced by `ValueObject`'s `as_inner` / `into_inner` methods.
+- Replace `#[vo(validate = "function")]` with
+  `#[value_object(validate = function, error = YourError)]`.
+  `ValidationError` is gone; choose your own error type.
+- Replace generated `TryFrom` / `From` / `Display` usage with constructors and
+  explicit application implementations where needed.
+- Replace `SecretVo` / `#[vo(zeroize)]` with `Secret<T>`.
+- Replace `record` / `take_events` with `record_event` / `pull_events`.
+- Replace `Load` / `Save` / `Delete` with `Repository` or `AsyncRepository`,
+  and `EventDispatcher` with event publisher contracts. `PortError` is gone;
+  adapters choose their own error types.
+- Remove `chrono`, `uuid`, and `zeroize` feature requests.
+- Add a direct core dependency for derives and opt in to serde per value object.
+
+More details are in the [API docs](https://docs.rs/ddd-toolkit). The
+[`facade-tests`](facade-tests/tests) integration suite covers custom repositories,
+async ports, multi-aggregate flows, publication failure/retry, derives, serde,
+and secrets through the facade.
 
 ## Changelog
 
@@ -175,4 +191,4 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 ## License
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
-[MIT license](LICENSE-MIT) at your option.
+[MIT license](LICENSE-MIT), at your option.
