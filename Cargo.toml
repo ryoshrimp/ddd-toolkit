@@ -53,3 +53,4 @@ serde = { version = "1", features = ["derive"], optional = true }
 default = ["derive"]
 derive = ["dep:ddd-toolkit-macro"]
 serde = ["ddd-toolkit-core/serde", "dep:serde"]
+serde_with = ["serde", "ddd-toolkit-core/serde_with"]

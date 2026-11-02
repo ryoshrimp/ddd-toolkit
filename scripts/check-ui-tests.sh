@@ -8,4 +8,5 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 # Keep core isolated from macro's serde-enabled dev-dependency.
 cargo test -p ddd-toolkit-core --no-default-features --tests --locked -- --ignored
 cargo test -p ddd-toolkit-core --features serde --tests --locked -- --ignored
+cargo test -p ddd-toolkit-core --features serde_with --tests --locked -- --ignored
 cargo test -p ddd-toolkit-macro --tests --locked -- --ignored

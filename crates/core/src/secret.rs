@@ -7,7 +7,16 @@ use zeroize::Zeroize;
 ///
 /// `Debug` and `Display` write the literal `[REDACTED]` rather than formatting `T`. Access is explicit through
 /// [`Self::as_inner`], [`Self::expose_secret`], or [`Self::into_inner`]; this type implements
-/// neither `Deref` nor serde serialization or deserialization, even with the `serde` feature.
+/// neither `Deref` nor serde `Serialize`. With `serde`, it implements `Deserialize` for
+/// `T: serde::Deserialize<'de> + Zeroize`, taking ownership through [`Self::new`]. With
+/// `serde_with`, `ExposeSecret` explicitly opts a field into plaintext output.
+/// Internal deserialization errors are replaced with `failed to deserialize secret`;
+/// independent format errors and logs from callers or custom implementations are not redacted.
+/// This is not encryption. Successfully wrapped values are zeroized on drop, but input/output
+/// buffers, parser temporaries, partially constructed or failed values, and other copies are not
+/// covered. Cleanup during failed deserialization depends on the inner type and parser; serde's
+/// contract cannot recover a partial `T` from an error. A caller-owned `zeroize::Zeroizing`
+/// input buffer can reduce exposure, but cannot erase parser copies.
 /// Cloning copies the inner value into another independently owned `Secret`. Equality delegates
 /// to the inner type and does not promise constant-time comparison.
 ///
@@ -23,8 +32,16 @@ use zeroize::Zeroize;
 ///
 /// `Debug` と `Display` は `T` を書式出力せず、リテラル `[REDACTED]` を出力します。値へのアクセスには
 /// [`Self::as_inner`]、[`Self::expose_secret`]、[`Self::into_inner`] を明示的に使います。
-/// `Deref` は実装せず、`serde` feature が有効でも serde のシリアライズ・デシリアライズは
-/// 実装しません。クローンは内包値を複製して別の `Secret` に所有させます。等値比較は内包型に
+/// `Deref` と serde の `Serialize` は実装しません。`serde` feature では
+/// `T: serde::Deserialize<'de> + Zeroize` に対する `Deserialize` を実装し、[`Self::new`] で
+/// 所有権を受け取ります。`serde_with` feature の `ExposeSecret` で、フィールドの
+/// 平文出力を明示的に許可できます。内部型由来の復元エラーは `failed to deserialize secret` に
+/// 置き換えますが、フォーマット側が独立に生成するエラーや呼び出し側・独自実装のログは秘匿しません。
+/// 暗号化ではありません。正常に包んだ値は破棄時にゼロ化しますが、入出力バッファ、パーサーの
+/// 一時値、構築途中・失敗時の値や別のコピーは対象外です。失敗時の後始末は内部型とパーサーに
+/// 依存し、serde の契約ではエラーから構築途中の `T` を回収できません。入力バッファを
+/// `zeroize::Zeroizing` で管理すると軽減できますが、パーサーのコピーは消去できません。
+/// クローンは内包値を複製して別の `Secret` に所有させます。等値比較は内包型に
 /// 委譲し、定数時間での比較を保証しません。
 ///
 /// ゼロ化の範囲は `T` の実装に従い、このラッパーのデストラクターが実行される必要があります。
@@ -115,6 +132,15 @@ impl<T: Zeroize> Secret<T> {
     /// 情報の隔離境界にはなりません。`f` がパニックした場合はそのまま伝播します。
     pub fn expose_secret<R>(&self, f: impl FnOnce(&T) -> R) -> R {
         f(self.as_inner())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T: Zeroize + serde::Deserialize<'de>> serde::Deserialize<'de> for Secret<T> {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        T::deserialize(deserializer)
+            .map(Self::new)
+            .map_err(|_| serde::de::Error::custom("failed to deserialize secret"))
     }
 }
 

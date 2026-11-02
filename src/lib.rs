@@ -16,7 +16,10 @@
 //! `{"Code":7}`. Macro 0.5 changes the old `{"Code":[7]}` output; migrate saved
 //! data by removing its outer tuple wrapper for affected variants before loading.
 //! [`Secret`] requires no feature and redacts formatting and zeroizes its contents
-//! on drop without a feature flag.
+//! on drop without a feature flag. `serde` adds `Secret` deserialization without
+//! implementing `Serialize`; `serde_with` includes `serde` and adds the explicit
+//! `ExposeSecret` output adapter. Output is plaintext, not encryption; see `Secret`
+//! for error-redaction and zeroization boundaries.
 //!
 //! Validation returns an application-defined error; construction
 //! uses `try_new` rather than the removed `TryFrom` implementation.
@@ -40,6 +43,9 @@
 //! 外側のタプルラッパーを除去してから読み込んでください。全 derive に直列化が
 //! 自動適用されるわけではありません。
 //! [`Secret`] は feature 指定なしで使え、書式出力を秘匿化して破棄時に内容をゼロ化します。
+//! `serde` では `Serialize` を実装せずに復元に対応します。`serde_with` は `serde` を含み、
+//! 明示的な出力用の `ExposeSecret` を追加します。出力は暗号化されない平文です。
+//! エラー秘匿とゼロ化の範囲は `Secret` の説明を参照してください。
 //!
 //! 検証はアプリケーション定義のエラーを返します。廃止された
 //! `TryFrom` 実装の代わりに `try_new` で構築します。

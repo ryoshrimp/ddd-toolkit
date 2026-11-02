@@ -209,7 +209,8 @@ may deliver duplicates. Application adapters define transaction guarantees.
 | Feature | Default | Enables |
 |---------|---------|---------|
 | `derive` | yes | `ValueObject`, `Entity`, `DomainEvent`, `AggregateRoot` derives; no direct core dependency required |
-| `serde` | no | Core's serde re-export and serde derive support for `#[value_object(serde)]`; independent of `derive` |
+| `serde` | no | Core's serde re-export, `Secret<T>` deserialization and serde derive support for `#[value_object(serde)]`; independent of `derive` |
+| `serde_with` | no | Includes `serde`; adds `ExposeSecret` for explicit composable plaintext output |
 
 To serialize a value object, enable the facade's `serde` feature and opt in on
 the type:
@@ -252,7 +253,10 @@ including validated constructors and named enum variants. No
 [core/macro compatibility contract](docs/macro-compatibility.md) for supported
 versions and serde feature requirements.
 
-`Secret<T>` is available without a feature flag and is not automatically serialized.
+`Secret<T>` is available without a feature flag and never implements `Serialize`.
+The `serde` feature adds `Deserialize`; the `serde_with` feature adds the explicit
+`ExposeSecret` plaintext output adapter. See [Secret serde integration](docs/secret-serde.md)
+for composition examples, error redaction and input/output zeroization limits.
 Calling `Secret::into_inner` transfers zeroization responsibility to the caller.
 
 ## Migrating from core/macro 0.3

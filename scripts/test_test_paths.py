@@ -54,12 +54,13 @@ class TestPaths(unittest.TestCase):
         result = self.run_script("check-feature-matrix.sh")
         self.assertEqual(result.returncode, 0, result.stderr)
         commands = self.cargo_commands()
-        self.assertEqual(len(commands), 14)  # six facade pairs + two core runs
+        self.assertEqual(len(commands), 17)  # seven facade pairs + three core runs
         self.assertTrue(all("--locked" in command for command in commands))
         self.assertTrue(all("--ignored" not in command for command in commands))
-        self.assertEqual(commands[-2:], [
+        self.assertEqual(commands[-3:], [
             ["test", "-p", "ddd-toolkit-core", "--no-default-features", "--locked"],
             ["test", "-p", "ddd-toolkit-core", "--features", "serde", "--locked"],
+            ["test", "-p", "ddd-toolkit-core", "--features", "serde_with", "--locked"],
         ])
 
     def test_ui_requires_rust_src_before_tests(self):
@@ -79,6 +80,8 @@ class TestPaths(unittest.TestCase):
             ["test", "-p", "ddd-toolkit-core", "--no-default-features",
              "--tests", "--locked", "--", "--ignored"],
             ["test", "-p", "ddd-toolkit-core", "--features", "serde",
+             "--tests", "--locked", "--", "--ignored"],
+            ["test", "-p", "ddd-toolkit-core", "--features", "serde_with",
              "--tests", "--locked", "--", "--ignored"],
             ["test", "-p", "ddd-toolkit-macro", "--tests", "--locked", "--", "--ignored"],
         ])
