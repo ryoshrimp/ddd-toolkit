@@ -16,11 +16,12 @@ contract. See [API documentation](https://docs.rs/ddd-toolkit) for signatures.
 - **Mode:** `S` = synchronous operations, `A` = asynchronous operations,
   `—` = shared data, marker or composition contract (not an async port).
   Async ports use boxed `Send` futures; no async runtime is supplied.
-- **Features:** every core trait/helper in the tables is available with
+- **Features:** core traits/helpers other than `ExposeSecret` are available with
   `default-features = false`, including async contracts and `Secret`.
-  Only the four derive macros require `derive` (enabled by default).
-  `serde` is optional; generated value-object serialization additionally needs
-  `#[value_object(serde)]`. It is not a prerequisite for the event contracts.
+  The four derive macros require `derive` (enabled by default).
+  `serde` adds `Secret` deserialization; generated value-object serialization additionally
+  needs `#[value_object(serde)]`. `ExposeSecret` requires `serde_with` (includes `serde`).
+  Neither serde feature is a prerequisite for the event contracts.
 - Every linked runnable example currently requires `derive` (see
   [Cargo.toml](../Cargo.toml)). This does not make `derive` a requirement of
   the traits those examples implement. Rows saying **Tests only** have no
@@ -54,10 +55,11 @@ and keep its mode, feature requirements and test links accurate.
 - **方式（Mode）:** `S` は同期、`A` は非同期、`—` は共通のデータ・マーカー・
   合成契約（非同期ポートではない）です。非同期ポートはボックス化された `Send` Future を
   返し、ランタイムは提供しません。
-- **feature:** 表中の core トレイト・ヘルパーはすべて `default-features = false` で
-  利用でき、非同期契約や `Secret` も対象です。四つのマクロだけが `derive`（既定で有効）を
-  必要とします。`serde` は任意で、値オブジェクトの生成された直列化には型ごとの
-  `#[value_object(serde)]` も必要です。イベント契約の前提条件ではありません。
+- **feature:** `ExposeSecret` 以外の core トレイト・ヘルパーは `default-features = false` で
+  利用でき、非同期契約や `Secret` も対象です。四つのマクロは `derive`（既定で有効）を
+  必要とします。`serde` は `Secret` の復元に対応し、値オブジェクトの生成された直列化には型ごとの
+  `#[value_object(serde)]` も必要です。`ExposeSecret` には `serde_with`（`serde` を含む）が必要です。
+  どちらの serde feature もイベント契約の前提条件ではありません。
 - 現在の実行例はすべて `derive` が必要です（[Cargo.toml](../Cargo.toml)参照）。
   実行例で実装するトレイト自体に `derive` が必要なわけではありません。
   **Tests only / テストのみ** の行は、現時点で対応する実行例がありません。
@@ -73,6 +75,7 @@ and keep its mode, feature requirements and test links accurate.
 | `Entity`, `ValueObject`, `AggregateRoot`, `DomainEvent` (traits / トレイト) | — | [getting_started](../examples/getting_started.rs) | [domain_flow](../facade-tests/tests/domain_flow.rs), [domain_events](../crates/core/tests/domain_events.rs) |
 | `Entity`, `ValueObject`, `AggregateRoot`, `DomainEvent` (derive macros; `derive` feature) | — | [getting_started](../examples/getting_started.rs) | [derive_via_facade](../facade-tests/tests/derive_via_facade.rs); optional `serde`: [serde_via_facade](../facade-tests/tests/serde_via_facade.rs) |
 | `Secret`, `SecretMetadata` | — | Tests only / テストのみ | [secret](../crates/core/tests/secret.rs), [secret_via_facade](../facade-tests/tests/secret_via_facade.rs), [secret_boundary_compile_fail](../crates/core/tests/secret_boundary_compile_fail.rs) |
+| `Secret` deserialization / 復元 (`serde`), `ExposeSecret` (`serde_with`) | — | Tests only / テストのみ; [serde guide / 連携ガイド](secret-serde.md) | [secret_deserialize](../crates/core/tests/secret_deserialize.rs), [secret_serde](../facade-tests/tests/secret_serde.rs), [secret_compile_fail](../crates/core/tests/secret_compile_fail.rs) |
 | `Specification`, `Policy` | S | [cqrs](../examples/cqrs.rs) | [generic_capabilities](../crates/core/tests/generic_capabilities.rs) |
 | `And`, `Or`, `Not` | S | Tests only / テストのみ | [generic_capabilities](../crates/core/tests/generic_capabilities.rs) |
 | `DomainService`, `DomainFactory` | S | Tests only / テストのみ | [generic_capabilities](../crates/core/tests/generic_capabilities.rs) |

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Check the facade in isolation: facade-tests enables derive + serde together,
+# Check the facade in isolation: facade-tests enables derive + serde_with together,
 # so workspace-wide checks alone cannot detect broken individual combinations.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -11,6 +11,7 @@ combos=(
   "--no-default-features --features derive"
   "--no-default-features --features serde"
   "--no-default-features --features derive,serde"
+  "--no-default-features --features serde_with"
   "--all-features"
 )
 
@@ -26,5 +27,6 @@ done
 # Core must also work without serde, independently of macro's dev-dependencies.
 cargo test -p ddd-toolkit-core --no-default-features --locked
 cargo test -p ddd-toolkit-core --features serde --locked
+cargo test -p ddd-toolkit-core --features serde_with --locked
 
 echo "All feature combinations checked successfully."

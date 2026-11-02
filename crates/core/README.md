@@ -29,8 +29,9 @@ Tested with the latest stable Rust (edition 2024). No minimum supported Rust
 version (MSRV) is specified.
 
 There are no default features.
-The only optional feature, `serde`, exposes serde internally for generated
-implementations; it does not automatically serialize domain types or `Secret`.
+The optional `serde` feature exposes serde internally for generated implementations
+and adds `Secret<T>` deserialization. `serde_with` includes `serde` and adds the
+`ExposeSecret` output adapter. Neither automatically serializes domain types or `Secret`.
 The crate uses `zeroize` for secret-value cleanup and has no async-runtime
 dependency.
 
@@ -231,8 +232,10 @@ assert!(token.expose_secret(|value| value.starts_with("example-")));
 
 `as_inner` also exposes plaintext. Calling `into_inner` transfers responsibility
 for zeroization to the caller. `SecretMetadata` is only a zero-sized marker; it
-does not protect a value. `Secret` does not implement serde serialization or
-implicit dereferencing.
+does not protect a value. `Secret` never implements `Serialize` or implicit dereferencing.
+With `serde`, it implements `Deserialize`; `serde_with` adds the explicit
+`ExposeSecret` plaintext output adapter. See [Secret serde integration](../../docs/secret-serde.md)
+for container composition, error redaction and input/output zeroization limits.
 
 ## Workflow and reliability boundaries
 

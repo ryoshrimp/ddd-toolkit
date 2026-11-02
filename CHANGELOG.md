@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Secret<T>` implements `Deserialize` with `serde`, replacing inner errors with
+  a fixed message. The optional `serde_with` feature provides `ExposeSecret` for
+  explicit plaintext serialization, composable with supported containers, without
+  implementing `Serialize` on `Secret` itself. Bilingual documentation explains
+  error-redaction limits and input/output zeroization and persistence boundaries (#44).
+
 ## [0.4.3] - 2026-11-02
 
 ### Added

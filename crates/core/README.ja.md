@@ -28,8 +28,9 @@ cargo add ddd-toolkit-core
 最低サポート Rust バージョン（MSRV）は定めていません。
 
 デフォルト feature はありません。
-唯一のオプション feature である `serde` は、生成された実装から serde を利用するための
-内部公開を有効にします。ドメイン型や `Secret` が自動的にシリアライズ可能になるわけではありません。
+オプションの `serde` feature は、生成された実装向けの serde 内部公開と
+`Secret<T>` の復元を有効にします。`serde_with` は `serde` を含み、出力アダプター
+`ExposeSecret` を追加します。ドメイン型や `Secret` を自動的にシリアライズするものではありません。
 秘密値の消去に `zeroize` を使用します。非同期ランタイムへの依存はありません。
 
 ## 構成要素
@@ -226,7 +227,10 @@ assert!(token.expose_secret(|value| value.starts_with("example-")));
 
 `as_inner` でも平文にアクセスできます。`into_inner` を呼ぶと、以後のゼロ化の責任は呼び出し側に移ります。
 `SecretMetadata` はサイズがゼロのマーカーにすぎず、値を保護しません。
-`Secret` は serde によるシリアライズや暗黙の参照外しを実装しません。
+`Secret` は `Serialize` や暗黙の参照外しを実装しません。`serde` feature では
+`Deserialize` を、`serde_with` feature では明示的な平文出力アダプター `ExposeSecret` を
+提供します。コンテナとの合成、エラー秘匿、入出力のゼロ化の限界は
+[Secret の serde 連携](../../docs/secret-serde.md)を参照してください。
 
 ## ワークフローと信頼性の責任範囲
 

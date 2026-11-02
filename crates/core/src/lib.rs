@@ -13,7 +13,9 @@
 //! [`Secret`] wraps a value implementing `zeroize::Zeroize`, redacts its formatted
 //! output, and zeroizes it on drop. Access to the unredacted value is explicit; extracting it
 //! transfers responsibility for zeroization to the caller. [`SecretMetadata`] is a zero-sized
-//! marker and does not itself protect data.
+//! marker and does not itself protect data. The `serde` feature adds `Secret` deserialization;
+//! `serde_with` includes `serde` and adds the explicit `ExposeSecret` output adapter.
+//! `Secret` never implements `Serialize`; adapter output is plaintext, not encryption.
 //!
 //! [`AsyncEventStore`] and [`AsyncSnapshotStore`] expose boxed `Send` futures for
 //! event and snapshot persistence. [`EventConsumer`] and [`Projection`] separate event handling
@@ -62,7 +64,9 @@
 //! [`Secret`] は `zeroize::Zeroize` を実装する値を包み、書式出力を秘匿化し、
 //! 破棄時にゼロ化します。秘匿化していない値には明示的にアクセスし、値を取り出した後の
 //! ゼロ化は呼び出し側が管理します。[`SecretMetadata`] はサイズがゼロのマーカーであり、
-//! それ自体はデータを保護しません。
+//! それ自体はデータを保護しません。`serde` feature は `Secret` の復元に対応し、
+//! `serde_with` は `serde` を含み、明示的な出力アダプター `ExposeSecret` を追加します。
+//! `Secret` 自体は `Serialize` を実装しません。アダプターの出力は暗号化されない平文です。
 //!
 //! [`AsyncEventStore`] と [`AsyncSnapshotStore`] はイベントとスナップショットの
 //! 永続化を、ボックス化された `Send` Future で公開します。[`EventConsumer`] と [`Projection`]
@@ -121,6 +125,8 @@ mod event_delivery_metadata;
 mod event_restoration_guard;
 mod event_store;
 mod event_versioning;
+#[cfg(feature = "serde_with")]
+mod expose_secret;
 mod outbox_lifecycle;
 mod process_manager;
 mod projection_reliability;
@@ -210,6 +216,9 @@ pub use replay::{
 pub use repository::Repository;
 
 pub use secret::Secret;
+
+#[cfg(feature = "serde_with")]
+pub use expose_secret::ExposeSecret;
 
 pub use secret_metadata::SecretMetadata;
 

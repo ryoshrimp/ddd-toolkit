@@ -206,7 +206,8 @@ fn main() {
 | Feature | デフォルト | 有効になる機能 |
 |---------|---------|---------|
 | `derive` | 有効 | `ValueObject`、`Entity`、`DomainEvent`、`AggregateRoot` の derive。コアの直接依存は不要 |
-| `serde` | 無効 | コアの serde 再エクスポートと、`#[value_object(serde)]` に必要な serde derive 対応。`derive` とは独立 |
+| `serde` | 無効 | コアの serde 再エクスポート、`Secret<T>` の復元、`#[value_object(serde)]` に必要な serde derive 対応。`derive` とは独立 |
+| `serde_with` | 無効 | `serde` を含み、合成可能な明示的平文出力用の `ExposeSecret` を追加 |
 
 値オブジェクトをシリアライズするには、ファサードの `serde` feature を有効にし、
 型ごとに次の属性を指定します。
@@ -247,7 +248,10 @@ struct UserId(String);
 `clippy::redundant_field_names` の許可は不要です。対応バージョンや serde feature の
 要件は [core/macro の互換性契約](docs/macro-compatibility.md) を参照してください。
 
-`Secret<T>` は feature の指定なしで使え、自動的にはシリアライズされません。
+`Secret<T>` は feature の指定なしで使え、`Serialize` は実装しません。
+`serde` feature は `Deserialize` を、`serde_with` feature は明示的な平文出力アダプター
+`ExposeSecret` を追加します。合成例、エラー秘匿と入出力のゼロ化の限界は
+[Secret の serde 連携](docs/secret-serde.md)を参照してください。
 `Secret::into_inner` を呼び出した後のゼロ化は呼び出し側の責任です。
 
 ## core/macro 0.3 からの移行
