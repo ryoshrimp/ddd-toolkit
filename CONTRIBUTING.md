@@ -82,6 +82,35 @@ Do not use `--include-ignored` for the functional-only path: it opts back into U
 snapshots. New trybuild harnesses must use the same `#[ignore]` annotation so they
 are selected by the UI script. Do not mark functional tests ignored.
 
+### Miri: Secret ownership and destruction
+
+CI's independent `miri-secret` job uses the latest nightly toolchain with the
+`miri` and `rust-src` components. It does not change the stable functional/UI
+paths or the existing required `test` gate. Reproduce locally with:
+
+```sh
+rustup toolchain install nightly --profile minimal --component miri --component rust-src
+cargo +nightly miri setup
+cargo +nightly miri test -p ddd-toolkit-core --no-default-features --test secret --locked
+```
+
+The explicit package and integration-test target limit interpretation to
+`crates/core/tests/secret.rs`, without optional features. This includes normal
+drop (zeroize followed by exactly one inner drop), ownership transfer through
+`into_inner` (no premature zeroize/drop and exactly one caller-owned drop),
+redaction/access, cloning/equality, and metadata tests. It does **not** run the
+workspace, doctests, trybuild/UI suites, or serde-specific tests. Keep this target
+selection explicit; do not replace it with an unrestricted `cargo miri test`.
+
+Miri checks these executed paths for undefined behavior, including invalid
+memory access and double frees around `ManuallyDrop`. Passing is not proof of
+all possible executions, complete zeroization, or absence of secret copies.
+The probe asserts calls/order, not that every secret byte in memory is erased.
+Nightly/Miri availability or behavior can change independently of stable Rust;
+record `rustc +nightly -Vv` and `cargo +nightly miri --version` when diagnosing
+failures, and distinguish toolchain regressions from ownership bugs rather than
+skipping the check.
+
 ## Diagnostic snapshots (core and macro)
 
 All trybuild suites use the latest stable Rust **with matching `rust-src`**,
