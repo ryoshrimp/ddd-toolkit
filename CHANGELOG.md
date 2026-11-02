@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-11-02
+
+### Changed
+
+- Upgrade to core 0.4.6 for opt-in Secret deserialization and explicit plaintext
+  serialization via `ExposeSecret`. Macro remains at 0.5.2; the supported
+  core/macro compatibility range is unchanged.
+
 ### Added
 
 - Dedicated nightly Miri CI check for Secret's ownership and destruction tests,

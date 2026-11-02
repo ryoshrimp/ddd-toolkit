@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-11-02
+
+### Added
+
+- Implement `Deserialize` for `Secret<T>` behind `serde`, replacing inner errors
+  with a fixed message. The optional `serde_with` feature provides `ExposeSecret`
+  for explicit plaintext serialization, including supported containers, without
+  implementing `Serialize` on `Secret` itself (#44).
+- Bilingual Secret serde documentation describes error-redaction limits,
+  input/output zeroization and persistence boundaries (#44).
+- Dedicated nightly Miri CI coverage for Secret ownership transfer and
+  zeroize-before-drop behavior, separate from stable functional/UI checks (#31).
+
 ## [0.4.5] - 2026-11-02
 
 ### Changed

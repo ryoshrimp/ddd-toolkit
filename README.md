@@ -28,7 +28,7 @@ by API name, including sync/async modes and feature requirements.
 ## Package and toolchain
 
 Domain-Driven Design traits and helpers, re-exported from
-[`ddd-toolkit-core`](crates/core) 0.4.5,
+[`ddd-toolkit-core`](crates/core) 0.4.6,
 plus the four derives from
 [`ddd-toolkit-macro`](crates/macro) 0.5.2.
 All public items are available at `ddd_toolkit::`.
