@@ -56,6 +56,17 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: ./scripts/check-feature-matrix.sh
 
+  miri-secret:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri, rust-src
+      - run: cargo +nightly miri setup
+      # Only this integration target: no workspace, doctests, or trybuild suites.
+      - run: cargo +nightly miri test -p ddd-toolkit-core --no-default-features --test secret --locked
+
   rustdoc:
     runs-on: ubuntu-latest
     steps:

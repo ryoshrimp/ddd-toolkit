@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Dedicated nightly Miri CI check for Secret's ownership and destruction tests,
+  separate from stable functional tests and UI diagnostics. Contributor instructions
+  document the bounded test target, local reproduction, and limits of Miri and
+  zeroization checks (#31).
 - `Secret<T>` implements `Deserialize` with `serde`, replacing inner errors with
   a fixed message. The optional `serde_with` feature provides `ExposeSecret` for
   explicit plaintext serialization, composable with supported containers, without
