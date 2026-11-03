@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.5] - 2026-11-03
+
+### Changed
+
+- Upgrade to macro 0.5.3 for ValueObject serde helper type resolution and
+  multi-field tuple serialization fixes. Core remains at 0.4.6; the supported
+  core/macro compatibility range is unchanged.
+
 ### Fixed
 
 - Resolve imported field types and generic bounds in ValueObject serde helpers

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-11-03
+
 ### Fixed
 
 - Bring parent-scope imports into ValueObject serde helper modules so imported

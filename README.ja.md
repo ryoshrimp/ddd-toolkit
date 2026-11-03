@@ -27,7 +27,7 @@ API・ドキュメント・ユースケースへのフィードバックを
 
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
 [`ddd-toolkit-core`](crates/core) 0.4.6 の公開 API と、
-[`ddd-toolkit-macro`](crates/macro) 0.5.2 の四つの derive マクロを再エクスポートします。
+[`ddd-toolkit-macro`](crates/macro) 0.5.3 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
 最新の Rust stable（edition 2024）で検証しています。
