@@ -12,6 +12,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = '''
 #![allow(dead_code)]
+#![deny(proc_macro_derive_resolution_fallback)]
 use api::AggregateRoot as _;
 
 #[derive(macros::ValueObject)]
@@ -59,6 +60,38 @@ fn derives_and_serde_work() {
     let mut order = Order { id: 7, events: vec![] };
     order.record_event(Event::Created);
     assert_eq!(order.pull_events(), vec![Event::Created]);
+}
+
+mod imported_types {
+    use super::Id;
+
+    #[derive(macros::ValueObject)]
+    #[value_object(serde)]
+    struct Pair { first: Id, second: Id }
+
+    #[derive(macros::ValueObject)]
+    #[value_object(serde)]
+    struct Tuple(Id, Id);
+
+    #[derive(macros::ValueObject)]
+    #[value_object(serde)]
+    enum Choice { Named { id: Id }, Newtype(Id), Tuple(Id, Id) }
+
+    #[test]
+    fn imported_types_deserialize() {
+        let pair = serde_json::from_str::<Pair>(r#"{"first":1,"second":2}"#).unwrap();
+        assert_eq!(pair, Pair::new(Id::new(1), Id::new(2)));
+        let tuple = serde_json::from_str::<Tuple>("[1,2]").unwrap();
+        assert_eq!(tuple, Tuple::new(Id::new(1), Id::new(2)));
+        for value in [
+            Choice::new_named(Id::new(1)),
+            Choice::new_newtype(Id::new(1)),
+            Choice::new_tuple(Id::new(1), Id::new(2)),
+        ] {
+            let json = serde_json::to_string(&value).unwrap();
+            assert_eq!(serde_json::from_str::<Choice>(&json).unwrap(), value);
+        }
+    }
 }
 '''
 

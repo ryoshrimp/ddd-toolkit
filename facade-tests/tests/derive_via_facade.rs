@@ -187,3 +187,31 @@ fn entity_identity_and_aggregate_event_queue() {
     assert_eq!(order.pull_events(), vec![Event::Placed, Event::Cancelled]);
     assert!(order.pull_events().is_empty());
 }
+
+// Other derives must also resolve user-imported types in a nested consumer scope.
+mod imported_types {
+    use super::Email;
+    use ddd_toolkit::AggregateRoot as _;
+    use std::num::NonZeroU64;
+
+    #[derive(Debug, Clone, PartialEq, ddd_toolkit::DomainEvent)]
+    struct EmailChanged(Email);
+
+    #[derive(Debug, ddd_toolkit::Entity, ddd_toolkit::AggregateRoot)]
+    struct Account {
+        #[entity(id)]
+        id: NonZeroU64,
+        #[aggregate(events)]
+        events: Vec<EmailChanged>,
+    }
+
+    #[test]
+    fn other_derives_preserve_imported_type_resolution() {
+        let id = NonZeroU64::new(1).unwrap();
+        let mut account = Account { id, events: vec![] };
+        let event = EmailChanged(Email::try_new("a@b.com".to_owned()).unwrap());
+        assert_eq!(ddd_toolkit::Entity::id(&account), &id);
+        account.record_event(event.clone());
+        assert_eq!(account.pull_events(), vec![event]);
+    }
+}
