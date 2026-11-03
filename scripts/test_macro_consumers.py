@@ -405,8 +405,10 @@ class MacroConsumerTests(unittest.TestCase):
                 deps = dependency("implementation", package, path, ["serde"])
                 deps += dependency("macros", "ddd-toolkit-macro", ROOT / "crates/macro")
                 deps += 'serde_json = "1"\nserde = { version = "1", features = ["derive"] }\n'
-                source = f'extern crate self as {name};\npub use implementation::*;\n'
-                source += SOURCE.replace("#![allow(dead_code)]", "").replace("api::", f"{name}::")
+                # Keep all crate-level attributes before the self-alias items.
+                self_alias = f'extern crate self as {name};\npub use implementation::*;\n'
+                source = SOURCE.replace("use api::", self_alias + "use api::", 1)
+                source = source.replace("api::", f"{name}::")
                 # Test the same derive in library, integration, and doctest targets.
                 source += '\n/// ```\n/// #[derive(macros::ValueObject)]\n/// struct Id(u64);\n/// ```\npub struct DocExample;\n'
                 self.check_consumer(deps, source, package=package,
