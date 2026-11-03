@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolve imported field types and generic bounds in ValueObject serde helpers
+  for named/tuple structs and enums, without collisions with user types named
+  `Fields` or `Enum`. Fix multi-field tuple serialization compilation and add
+  facade consumer regression coverage, including the other derives (#48).
+
 ## [0.4.4] - 2026-11-02
 
 ### Changed

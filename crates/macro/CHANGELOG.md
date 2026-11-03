@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bring parent-scope imports into ValueObject serde helper modules so imported
+  field types and generic bounds resolve for multi-field structs and enums.
+  Use value-object-specific helper type names to avoid shadowing user types
+  named `Fields` or `Enum`, and fix the serializer call for multi-field tuple
+  structs. Facade consumers cover all helper shapes and imported types in
+  Entity, AggregateRoot, and DomainEvent derives (#48).
+
 ## [0.5.2] - 2026-11-02
 
 ### Added

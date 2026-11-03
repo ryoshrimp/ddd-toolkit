@@ -544,6 +544,7 @@ fn serde_impl_enum(
     );
     let helper = format_ident!("__ddd_value_object_{}", name);
     let (helper_impl, _, helper_where) = original.split_for_impl();
+    let helper_type = format_ident!("__DddValueObjectEnum{}", name);
     let definitions = variants.iter().map(enum_variant_definition);
     let helper_definition = quote! {
         /// **English:**<br>
@@ -551,7 +552,7 @@ fn serde_impl_enum(
         ///
         /// **日本語:**<br>
         /// serde の復号用に値オブジェクトのバリアント構成を保持します。
-        pub enum Enum #helper_impl { #(#definitions),* } #helper_where
+        pub enum #helper_type #helper_impl { #(#definitions),* } #helper_where
     };
 
     let mut serialize_generics = original.clone();
@@ -635,12 +636,12 @@ fn serde_impl_enum(
         let helper_name = &variant.variant.ident;
         let self_name = &variant.variant.ident;
         let helper_pattern = if variant.unit {
-            quote! { #helper::Enum::#helper_name }
+            quote! { #helper::#helper_type::#helper_name }
         } else if variant.named {
             let members = &variant.members;
-            quote! { #helper::Enum::#helper_name { #(#members: #bindings),* } }
+            quote! { #helper::#helper_type::#helper_name { #(#members: #bindings),* } }
         } else {
-            quote! { #helper::Enum::#helper_name(#(#bindings),*) }
+            quote! { #helper::#helper_type::#helper_name(#(#bindings),*) }
         };
         let self_value = if variant.unit {
             quote! { Self::#self_name }
@@ -668,6 +669,10 @@ fn serde_impl_enum(
         #[doc(hidden)]
         #[allow(non_snake_case)]
         mod #helper {
+            // Field types and generic bounds are written in the parent's scope.
+            #[allow(unused_imports)]
+            use super::*;
+
             #[derive(#serde::Deserialize)]
             #[serde(crate = #serde_path)]
             #helper_definition
@@ -687,7 +692,7 @@ fn serde_impl_enum(
             where
                 D: #serde::Deserializer<#de_lifetime>,
             {
-                let value = <#helper::Enum #original_ty as #serde::Deserialize<#de_lifetime>>::deserialize(deserializer)?;
+                let value = <#helper::#helper_type #original_ty as #serde::Deserialize<#de_lifetime>>::deserialize(deserializer)?;
                 match value { #(#deserialize_arms),* }
             }
         }
@@ -1339,6 +1344,7 @@ fn serde_impl_multi(
     );
     let helper = format_ident!("__ddd_value_object_{}", name);
     let (helper_impl, _, helper_where) = original.split_for_impl();
+    let helper_type = format_ident!("__DddValueObjectFields{}", name);
     let helper_definition = if named {
         let defs = fields.iter().map(|field| {
             let ident = field.ident.as_ref().expect("named field has an identifier");
@@ -1351,7 +1357,7 @@ fn serde_impl_multi(
             ///
             /// **日本語:**<br>
             /// 値オブジェクトの検証前に復号された名前付きフィールドを保持します。
-            pub struct Fields #helper_impl { #(#defs),* } #helper_where
+            pub struct #helper_type #helper_impl { #(#defs),* } #helper_where
         }
     } else {
         quote! {
@@ -1360,7 +1366,7 @@ fn serde_impl_multi(
             ///
             /// **日本語:**<br>
             /// 値オブジェクト構築前に復号されたタプルフィールドを保持します。
-            pub struct Fields #helper_impl (#(pub #types),*) #helper_where;
+            pub struct #helper_type #helper_impl (#(pub #types),*) #helper_where;
         }
     };
     let helper_values: Vec<TokenStream> = members
@@ -1411,7 +1417,7 @@ fn serde_impl_multi(
         }
     } else {
         quote! {
-            let mut state = #serde::Serializer::serialize_tuple(serializer, stringify!(#name), #field_count)?;
+            let mut state = #serde::Serializer::serialize_tuple(serializer, #field_count)?;
             #( #serde::ser::SerializeTuple::serialize_element(&mut state, &self.#members)?; )*
             #serde::ser::SerializeTuple::end(state)
         }
@@ -1429,6 +1435,10 @@ fn serde_impl_multi(
         #[doc(hidden)]
         #[allow(non_snake_case)]
         mod #helper {
+            // Field types and generic bounds are written in the parent's scope.
+            #[allow(unused_imports)]
+            use super::*;
+
             #[derive(#serde::Deserialize)]
             #[serde(crate = #serde_path)]
             #helper_definition
@@ -1448,7 +1458,7 @@ fn serde_impl_multi(
             where
                 D: #serde::Deserializer<#de_lifetime>,
             {
-                let fields = <#helper::Fields #original_ty as #serde::Deserialize<#de_lifetime>>::deserialize(deserializer)?;
+                let fields = <#helper::#helper_type #original_ty as #serde::Deserialize<#de_lifetime>>::deserialize(deserializer)?;
                 #deserialize_build
             }
         }
