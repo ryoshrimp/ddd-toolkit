@@ -245,8 +245,51 @@ Deserialization runs the configured validator; validation errors become
 ## Entities and aggregate events
 
 `Entity` compares and hashes only the field marked `#[entity(id)]`; other fields
-do not participate. It provides an inherent borrowed `id()` accessor, but no
-constructor or identifier validation.
+do not participate. It provides an inherent borrowed `id()` accessor. By default,
+no constructor or validation is generated.
+
+Optional validation and serde can be used independently or together:
+
+```rust
+use ddd_toolkit::Entity;
+
+#[derive(Entity)]
+#[entity(validate = check_stock, error = &'static str, serde)]
+struct Stock {
+    #[entity(id)]
+    id: u64,
+    reserved: u32,
+    total: u32,
+}
+
+fn check_stock(stock: &Stock) -> Result<(), &'static str> {
+    if stock.reserved <= stock.total { Ok(()) } else { Err("over-reserved") }
+}
+
+let stock = Stock::try_new(42, 2, 5).unwrap();
+assert_eq!(stock.id(), &42);
+assert!(Stock::try_new(42, 6, 5).is_err());
+```
+
+- Enable the facade/core `serde` feature for `#[entity(serde)]`. No direct serde
+  dependency is required for generated implementations. All fields are serialized
+  in struct format, even when the ID is the only field. Field/container serde
+  customization attributes are not forwarded; use manual implementations or DTOs
+  when you need a different wire/storage representation.
+- Specify `validate` and `error` together. The validator receives `&Self` even
+  for one field. `try_new` takes every field in declaration order, including the
+  ID, and propagates validation errors and panics. Without validation, no
+  constructor is generated; serde-only restoration constructs the supplied state.
+- Deserialization validates via `try_new` when configured. Errors become
+  `entity validation failed`, without requiring `Display` on the error type.
+  Neither construction nor restoration generates IDs, records creation events,
+  or invokes handwritten business creation methods.
+- Validated entities reject unrestricted `pub` fields. Defining-module construction,
+  restricted visibility, and handwritten mutations can still bypass validation.
+  State-changing methods must preserve invariants themselves. Construction checks
+  are not authorization, database uniqueness checks, or transition rules.
+- `trait_only` cannot be combined with `validate`, `error`, or `serde`. Existing
+  handwritten `try_new` or serde implementations must not conflict with generated ones.
 
 `DomainEvent` is a marker implementation for a struct or enum. It does not add
 serialization, methods, or `Send`/`Sync` bounds.

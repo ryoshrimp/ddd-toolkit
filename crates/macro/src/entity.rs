@@ -13,6 +13,9 @@ use crate::path::core_path;
 /// 生成し、不正な形状、属性の誤配置、識別子の曖昧さをエラーにします。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     let mut trait_only = false;
+    let mut validator: Option<syn::Path> = None;
+    let mut error: Option<syn::Type> = None;
+    let mut serde = false;
     for attr in &input.attrs {
         if !attr.path().is_ident("entity") {
             continue;
@@ -20,6 +23,30 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         let mut option_found = false;
         attr.parse_nested_meta(|meta| {
             option_found = true;
+            if meta.path.is_ident("validate") {
+                if validator.is_some() {
+                    return Err(meta.error("duplicate validate attribute"));
+                }
+                validator = Some(meta.value()?.parse()?);
+                return Ok(());
+            }
+            if meta.path.is_ident("error") {
+                if error.is_some() {
+                    return Err(meta.error("duplicate error attribute"));
+                }
+                error = Some(meta.value()?.parse()?);
+                return Ok(());
+            }
+            if meta.path.is_ident("serde") {
+                if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
+                    return Err(meta.error("serde is a flag and takes no value"));
+                }
+                if serde {
+                    return Err(meta.error("duplicate serde attribute"));
+                }
+                serde = true;
+                return Ok(());
+            }
             if !meta.path.is_ident("trait_only") {
                 return Err(meta.error("entity(id) must be placed on a named field"));
             }
@@ -35,9 +62,22 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         if !option_found {
             return Err(syn::Error::new_spanned(
                 attr,
-                "entity requires the trait_only flag",
+                "entity requires at least one option",
             ));
         }
+    }
+
+    if trait_only && (validator.is_some() || error.is_some() || serde) {
+        return Err(syn::Error::new_spanned(
+            &input.ident,
+            "trait_only cannot be combined with validate, error, or serde",
+        ));
+    }
+    if validator.is_some() != error.is_some() {
+        return Err(syn::Error::new_spanned(
+            &input.ident,
+            "validate and error must be specified together",
+        ));
     }
 
     let fields = match &input.data {
@@ -95,6 +135,61 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         return Ok(trait_impl);
     }
 
+    if validator.is_some()
+        && let Some(field) = fields
+            .iter()
+            .find(|field| matches!(field.vis, syn::Visibility::Public(_)))
+    {
+        return Err(syn::Error::new_spanned(
+            field,
+            "validated Entity fields must not be public",
+        ));
+    }
+    let arguments: Vec<_> = fields
+        .iter()
+        .map(|field| field.ident.as_ref().unwrap())
+        .collect();
+    let types: Vec<_> = fields.iter().map(|field| &field.ty).collect();
+    let constructor = match (&validator, &error) {
+        (Some(validator), Some(error)) => Some(quote! {
+            /// **English:**<br>
+            /// Builds the supplied state in declaration order and validates it.
+            /// Propagates validator errors and panics; does not generate an ID or events.
+            ///
+            /// **日本語:**<br>
+            /// 宣言順に指定された状態を構築して検証します。検証のエラーとパニックを
+            /// 伝播し、ID の生成やイベントの発生は行いません。
+            pub fn try_new(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
+                let candidate = Self { #(#arguments),* };
+                #validator(&candidate)?;
+                Ok(candidate)
+            }
+        }),
+        _ => None,
+    };
+    let serde_impl = if serde {
+        let members: Vec<_> = arguments
+            .iter()
+            .map(|ident| syn::Member::Named((*ident).clone()))
+            .collect();
+        let Data::Struct(data) = &input.data else {
+            unreachable!()
+        };
+        Some(crate::value_object::serde_impl_multi(
+            name,
+            &input.generics,
+            &data.fields,
+            &members,
+            &types,
+            true,
+            validator.is_some(),
+            &core,
+            "entity validation failed",
+        )?)
+    } else {
+        None
+    };
+
     let mut partial_eq_generics = input.generics.clone();
     partial_eq_generics
         .make_where_clause()
@@ -118,6 +213,7 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
 
     Ok(quote! {
         #trait_impl
+        #serde_impl
 
         impl #impl_generics #name #ty_generics #where_clause {
             /// **English:**<br>
@@ -128,6 +224,8 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
             pub fn id(&self) -> &#id_ty {
                 &self.#id_name
             }
+
+            #constructor
         }
 
         impl #partial_eq_impl ::core::cmp::PartialEq for #name #partial_eq_ty #partial_eq_where {

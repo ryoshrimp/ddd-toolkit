@@ -237,8 +237,49 @@ fn main() {
 ## エンティティと集約イベント
 
 `Entity` は `#[entity(id)]` フィールドだけで比較とハッシュを行い、他のフィールドは
-使いません。識別子を借用する固有メソッド `id()` を生成しますが、コンストラクターや
-識別子の検証は生成しません。
+使いません。識別子を借用する固有メソッド `id()` を生成します。
+既定ではコンストラクターや検証は生成しません。
+
+検証と serde はそれぞれ独立して、または組み合わせて指定できます:
+
+```rust
+use ddd_toolkit::Entity;
+
+#[derive(Entity)]
+#[entity(validate = check_stock, error = &'static str, serde)]
+struct Stock {
+    #[entity(id)]
+    id: u64,
+    reserved: u32,
+    total: u32,
+}
+
+fn check_stock(stock: &Stock) -> Result<(), &'static str> {
+    if stock.reserved <= stock.total { Ok(()) } else { Err("over-reserved") }
+}
+
+let stock = Stock::try_new(42, 2, 5).unwrap();
+assert_eq!(stock.id(), &42);
+assert!(Stock::try_new(42, 6, 5).is_err());
+```
+
+- `#[entity(serde)]` にはファサードまたはコアの `serde` feature が必要です。
+  生成コードのために serde へ直接依存する必要はありません。ID のみでも全フィールドを
+  構造体形式で直列化します。フィールド・コンテナーの serde カスタマイズ属性は転送しません。
+  通信・保存形式を変更したい場合は手書き実装または DTO を使ってください。
+- `validate` と `error` は同時に指定します。単一フィールドでも検証関数は `&Self` を
+  受け取ります。`try_new` は ID を含む全フィールドを宣言順に取り、検証のエラーと
+  パニックを伝播します。検証なしではコンストラクターを生成せず、serde のみの復元は
+  指定された状態をそのまま構築します。
+- 検証付きの逆直列化は `try_new` を呼びます。エラー型に `Display` を要求せず、
+  失敗を `entity validation failed` に変換します。構築・復元のどちらも ID の生成、
+  作成イベントの記録、手書きの業務上の作成メソッドの呼び出しは行いません。
+- 検証付き Entity は無制限の `pub` フィールドを禁止しますが、定義モジュール内の
+  直接構築、制限付き公開、手書きの変更処理では検証を迂回できます。状態変更メソッド
+  自身でも不変条件を維持してください。構築時の検証は認可、DB の一意性検査、
+  状態遷移のルールを代替しません。
+- `trait_only` と `validate`、`error`、`serde` の併用は禁止です。手書きの `try_new`
+  や serde 実装は生成コードと衝突しないようにしてください。
 
 `DomainEvent` は構造体または列挙型へのマーカー実装です。
 シリアライズ、メソッド、`Send` / `Sync` 境界は追加しません。

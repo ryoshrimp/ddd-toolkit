@@ -1,0 +1,34 @@
+error: validate and error must be specified together
+ --> tests/ui/entity_validation_options.rs:5:8
+  |
+5 | struct MissingError {
+  |        ^^^^^^^^^^^^
+
+error: validate and error must be specified together
+  --> tests/ui/entity_validation_options.rs:12:8
+   |
+12 | struct MissingValidator {
+   |        ^^^^^^^^^^^^^^^^
+
+error: trait_only cannot be combined with validate, error, or serde
+  --> tests/ui/entity_validation_options.rs:19:8
+   |
+19 | struct TraitOnlySerde {
+   |        ^^^^^^^^^^^^^^
+
+error: validated Entity fields must not be public
+  --> tests/ui/entity_validation_options.rs:29:5
+   |
+29 | /     /// **English:**<br>
+30 | |     /// Exposes state to test rejection of public validated fields.
+31 | |     ///
+32 | |     /// **日本語:**<br>
+33 | |     /// 検証対象の公開フィールドの拒否を確認するために状態を公開します。
+34 | |     pub state: u32,
+   | |__________________^
+
+error: duplicate serde attribute
+  --> tests/ui/entity_validation_options.rs:38:17
+   |
+38 | #[entity(serde, serde)]
+   |                 ^^^^^

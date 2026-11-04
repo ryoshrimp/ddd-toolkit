@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Opt-in Entity validation and serde: `#[entity(validate = check, error = Error,
+  serde)]` generates a state-only `try_new` and validates deserialization while
+  preserving supplied IDs. Existing identity equality/hashing and default APIs
+  remain unchanged; `trait_only` cannot be combined with these options.
+
+### Fixed
+
+- Shared named-struct serde helpers now place generic `where` clauses before
+  the body and serialize raw identifier fields without the `r#` prefix.
+
 ## [0.4.5] - 2026-11-03
 
 ### Changed

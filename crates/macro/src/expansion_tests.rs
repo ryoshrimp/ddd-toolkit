@@ -204,7 +204,7 @@ fn trait_only_rejects_invalid_options_and_shapes() {
             ),
             (
                 "#[entity()] struct V { #[entity(id)] id: u32 }",
-                "requires the trait_only flag",
+                "requires at least one option",
             ),
             ("#[entity(trait_only)] struct V { id: u32 }", "exactly one"),
             (
@@ -325,6 +325,77 @@ fn entity_reports_attribute_and_shape_errors() {
             ),
         ],
     );
+}
+
+#[test]
+fn entity_validation_options_reject_unsafe_or_ambiguous_combinations() {
+    rejects(
+        entity::expand,
+        &[
+            (
+                "#[entity(validate = check)] struct V { #[entity(id)] id: u64 }",
+                "specified together",
+            ),
+            (
+                "#[entity(error = Error)] struct V { #[entity(id)] id: u64 }",
+                "specified together",
+            ),
+            (
+                "#[entity(validate = a, validate = b)] struct V { #[entity(id)] id: u64 }",
+                "duplicate validate",
+            ),
+            (
+                "#[entity(error = A, error = B)] struct V { #[entity(id)] id: u64 }",
+                "duplicate error",
+            ),
+            (
+                "#[entity(serde)] #[entity(serde)] struct V { #[entity(id)] id: u64 }",
+                "duplicate serde",
+            ),
+            (
+                "#[entity(serde = true)] struct V { #[entity(id)] id: u64 }",
+                "serde is a flag",
+            ),
+            (
+                "#[entity(trait_only, serde)] struct V { #[entity(id)] id: u64 }",
+                "cannot be combined",
+            ),
+            (
+                "#[entity(trait_only, validate = check, error = Error)] struct V { #[entity(id)] id: u64 }",
+                "cannot be combined",
+            ),
+            (
+                "#[entity(validate = check, error = Error)] struct V { #[entity(id)] pub id: u64 }",
+                "must not be public",
+            ),
+            (
+                "#[entity(validate = check, error = Error)] struct V { #[entity(id)] id: u64, pub data: u32 }",
+                "must not be public",
+            ),
+        ],
+    );
+}
+
+#[test]
+fn entity_options_expand_independently_and_in_any_order() {
+    for options in [
+        quote!(validate = check, error = Error),
+        quote!(serde),
+        quote!(serde, validate = check, error = Error),
+    ] {
+        let input = syn::parse2(quote! {
+            #[entity(#options)]
+            struct Item<T> { #[entity(id)] key: u64, payload: T }
+        })
+        .unwrap();
+        let output = entity::expand(input).unwrap().to_string();
+        let options = options.to_string();
+        assert_eq!(output.contains("try_new"), options.contains("validate"));
+        assert_eq!(
+            output.contains("Serialize for Item"),
+            options.contains("serde")
+        );
+    }
 }
 
 #[test]
