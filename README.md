@@ -97,6 +97,11 @@ fn main() {
 do not derive these again. Unvalidated structs use `new`; validated structs use
 `try_new`. Named/multi-field structs and data-carrying enums are also supported.
 `Entity` derives equality and hashing using only the `#[entity(id)]` field.
+Optionally, `#[entity(validate = check, error = Error, serde)]` adds a validated
+`try_new(...)` and serde support (enable the facade `serde` feature). The validator
+receives `&Self`; deserialization validates too. Supplied IDs are preserved and no
+creation events are generated. State-changing methods must still enforce invariants.
+See [entity validation and serde](crates/macro/README.md#entities-and-aggregate-events).
 
 ## Next: runnable examples
 

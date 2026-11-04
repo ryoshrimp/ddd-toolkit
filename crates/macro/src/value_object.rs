@@ -923,6 +923,7 @@ fn expand_multi(
             named,
             attrs.validator.is_some(),
             &core,
+            "value object validation failed",
         )?)
     } else {
         None
@@ -1324,7 +1325,7 @@ fn serde_impl_single(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn serde_impl_multi(
+pub(crate) fn serde_impl_multi(
     name: &syn::Ident,
     original: &Generics,
     fields: &Fields,
@@ -1333,6 +1334,7 @@ fn serde_impl_multi(
     named: bool,
     validated: bool,
     core: &TokenStream,
+    validation_error: &str,
 ) -> Result<TokenStream> {
     let serde = quote!(#core::__private::serde);
     let serde_path = LitStr::new(
@@ -1353,11 +1355,11 @@ fn serde_impl_multi(
         });
         quote! {
             /// **English:**<br>
-            /// Holds named fields decoded before value-object validation.
+            /// Holds named fields decoded before domain validation.
             ///
             /// **日本語:**<br>
-            /// 値オブジェクトの検証前に復号された名前付きフィールドを保持します。
-            pub struct #helper_type #helper_impl { #(#defs),* } #helper_where
+            /// ドメイン検証前に復号された名前付きフィールドを保持します。
+            pub struct #helper_type #helper_impl #helper_where { #(#defs),* }
         }
     } else {
         quote! {
@@ -1407,7 +1409,7 @@ fn serde_impl_multi(
             .iter()
             .map(|field| {
                 let ident = field.ident.as_ref().expect("named field has an identifier");
-                LitStr::new(&ident.to_string(), ident.span())
+                LitStr::new(&ident.unraw().to_string(), ident.span())
             })
             .collect();
         quote! {
@@ -1425,7 +1427,7 @@ fn serde_impl_multi(
     let deserialize_build = if validated {
         quote! {
             Self::try_new(#(#helper_values),*).map_err(|_| {
-                <D::Error as #serde::de::Error>::custom("value object validation failed")
+                <D::Error as #serde::de::Error>::custom(#validation_error)
             })
         }
     } else {

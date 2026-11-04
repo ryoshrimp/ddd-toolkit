@@ -65,6 +65,34 @@ fn derives_and_serde_work() {
 mod imported_types {
     use super::Id;
 
+    #[derive(Debug, macros::Entity)]
+    #[entity(validate = validate_record, error = &'static str, serde)]
+    struct Record<T> where T: Clone {
+        #[entity(id)]
+        id: Id,
+        r#type: T,
+        count: u64,
+    }
+
+    fn validate_record<T: Clone>(record: &Record<T>) -> Result<(), &'static str> {
+        if record.count == 0 { Err("empty") } else { Ok(()) }
+    }
+
+    #[test]
+    fn entity_serde_uses_reexport_and_validates_imported_types() {
+        let record = Record::try_new(Id::new(7), String::from("item"), 2).unwrap();
+        let json = serde_json::to_string(&record).unwrap();
+        assert_eq!(json, r#"{"id":7,"type":"item","count":2}"#);
+        let restored: Record<String> = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored, record);
+        assert_eq!(restored.r#type, "item");
+        assert_eq!(restored.count, 2);
+        let error = serde_json::from_str::<Record<String>>(
+            r#"{"id":7,"type":"item","count":0}"#,
+        ).unwrap_err();
+        assert!(error.to_string().contains("entity validation failed"));
+    }
+
     #[derive(macros::ValueObject)]
     #[value_object(serde)]
     struct Pair { first: Id, second: Id }
@@ -111,8 +139,19 @@ struct Order {
     #[aggregate(events)]
     events: Vec<Event>,
 }
+#[derive(macros::Entity)]
+#[entity(validate = validate_identity, error = &'static str)]
+struct ValidatedIdentity {
+    #[entity(id)]
+    id: u64,
+}
+fn validate_identity(value: &ValidatedIdentity) -> Result<(), &'static str> {
+    if value.id == 0 { Err("zero") } else { Ok(()) }
+}
 #[test]
 fn contracts_work_without_serde() {
+    assert!(ValidatedIdentity::try_new(0).is_err());
+    assert_eq!(*ValidatedIdentity::try_new(7).unwrap().id(), 7);
     fn value_object<T: api::ValueObject>() {}
     fn aggregate<T: api::AggregateRoot>() {}
     value_object::<Id>();

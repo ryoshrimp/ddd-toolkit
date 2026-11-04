@@ -160,13 +160,30 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 ///
 /// Requires a named-field struct with exactly one `#[entity(id)]` field. Other
 /// fields do not participate in comparison or hashing; identifier types must
-/// implement the corresponding traits. No constructor or identifier validation
+/// implement the corresponding traits. By default no constructor or validation
 /// is generated. Non-struct inputs, misplaced flags, missing or multiple identifier
 /// fields, unknown options, and missing core dependencies cause compile errors.
+///
+/// `#[entity(validate = path, error = ErrorType)]` generates `try_new` taking all
+/// fields in declaration order, including the supplied ID. The validator receives
+/// `&Self` (even for one field) and returns `Result<(), ErrorType>`; errors and
+/// panics propagate. Unrestricted `pub` fields are rejected. Direct construction
+/// in the defining module, restricted visibility, and handwritten mutations can
+/// still bypass validation; mutation methods must preserve invariants themselves.
+///
+/// `#[entity(serde)]` generates `Serialize` and `Deserialize` using the core
+/// crate's serde re-export; enable the core or facade `serde` feature. All fields
+/// participate, in struct format even for an ID-only entity. With validation
+/// configured, deserialization calls `try_new`, mapping failures to
+/// `entity validation failed` without exposing the validator error. These paths
+/// only construct supplied state: they do not generate IDs or creation events.
+/// Use separate DTOs when persistence or wire formats differ from the domain model.
+/// Field/container serde customization attributes are not forwarded.
 ///
 /// `#[entity(trait_only)]` generates only the domain trait implementation. It
 /// still requires `#[entity(id)]`, but adds no inherent `id()`, standard traits,
 /// or extra bounds, so handwritten accessors and equality semantics are preserved.
+/// It cannot be combined with `validate`, `error`, or `serde`.
 ///
 /// **日本語:**<br>
 /// `ddd_toolkit_core::Entity` と識別子を借用する固有の `id()`、
@@ -174,13 +191,29 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 ///
 /// 名前付き構造体に `#[entity(id)]` フィールドがちょうど一つ必要です。
 /// 他のフィールドは比較やハッシュに使いません。識別子型は対応するトレイトを
-/// 実装する必要があります。コンストラクターや識別子の検証は生成しません。
+/// 実装する必要があります。既定ではコンストラクターや検証は生成しません。
 /// 構造体以外、フラグの誤配置、識別子の欠落・複数指定、未知のオプション、
 /// コア依存の欠落はコンパイルエラーになります。
+///
+/// `#[entity(validate = path, error = ErrorType)]` は ID を含む全フィールドを
+/// 宣言順に受け取る `try_new` を生成します。検証関数は単一フィールドでも
+/// `&Self` を受け取り、`Result<(), ErrorType>` を返します。エラーとパニックは
+/// 伝播します。無制限の `pub` フィールドは禁止しますが、定義モジュール内の
+/// 直接構築、制限付き公開、手書きの変更処理では検証を迂回できるため、
+/// 状態変更メソッド自身でも不変条件を維持してください。
+///
+/// `#[entity(serde)]` はコアの serde 再公開を使って `Serialize` と `Deserialize`
+/// を生成します。コアまたはファサードの `serde` feature が必要です。全フィールドを
+/// 対象とし、ID のみでも構造体形式です。検証付きの逆直列化は `try_new` を呼び、
+/// 検証エラーの内容を公開せず `entity validation failed` に変換します。
+/// 指定された状態を構築するだけで、ID の生成や作成イベントの発生は行いません。
+/// 永続化・通信形式がドメインモデルと異なる場合は DTO を分けてください。
+/// フィールド・コンテナーの serde カスタマイズ属性は転送しません。
 ///
 /// `#[entity(trait_only)]` はドメイントレイト実装だけを生成します。
 /// `#[entity(id)]` は引き続き必要ですが、固有の `id()`、標準トレイト、追加の
 /// 境界は生成しないため、手書きのアクセサーと等価性の意味を維持できます。
+/// `validate`、`error`、`serde` との併用はできません。
 ///
 /// # Example / 使用例
 ///
@@ -197,6 +230,20 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 /// let updated = Order { id: 1, total: 20 };
 /// assert!(first == updated);
 /// assert_eq!(updated.id(), &1);
+///
+/// #[derive(Entity)]
+/// #[entity(validate = check, error = &'static str)]
+/// struct Stock {
+///     #[entity(id)]
+///     id: u64,
+///     reserved: u32,
+///     total: u32,
+/// }
+/// fn check(stock: &Stock) -> Result<(), &'static str> {
+///     if stock.reserved <= stock.total { Ok(()) } else { Err("over-reserved") }
+/// }
+/// assert!(Stock::try_new(1, 5, 3).is_err());
+/// assert_eq!(Stock::try_new(1, 2, 3).unwrap().id(), &1);
 /// ```
 #[proc_macro_derive(Entity, attributes(entity))]
 pub fn derive_entity(input: TokenStream) -> TokenStream {
