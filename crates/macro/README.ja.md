@@ -234,6 +234,39 @@ fn main() {
 デシリアライズ時は設定された検証関数を実行し、検証エラーは元のメッセージではなく
 `value object validation failed` に変換します。
 
+### Serde の命名属性
+
+`ValueObject` と `Entity` の生成 serde は、双方向の命名変更に対応します:
+
+```rust
+use ddd_toolkit::ValueObject;
+
+#[derive(ValueObject, Copy)]
+#[value_object(serde)]
+#[serde(rename_all = "snake_case")]
+enum GrantType {
+    AuthorizationCode,
+    ClientCredentials,
+    RefreshToken,
+}
+// JSON: "authorization_code", "client_credentials", "refresh_token"
+```
+
+- `#[serde(rename = "...")]` はコンテナー、enum バリアント、名前付きフィールドを改名します。
+- enum の `#[serde(rename_all = "...")]` はバリアント名を、名前付き構造体または
+  struct バリアントではフィールド名を変更します。個別の `rename` が優先されます。
+- 対応する規則は `lowercase`、`UPPERCASE`、`PascalCase`、`camelCase`、
+  `snake_case`、`SCREAMING_SNAKE_CASE`、`kebab-case`、`SCREAMING-KEBAB-CASE` です。
+- 直列化と逆直列化の**両方**に適用します。逆直列化時の検証は維持され、
+  Entity の復元では指定された ID を保持します。
+- 生成 serde 使用時、他のオプション（`tag`、`alias`、`skip`、`default`、方向別の
+  `rename(serialize = ..., deserialize = ...)` など）は黙って無視せずコンパイルエラーに
+  します。透過的な単一フィールド ValueObject、タプルフィールド・構造体の命名属性も、
+  既存の通信形式に変更対象の名前がないため拒否します。
+- `#[value_object(serde)]` / `#[entity(serde)]` を付けない場合、独立した Serde derive が
+  属性を処理する従来の動作を維持します。未対応形式は DTO または手書き実装を使い、
+  独立した `Deserialize` でドメインの検証を迂回しないでください。
+
 ## エンティティと集約イベント
 
 `Entity` は `#[entity(id)]` フィールドだけで比較とハッシュを行い、他のフィールドは
@@ -265,8 +298,9 @@ assert!(Stock::try_new(42, 6, 5).is_err());
 
 - `#[entity(serde)]` にはファサードまたはコアの `serde` feature が必要です。
   生成コードのために serde へ直接依存する必要はありません。ID のみでも全フィールドを
-  構造体形式で直列化します。フィールド・コンテナーの serde カスタマイズ属性は転送しません。
-  通信・保存形式を変更したい場合は手書き実装または DTO を使ってください。
+  構造体形式で直列化します。ID を含むフィールドとコンテナーの命名は
+  [Serde の命名属性](#serde-の命名属性)に従います。未対応の serde オプションは
+  コンパイルエラーになります。
 - `validate` と `error` は同時に指定します。単一フィールドでも検証関数は `&Self` を
   受け取ります。`try_new` は ID を含む全フィールドを宣言順に取り、検証のエラーと
   パニックを伝播します。検証なしではコンストラクターを生成せず、serde のみの復元は

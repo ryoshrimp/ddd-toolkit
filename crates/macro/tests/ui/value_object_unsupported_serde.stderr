@@ -1,0 +1,5 @@
+error: unsupported serde attribute with generated serde; supported naming options are rename and, on containers or struct variants, rename_all
+ --> tests/ui/value_object_unsupported_serde.rs:5:9
+  |
+5 | #[serde(tag = "kind")]
+  |         ^^^

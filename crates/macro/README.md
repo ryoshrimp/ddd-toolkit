@@ -242,6 +242,40 @@ newtype variants and need format-specific migration.
 Deserialization runs the configured validator; validation errors become
 `value object validation failed` rather than preserving the original error text.
 
+### Serde naming attributes
+
+Generated serde for both `ValueObject` and `Entity` supports symmetric naming:
+
+```rust
+use ddd_toolkit::ValueObject;
+
+#[derive(ValueObject, Copy)]
+#[value_object(serde)]
+#[serde(rename_all = "snake_case")]
+enum GrantType {
+    AuthorizationCode,
+    ClientCredentials,
+    RefreshToken,
+}
+// JSON: "authorization_code", "client_credentials", "refresh_token"
+```
+
+- `#[serde(rename = "...")]` renames a container, enum variant, or named field.
+- `#[serde(rename_all = "...")]` on an enum renames variants; on a named struct
+  or struct variant it renames fields. An explicit `rename` takes precedence.
+- Supported rules: `lowercase`, `UPPERCASE`, `PascalCase`, `camelCase`,
+  `snake_case`, `SCREAMING_SNAKE_CASE`, `kebab-case`, `SCREAMING-KEBAB-CASE`.
+- Naming applies to serialization **and** deserialization. Validation still runs
+  during deserialization, and Entity restoration preserves the supplied ID.
+- With generated serde, other options (including `tag`, `alias`, `skip`,
+  `default`, and directional `rename(serialize = ..., deserialize = ...)`) are
+  compile errors, not silently ignored. Naming attributes on transparent
+  single-field ValueObjects or tuple fields/structs are also rejected: their
+  existing wire shapes have no corresponding names to change.
+- Without `#[value_object(serde)]` / `#[entity(serde)]`, independent Serde derives
+  still own their attributes. Use a DTO or a manual implementation for unsupported
+  formats; do not bypass domain validation with an independent `Deserialize`.
+
 ## Entities and aggregate events
 
 `Entity` compares and hashes only the field marked `#[entity(id)]`; other fields
@@ -273,9 +307,9 @@ assert!(Stock::try_new(42, 6, 5).is_err());
 
 - Enable the facade/core `serde` feature for `#[entity(serde)]`. No direct serde
   dependency is required for generated implementations. All fields are serialized
-  in struct format, even when the ID is the only field. Field/container serde
-  customization attributes are not forwarded; use manual implementations or DTOs
-  when you need a different wire/storage representation.
+  in struct format, even when the ID is the only field. Container/field naming
+  follows [Serde naming attributes](#serde-naming-attributes), including on the ID
+  field. Unsupported serde options produce a compile error.
 - Specify `validate` and `error` together. The validator receives `&Self` even
   for one field. `try_new` takes every field in declaration order, including the
   ID, and propagates validation errors and panics. Without validation, no

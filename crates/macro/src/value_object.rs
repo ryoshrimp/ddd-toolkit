@@ -23,6 +23,7 @@ struct Attributes {
 /// 不正な属性には構文エラーを返します。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     let attrs = parse_attributes(&input)?;
+    crate::serde_attributes::validate(&input, attrs.serde, true)?;
     match &input.data {
         Data::Struct(data) => match &data.fields {
             Fields::Named(fields) if fields.named.is_empty() => Err(syn::Error::new_spanned(
@@ -150,6 +151,7 @@ fn expand_enum(
             &variants,
             attrs.validator.as_ref(),
             &core,
+            &input.attrs,
         )?)
     } else {
         None
@@ -513,13 +515,12 @@ fn enum_variant_definition(variant: &EnumVariant<'_>) -> TokenStream {
     if variant.unit {
         quote! { #name }
     } else if variant.named {
-        let fields = variant
-            .members
-            .iter()
-            .zip(variant.types.iter())
-            .map(|(member, ty)| {
-                quote! { #member: #ty }
-            });
+        let fields = variant.variant.fields.iter().map(|field| {
+            let member = &field.ident;
+            let ty = &field.ty;
+            let attrs = crate::serde_attributes::serde_attrs(&field.attrs);
+            quote! { #(#attrs)* #member: #ty }
+        });
         quote! { #name { #(#fields),* } }
     } else {
         let types = &variant.types;
@@ -533,7 +534,10 @@ fn serde_impl_enum(
     variants: &[EnumVariant<'_>],
     validator: Option<&syn::Path>,
     core: &TokenStream,
+    container_attrs: &[syn::Attribute],
 ) -> Result<TokenStream> {
+    let naming = crate::serde_attributes::Naming::parse(container_attrs, true)?;
+    let container_attrs: Vec<_> = crate::serde_attributes::serde_attrs(container_attrs).collect();
     let serde = quote!(#core::__private::serde);
     let serde_path = LitStr::new(
         &format!(
@@ -545,13 +549,18 @@ fn serde_impl_enum(
     let helper = format_ident!("__ddd_value_object_{}", name);
     let (helper_impl, _, helper_where) = original.split_for_impl();
     let helper_type = format_ident!("__DddValueObjectEnum{}", name);
-    let definitions = variants.iter().map(enum_variant_definition);
+    let definitions = variants.iter().map(|variant| {
+        let attrs = crate::serde_attributes::serde_attrs(&variant.variant.attrs);
+        let definition = enum_variant_definition(variant);
+        quote! { #(#attrs)* #definition }
+    });
     let helper_definition = quote! {
         /// **English:**<br>
         /// Mirrors event-free value-object variants for serde decoding.
         ///
         /// **日本語:**<br>
         /// serde の復号用に値オブジェクトのバリアント構成を保持します。
+        #(#container_attrs)*
         pub enum #helper_type #helper_impl { #(#definitions),* } #helper_where
     };
 
@@ -571,19 +580,20 @@ fn serde_impl_enum(
             .collect();
         let pattern = enum_pattern(variant, &bindings);
         let variant_name = &variant.variant.ident;
-        let variant_label = LitStr::new(&variant_name.to_string(), variant_name.span());
-        let type_label = LitStr::new(&name.to_string(), name.span());
+        let variant_naming = crate::serde_attributes::Naming::parse(&variant.variant.attrs, true).expect("validated naming");
+        let variant_label = variant_naming.label(variant_name, &naming, true);
+        let type_label = naming.type_label(name);
         if variant.unit {
             quote! {
                 #pattern => #serde::Serializer::serialize_unit_variant(serializer, #type_label, #index as u32, #variant_label),
             }
         } else if variant.named {
-            let fields = variant.members.iter().enumerate().map(|(field, member)| {
-                let binding = &bindings[field];
-                let label = match member {
-                    Member::Named(ident) => LitStr::new(&ident.to_string(), ident.span()),
-                    Member::Unnamed(_) => unreachable!("named enum field"),
-                };
+            let fields = variant.variant.fields.iter().enumerate().map(|(index, field)| {
+                let binding = &bindings[index];
+                let ident = field.ident.as_ref().expect("named enum field");
+                let label = crate::serde_attributes::Naming::parse(&field.attrs, false)
+                    .expect("validated naming")
+                    .label(ident, &variant_naming, false);
                 quote! { #serde::ser::SerializeStructVariant::serialize_field(&mut state, #label, #binding)?; }
             });
             let count = variant.types.len();
@@ -924,6 +934,7 @@ fn expand_multi(
             attrs.validator.is_some(),
             &core,
             "value object validation failed",
+            &input.attrs,
         )?)
     } else {
         None
@@ -1335,7 +1346,11 @@ pub(crate) fn serde_impl_multi(
     validated: bool,
     core: &TokenStream,
     validation_error: &str,
+    container_attrs: &[syn::Attribute],
 ) -> Result<TokenStream> {
+    let naming = crate::serde_attributes::Naming::parse(container_attrs, true)?;
+    let type_label = naming.type_label(name);
+    let container_attrs: Vec<_> = crate::serde_attributes::serde_attrs(container_attrs).collect();
     let serde = quote!(#core::__private::serde);
     let serde_path = LitStr::new(
         &format!(
@@ -1351,7 +1366,8 @@ pub(crate) fn serde_impl_multi(
         let defs = fields.iter().map(|field| {
             let ident = field.ident.as_ref().expect("named field has an identifier");
             let ty = &field.ty;
-            quote! { pub #ident: #ty }
+            let attrs = crate::serde_attributes::serde_attrs(&field.attrs);
+            quote! { #(#attrs)* pub #ident: #ty }
         });
         quote! {
             /// **English:**<br>
@@ -1359,6 +1375,7 @@ pub(crate) fn serde_impl_multi(
             ///
             /// **日本語:**<br>
             /// ドメイン検証前に復号された名前付きフィールドを保持します。
+            #(#container_attrs)*
             pub struct #helper_type #helper_impl #helper_where { #(#defs),* }
         }
     } else {
@@ -1368,6 +1385,7 @@ pub(crate) fn serde_impl_multi(
             ///
             /// **日本語:**<br>
             /// 値オブジェクト構築前に復号されたタプルフィールドを保持します。
+            #(#container_attrs)*
             pub struct #helper_type #helper_impl (#(pub #types),*) #helper_where;
         }
     };
@@ -1409,11 +1427,13 @@ pub(crate) fn serde_impl_multi(
             .iter()
             .map(|field| {
                 let ident = field.ident.as_ref().expect("named field has an identifier");
-                LitStr::new(&ident.unraw().to_string(), ident.span())
+                crate::serde_attributes::Naming::parse(&field.attrs, false)
+                    .expect("validated naming")
+                    .label(ident, &naming, false)
             })
             .collect();
         quote! {
-            let mut state = #serde::Serializer::serialize_struct(serializer, stringify!(#name), #field_count)?;
+            let mut state = #serde::Serializer::serialize_struct(serializer, #type_label, #field_count)?;
             #( #serde::ser::SerializeStruct::serialize_field(&mut state, #names, &self.#members)?; )*
             #serde::ser::SerializeStruct::end(state)
         }

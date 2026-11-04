@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Register serde helper attributes for ValueObject and Entity and apply symmetric
+  `rename` / `rename_all` to generated serialization and deserialization. Support
+  all eight naming rules, variant and named-field overrides, and generic types
+  while preserving validation and restored IDs. Reject unsupported, malformed,
+  duplicate, or inapplicable options with compile-time diagnostics. Independent
+  Serde derives without generated serde remain supported (#51).
+
 ## [0.5.3] - 2026-11-03
 
 ### Fixed

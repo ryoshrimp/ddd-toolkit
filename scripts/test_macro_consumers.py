@@ -62,6 +62,40 @@ fn derives_and_serde_work() {
     assert_eq!(order.pull_events(), vec![Event::Created]);
 }
 
+// Naming helpers must also work without a direct serde dependency and with
+// renamed facade/core dependencies in these isolated consumer workspaces.
+#[derive(macros::ValueObject, Copy)]
+#[value_object(serde)]
+#[serde(rename_all = "snake_case")]
+enum GrantType { AuthorizationCode, ClientCredentials, RefreshToken }
+
+#[derive(macros::Entity)]
+#[entity(serde)]
+#[serde(rename_all = "camelCase")]
+struct Account {
+    #[entity(id)]
+    #[serde(rename = "account_id")]
+    id: u64,
+    display_name: String,
+}
+
+#[test]
+fn serde_naming_uses_reexport() {
+    for (grant, label) in [
+        (GrantType::AuthorizationCode, "authorization_code"),
+        (GrantType::ClientCredentials, "client_credentials"),
+        (GrantType::RefreshToken, "refresh_token"),
+    ] {
+        assert_eq!(serde_json::to_value(grant).unwrap(), label);
+        let restored: GrantType = serde_json::from_value(label.into()).unwrap();
+        assert_eq!(restored, grant);
+    }
+    let json = r#"{"account_id":7,"displayName":"Alice"}"#;
+    let account: Account = serde_json::from_str(json).unwrap();
+    assert_eq!(*account.id(), 7);
+    assert_eq!(serde_json::to_string(&account).unwrap(), json);
+}
+
 mod imported_types {
     use super::Id;
 

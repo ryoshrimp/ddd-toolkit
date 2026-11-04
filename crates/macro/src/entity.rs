@@ -80,6 +80,8 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         ));
     }
 
+    crate::serde_attributes::validate(&input, serde, false)?;
+
     let fields = match &input.data {
         Data::Struct(data) => match &data.fields {
             Fields::Named(fields) => &fields.named,
@@ -185,6 +187,7 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
             validator.is_some(),
             &core,
             "entity validation failed",
+            &input.attrs,
         )?)
     } else {
         None

@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Generated ValueObject and Entity serde now accepts and honors symmetric
+  `#[serde(rename = "...")]` and `#[serde(rename_all = "...")]` naming attributes
+  in both directions, preserving validation and entity IDs. Unsupported options
+  and naming on transparent/tuple shapes fail explicitly instead of being ignored
+  (#51).
 - Shared named-struct serde helpers now place generic `where` clauses before
   the body and serialize raw identifier fields without the `r#` prefix.
 

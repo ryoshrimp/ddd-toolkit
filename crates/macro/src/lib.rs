@@ -44,6 +44,7 @@ mod aggregate_root;
 mod domain_event;
 mod entity;
 mod path;
+mod serde_attributes;
 mod value_object;
 
 /// **English:**<br>
@@ -146,7 +147,7 @@ mod value_object;
 /// assert_eq!(status.as_ready(), Some((&7,)));
 /// assert!(!status.is_pending());
 /// ```
-#[proc_macro_derive(ValueObject, attributes(value_object))]
+#[proc_macro_derive(ValueObject, attributes(value_object, serde))]
 pub fn derive_value_object(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as syn::DeriveInput);
     value_object::expand(input)
@@ -245,7 +246,7 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 /// assert!(Stock::try_new(1, 5, 3).is_err());
 /// assert_eq!(Stock::try_new(1, 2, 3).unwrap().id(), &1);
 /// ```
-#[proc_macro_derive(Entity, attributes(entity))]
+#[proc_macro_derive(Entity, attributes(entity, serde))]
 pub fn derive_entity(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as syn::DeriveInput);
     entity::expand(input)

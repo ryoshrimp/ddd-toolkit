@@ -13,6 +13,81 @@ use syn::{DeriveInput, Result};
 
 type Expander = fn(DeriveInput) -> Result<TokenStream>;
 
+#[test]
+fn generated_serde_rejects_unsupported_or_malformed_attributes() {
+    for (expand, option, shape) in [
+        (
+            value_object::expand as Expander,
+            "value_object",
+            "struct Value { id: u32, count: u32 }",
+        ),
+        (
+            entity::expand as Expander,
+            "entity",
+            "struct Value { #[entity(id)] id: u32, count: u32 }",
+        ),
+    ] {
+        for attribute in [
+            "#[serde(tag = \"kind\")]",
+            "#[serde(deny_unknown_fields)]",
+            "#[serde(rename_all = \"invalid\")]",
+            "#[serde(rename_all = \"snake_case\", rename_all = \"camelCase\")]",
+            "#[serde(rename(serialize = \"out\", deserialize = \"in\"))]",
+            "#[serde(rename = 42)]",
+            "#[serde()]",
+            "#[serde]",
+        ] {
+            let source = format!("#[{option}(serde)] {attribute} {shape}");
+            assert!(
+                expand(syn::parse_str(&source).unwrap()).is_err(),
+                "{source}"
+            );
+        }
+        for field_attribute in [
+            "#[serde(skip)]",
+            "#[serde(alias = \"other\")]",
+            "#[serde(rename_all = \"camelCase\")]",
+        ] {
+            let source = format!(
+                "#[{option}(serde)] struct Value {{ #[entity(id)] id: u32, {field_attribute} count: u32 }}"
+            );
+            assert!(
+                expand(syn::parse_str(&source).unwrap()).is_err(),
+                "{source}"
+            );
+        }
+    }
+    rejects(
+        value_object::expand,
+        &[
+            (
+                "#[value_object(serde)] #[serde(rename_all = \"snake_case\")] struct Value(u32);",
+                "transparent or tuple",
+            ),
+            (
+                "#[value_object(serde)] struct Value(#[serde(rename = \"x\")] u32, u32);",
+                "transparent or tuple",
+            ),
+            (
+                "#[value_object(serde)] struct Value { #[serde(rename = \"x\")] field: u32 }",
+                "transparent or tuple",
+            ),
+            (
+                "#[value_object(serde)] enum Value { #[serde(other)] Unit }",
+                "unsupported serde attribute",
+            ),
+            (
+                "#[value_object(serde)] enum Value { Named { #[serde(default)] field: u32 } }",
+                "unsupported serde attribute",
+            ),
+            (
+                "#[value_object(serde)] enum Value { #[serde(rename_all = \"camelCase\")] Unit }",
+                "unsupported serde attribute",
+            ),
+        ],
+    );
+}
+
 fn rejects(expand: Expander, cases: &[(&str, &str)]) {
     for (source, expected) in cases {
         let input = syn::parse_str(source).unwrap();
