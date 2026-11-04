@@ -21,6 +21,7 @@ struct Id(u64);
 
 #[derive(macros::ValueObject)]
 #[value_object(serde)]
+#[serde(rename_all = "snake_case")]
 enum State { Ready { count: u64 }, Code(u64), Codes(Vec<u64>) }
 
 #[derive(Debug, Clone, PartialEq, macros::DomainEvent)]
@@ -49,9 +50,9 @@ fn derives_and_serde_work() {
     assert_eq!(json, "7");
     assert_eq!(serde_json::from_str::<Id>(&json).unwrap(), id);
     for (state, expected) in [
-        (State::new_ready(7), r#"{"Ready":{"count":7}}"#),
-        (State::new_code(7), r#"{"Code":7}"#),
-        (State::new_codes(vec![7]), r#"{"Codes":[7]}"#),
+        (State::new_ready(7), r#"{"ready":{"count":7}}"#),
+        (State::new_code(7), r#"{"code":7}"#),
+        (State::new_codes(vec![7]), r#"{"codes":[7]}"#),
     ] {
         let json = serde_json::to_string(&state).unwrap();
         assert_eq!(json, expected);
@@ -67,8 +68,10 @@ mod imported_types {
 
     #[derive(Debug, macros::Entity)]
     #[entity(validate = validate_record, error = &'static str, serde)]
+    #[serde(rename_all = "camelCase")]
     struct Record<T> where T: Clone {
         #[entity(id)]
+        #[serde(rename = "record_id")]
         id: Id,
         r#type: T,
         count: u64,
@@ -82,13 +85,13 @@ mod imported_types {
     fn entity_serde_uses_reexport_and_validates_imported_types() {
         let record = Record::try_new(Id::new(7), String::from("item"), 2).unwrap();
         let json = serde_json::to_string(&record).unwrap();
-        assert_eq!(json, r#"{"id":7,"type":"item","count":2}"#);
+        assert_eq!(json, r#"{"record_id":7,"type":"item","count":2}"#);
         let restored: Record<String> = serde_json::from_str(&json).unwrap();
         assert_eq!(restored, record);
         assert_eq!(restored.r#type, "item");
         assert_eq!(restored.count, 2);
         let error = serde_json::from_str::<Record<String>>(
-            r#"{"id":7,"type":"item","count":0}"#,
+            r#"{"record_id":7,"type":"item","count":0}"#,
         ).unwrap_err();
         assert!(error.to_string().contains("entity validation failed"));
     }
@@ -334,6 +337,39 @@ class MacroConsumerTests(unittest.TestCase):
                     macros = "macros"
                 deps += 'serde_json = "1"\n'
                 self.check_consumer(deps, SOURCE.replace("api::", f"{alias}::").replace("macros::", f"{macros}::"))
+
+    def test_serde_reexport_with_shadowed_dependency_name(self):
+        # Helper modules import their parent scope; keep Serde's crate path absolute.
+        for kind in ("core", "facade"):
+            with self.subTest(kind=kind):
+                if kind == "core":
+                    deps = dependency("api", "ddd-toolkit-core", ROOT / "crates/core", ["serde"])
+                    deps += dependency("macros", "ddd-toolkit-macro", ROOT / "crates/macro")
+                    deps += 'serde = { version = "1", features = ["derive"] }\n'
+                    macros = "macros"
+                else:
+                    deps = dependency("api", "ddd-toolkit", ROOT, ["serde"])
+                    macros = "api"
+                deps += 'serde_json = "1"\n'
+                source = r'''
+#![deny(warnings)]
+#[allow(non_camel_case_types, dead_code)]
+struct api;
+#[derive(::macros::ValueObject)]
+#[value_object(serde)]
+#[serde(rename_all = "snake_case")]
+pub enum GrantType { AuthorizationCode }
+#[derive(::macros::Entity)]
+#[entity(serde)]
+pub struct Record { #[entity(id)] #[serde(rename = "key")] id: u64 }
+#[test]
+fn serde_uses_absolute_reexport() {
+    assert_eq!(serde_json::to_string(&GrantType::AuthorizationCode).unwrap(), "\"authorization_code\"");
+    let record: Record = serde_json::from_str(r#"{"key":7}"#).unwrap();
+    assert_eq!(*record.id(), 7);
+}
+'''
+                self.check_consumer(deps, source.replace("::macros::", f"::{macros}::"))
 
     def test_minimum_core_compatibility(self):
         # Test the released lower bound, never a copy of the current core.

@@ -168,23 +168,11 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         _ => None,
     };
     let serde_impl = if serde {
-        let members: Vec<_> = arguments
-            .iter()
-            .map(|ident| syn::Member::Named((*ident).clone()))
-            .collect();
-        let Data::Struct(data) = &input.data else {
-            unreachable!()
-        };
-        Some(crate::value_object::serde_impl_multi(
-            name,
-            &input.generics,
-            &data.fields,
-            &members,
-            &types,
-            true,
-            validator.is_some(),
+        Some(crate::serde::expand(
+            &input,
+            validator.as_ref(),
             &core,
-            "entity validation failed",
+            true,
         )?)
     } else {
         None

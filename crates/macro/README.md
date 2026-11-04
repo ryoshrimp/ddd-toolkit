@@ -219,7 +219,10 @@ fn main() {
 ```
 
 `#[value_object(serde)]` generates `Serialize` and `Deserialize` through the core
-crate's serde re-export; it is not a feature on `ddd-toolkit-macro`. Add serde or
+crate's serde re-export; it is not a feature on `ddd-toolkit-macro`. Both
+ValueObject and Entity delegate supported `#[serde(...)]` customizations to Serde
+derive while preserving validation. See [domain Serde support](../../docs/macro-serde.md)
+for examples, supported attributes, and explicit restrictions. Add serde or
 a format crate directly to your dependencies if your own code uses their APIs.
 The attribute can be combined with `validate` and `error` in the same
 `#[value_object(...)]` declaration.
@@ -273,14 +276,14 @@ assert!(Stock::try_new(42, 6, 5).is_err());
 
 - Enable the facade/core `serde` feature for `#[entity(serde)]`. No direct serde
   dependency is required for generated implementations. All fields are serialized
-  in struct format, even when the ID is the only field. Field/container serde
-  customization attributes are not forwarded; use manual implementations or DTOs
-  when you need a different wire/storage representation.
+  in struct format by default, even when the ID is the only field. Supported
+  field/container `#[serde(...)]` attributes are delegated to Serde derive; see
+  [domain Serde support](../../docs/macro-serde.md) for the allowlist and limitations.
 - Specify `validate` and `error` together. The validator receives `&Self` even
   for one field. `try_new` takes every field in declaration order, including the
   ID, and propagates validation errors and panics. Without validation, no
   constructor is generated; serde-only restoration constructs the supplied state.
-- Deserialization validates via `try_new` when configured. Errors become
+- Deserialization runs the same validator as `try_new` when configured. Errors become
   `entity validation failed`, without requiring `Display` on the error type.
   Neither construction nor restoration generates IDs, records creation events,
   or invokes handwritten business creation methods.

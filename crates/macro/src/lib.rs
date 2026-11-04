@@ -44,6 +44,7 @@ mod aggregate_root;
 mod domain_event;
 mod entity;
 mod path;
+mod serde;
 mod value_object;
 
 /// **English:**<br>
@@ -78,7 +79,10 @@ mod value_object;
 /// `#[value_object(serde)]` additionally generates serialization through the core
 /// crate's serde re-export; enable the core crate's `serde` feature. Single-field
 /// structs serialize as their inner value, named structs as structs, tuple structs
-/// as tuples, and enums as externally tagged variants. Single-field tuple variants
+/// as tuples, and enums as externally tagged variants by default. Supported
+/// container/variant/field `#[serde(...)]` attributes are delegated to Serde derive;
+/// unsupported attributes (including container conversions/default) are rejected.
+/// Single-field tuple variants
 /// use Serde's newtype format; other tuple variants use tuple format.
 /// Deserialization runs validation when configured,
 /// mapping its errors to `value object validation failed`. Serialization generation
@@ -117,6 +121,9 @@ mod value_object;
 /// `#[value_object(serde)]` はコアの serde 再公開を使う直列化実装も生成します。
 /// コアの `serde` feature を有効にしてください。単一フィールドは内包値、名前付き
 /// 構造体は構造体、タプル構造体はタプル、列挙型は外部タグ形式で直列化します。
+/// これらは既定の形式です。対応するコンテナー・バリアント・フィールドの
+/// `#[serde(...)]` 属性は Serde derive に委譲し、非対応の属性（コンテナーの
+/// 変換属性や default など）は拒否します。
 /// 単一フィールドのタプルバリアントは Serde の newtype 形式、その他はタプル形式です。
 /// 逆直列化時も設定された検証を
 /// 実行し、検証エラーを `value object validation failed` に変換します。
@@ -146,7 +153,7 @@ mod value_object;
 /// assert_eq!(status.as_ready(), Some((&7,)));
 /// assert!(!status.is_pending());
 /// ```
-#[proc_macro_derive(ValueObject, attributes(value_object))]
+#[proc_macro_derive(ValueObject, attributes(value_object, serde))]
 pub fn derive_value_object(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as syn::DeriveInput);
     value_object::expand(input)
@@ -173,12 +180,13 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 ///
 /// `#[entity(serde)]` generates `Serialize` and `Deserialize` using the core
 /// crate's serde re-export; enable the core or facade `serde` feature. All fields
-/// participate, in struct format even for an ID-only entity. With validation
-/// configured, deserialization calls `try_new`, mapping failures to
+/// participate, in struct format by default even for an ID-only entity. With
+/// validation configured, deserialization runs the same validator as `try_new`, mapping failures to
 /// `entity validation failed` without exposing the validator error. These paths
 /// only construct supplied state: they do not generate IDs or creation events.
 /// Use separate DTOs when persistence or wire formats differ from the domain model.
-/// Field/container serde customization attributes are not forwarded.
+/// Supported field/container `#[serde(...)]` attributes are delegated to Serde
+/// derive. Unsupported attributes, including container conversions/default, are rejected.
 ///
 /// `#[entity(trait_only)]` generates only the domain trait implementation. It
 /// still requires `#[entity(id)]`, but adds no inherent `id()`, standard traits,
@@ -204,11 +212,13 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 ///
 /// `#[entity(serde)]` はコアの serde 再公開を使って `Serialize` と `Deserialize`
 /// を生成します。コアまたはファサードの `serde` feature が必要です。全フィールドを
-/// 対象とし、ID のみでも構造体形式です。検証付きの逆直列化は `try_new` を呼び、
+/// 対象とし、既定では ID のみでも構造体形式です。検証付きの逆直列化は
+/// `try_new` と同じ検証を実行し、
 /// 検証エラーの内容を公開せず `entity validation failed` に変換します。
 /// 指定された状態を構築するだけで、ID の生成や作成イベントの発生は行いません。
 /// 永続化・通信形式がドメインモデルと異なる場合は DTO を分けてください。
-/// フィールド・コンテナーの serde カスタマイズ属性は転送しません。
+/// 対応するフィールド・コンテナーの `#[serde(...)]` 属性は Serde derive に委譲し、
+/// 非対応の属性（コンテナーの変換属性や default など）は拒否します。
 ///
 /// `#[entity(trait_only)]` はドメイントレイト実装だけを生成します。
 /// `#[entity(id)]` は引き続き必要ですが、固有の `id()`、標準トレイト、追加の
@@ -245,7 +255,7 @@ pub fn derive_value_object(input: TokenStream) -> TokenStream {
 /// assert!(Stock::try_new(1, 5, 3).is_err());
 /// assert_eq!(Stock::try_new(1, 2, 3).unwrap().id(), &1);
 /// ```
-#[proc_macro_derive(Entity, attributes(entity))]
+#[proc_macro_derive(Entity, attributes(entity, serde))]
 pub fn derive_entity(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as syn::DeriveInput);
     entity::expand(input)

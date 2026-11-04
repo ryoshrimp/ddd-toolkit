@@ -1,0 +1,47 @@
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+ --> tests/ui/domain_serde_unsupported.rs:5:9
+  |
+5 | #[serde(from = "u64")]
+  |         ^^^^^^^^^^^^
+
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+  --> tests/ui/domain_serde_unsupported.rs:10:9
+   |
+10 | #[serde(try_from = "u64")]
+   |         ^^^^^^^^^^^^^^^^
+
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+  --> tests/ui/domain_serde_unsupported.rs:15:9
+   |
+15 | #[serde(into = "u64")]
+   |         ^^^^^^^^^^^^
+
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+  --> tests/ui/domain_serde_unsupported.rs:20:9
+   |
+20 | #[serde(default)]
+   |         ^^^^^^^
+
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+  --> tests/ui/domain_serde_unsupported.rs:28:9
+   |
+28 | #[serde(crate = "serde")]
+   |         ^^^^^^^^^^^^^^^
+
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+  --> tests/ui/domain_serde_unsupported.rs:37:13
+   |
+37 |     #[serde(serialize_with = "codec")]
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+  --> tests/ui/domain_serde_unsupported.rs:45:13
+   |
+45 |     #[serde(getter = "get_id")]
+   |             ^^^^^^^^^^^^^^^^^
+
+error: unsupported serde attribute for generated domain serde; see docs/macro-serde.md
+  --> tests/ui/domain_serde_unsupported.rs:51:24
+   |
+51 | struct Unknown(#[serde(not_a_serde_option)] u64);
+   |                        ^^^^^^^^^^^^^^^^^^
