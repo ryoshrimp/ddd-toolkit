@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Delegate ValueObject and Entity `#[serde(...)]` wire-format customization to
+  Serde derive, including all naming rules, aliases, field defaults/skips,
+  flattening, tags, borrowing, bounds, and field codecs. Borrowed serialization
+  avoids cloning; owned deserialization preserves domain validation and supplied
+  Entity IDs. Reject unsupported attributes explicitly (including container
+  conversions/default and crate overrides); document the allowlist and
+  limitations in `docs/macro-serde.md` (#51).
+
 ## [0.5.3] - 2026-11-03
 
 ### Fixed

@@ -1,8 +1,8 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    Data, DeriveInput, Field, Fields, GenericParam, Generics, Lifetime, LitStr, Member, Result,
-    Type, ext::IdentExt, parse_quote,
+    Data, DeriveInput, Field, Fields, Generics, LitStr, Member, Result, Type, ext::IdentExt,
+    parse_quote,
 };
 
 use crate::path::core_path;
@@ -144,12 +144,11 @@ fn expand_enum(
     let accessors = enum_accessors(&variants);
     let standard_impls = standard_impls_enum(name, &input.generics, &variants);
     let serde_impl = if attrs.serde {
-        Some(serde_impl_enum(
-            name,
-            &input.generics,
-            &variants,
+        Some(crate::serde::expand(
+            input,
             attrs.validator.as_ref(),
             &core,
+            false,
         )?)
     } else {
         None
@@ -508,197 +507,6 @@ fn standard_impls_enum(
     }
 }
 
-fn enum_variant_definition(variant: &EnumVariant<'_>) -> TokenStream {
-    let name = &variant.variant.ident;
-    if variant.unit {
-        quote! { #name }
-    } else if variant.named {
-        let fields = variant
-            .members
-            .iter()
-            .zip(variant.types.iter())
-            .map(|(member, ty)| {
-                quote! { #member: #ty }
-            });
-        quote! { #name { #(#fields),* } }
-    } else {
-        let types = &variant.types;
-        quote! { #name(#(#types),*) }
-    }
-}
-
-fn serde_impl_enum(
-    name: &syn::Ident,
-    original: &Generics,
-    variants: &[EnumVariant<'_>],
-    validator: Option<&syn::Path>,
-    core: &TokenStream,
-) -> Result<TokenStream> {
-    let serde = quote!(#core::__private::serde);
-    let serde_path = LitStr::new(
-        &format!(
-            "{}::__private::serde",
-            core.to_string().replace(' ', "").trim_start_matches("::")
-        ),
-        Span::call_site(),
-    );
-    let helper = format_ident!("__ddd_value_object_{}", name);
-    let (helper_impl, _, helper_where) = original.split_for_impl();
-    let helper_type = format_ident!("__DddValueObjectEnum{}", name);
-    let definitions = variants.iter().map(enum_variant_definition);
-    let helper_definition = quote! {
-        /// **English:**<br>
-        /// Mirrors event-free value-object variants for serde decoding.
-        ///
-        /// **日本語:**<br>
-        /// serde の復号用に値オブジェクトのバリアント構成を保持します。
-        pub enum #helper_type #helper_impl { #(#definitions),* } #helper_where
-    };
-
-    let mut serialize_generics = original.clone();
-    for variant in variants {
-        for ty in &variant.types {
-            serialize_generics
-                .make_where_clause()
-                .predicates
-                .push(parse_quote!(#ty: #serde::Serialize));
-        }
-    }
-    let (serialize_impl, serialize_ty, serialize_where) = serialize_generics.split_for_impl();
-    let serialize_arms = variants.iter().enumerate().map(|(index, variant)| {
-        let bindings: Vec<_> = (0..variant.types.len())
-            .map(|field| format_ident!("__ddd_serialize_{field}"))
-            .collect();
-        let pattern = enum_pattern(variant, &bindings);
-        let variant_name = &variant.variant.ident;
-        let variant_label = LitStr::new(&variant_name.to_string(), variant_name.span());
-        let type_label = LitStr::new(&name.to_string(), name.span());
-        if variant.unit {
-            quote! {
-                #pattern => #serde::Serializer::serialize_unit_variant(serializer, #type_label, #index as u32, #variant_label),
-            }
-        } else if variant.named {
-            let fields = variant.members.iter().enumerate().map(|(field, member)| {
-                let binding = &bindings[field];
-                let label = match member {
-                    Member::Named(ident) => LitStr::new(&ident.to_string(), ident.span()),
-                    Member::Unnamed(_) => unreachable!("named enum field"),
-                };
-                quote! { #serde::ser::SerializeStructVariant::serialize_field(&mut state, #label, #binding)?; }
-            });
-            let count = variant.types.len();
-            quote! {
-                #pattern => {
-                    let mut state = #serde::Serializer::serialize_struct_variant(serializer, #type_label, #index as u32, #variant_label, #count)?;
-                    #(#fields)*
-                    #serde::ser::SerializeStructVariant::end(state)
-                },
-            }
-        } else if bindings.len() == 1 {
-            let binding = &bindings[0];
-            quote! {
-                #pattern => #serde::Serializer::serialize_newtype_variant(serializer, #type_label, #index as u32, #variant_label, #binding),
-            }
-        } else {
-            let fields = bindings.iter().map(|binding| {
-                quote! { #serde::ser::SerializeTupleVariant::serialize_field(&mut state, #binding)?; }
-            });
-            let count = variant.types.len();
-            quote! {
-                #pattern => {
-                    let mut state = #serde::Serializer::serialize_tuple_variant(serializer, #type_label, #index as u32, #variant_label, #count)?;
-                    #(#fields)*
-                    #serde::ser::SerializeTupleVariant::end(state)
-                },
-            }
-        }
-    });
-
-    let mut de_generics = original.clone();
-    let de_lifetime = fresh_lifetime(&de_generics);
-    de_generics
-        .params
-        .insert(0, GenericParam::Lifetime(parse_quote!(#de_lifetime)));
-    for variant in variants {
-        for ty in &variant.types {
-            de_generics
-                .make_where_clause()
-                .predicates
-                .push(parse_quote!(#ty: #serde::Deserialize<#de_lifetime>));
-        }
-    }
-    let (de_impl, _, de_where) = de_generics.split_for_impl();
-    let (_, original_ty, _) = original.split_for_impl();
-    let deserialize_arms = variants.iter().map(|variant| {
-        let bindings: Vec<_> = (0..variant.types.len())
-            .map(|field| format_ident!("__ddd_deserialize_{field}"))
-            .collect();
-        let helper_name = &variant.variant.ident;
-        let self_name = &variant.variant.ident;
-        let helper_pattern = if variant.unit {
-            quote! { #helper::#helper_type::#helper_name }
-        } else if variant.named {
-            let members = &variant.members;
-            quote! { #helper::#helper_type::#helper_name { #(#members: #bindings),* } }
-        } else {
-            quote! { #helper::#helper_type::#helper_name(#(#bindings),*) }
-        };
-        let self_value = if variant.unit {
-            quote! { Self::#self_name }
-        } else if variant.named {
-            let members = &variant.members;
-            quote! { Self::#self_name { #(#members: #bindings),* } }
-        } else {
-            quote! { Self::#self_name(#(#bindings),*) }
-        };
-        let success = if let Some(validator) = validator {
-            quote! {
-                let candidate = #self_value;
-                #validator(&candidate).map_err(|_| {
-                    <D::Error as #serde::de::Error>::custom("value object validation failed")
-                })?;
-                Ok(candidate)
-            }
-        } else {
-            quote! { Ok(#self_value) }
-        };
-        quote! { #helper_pattern => { #success } }
-    });
-
-    Ok(quote! {
-        #[doc(hidden)]
-        #[allow(non_snake_case)]
-        mod #helper {
-            // Field types and generic bounds are written in the parent's scope.
-            #[allow(unused_imports)]
-            use super::*;
-
-            #[derive(#serde::Deserialize)]
-            #[serde(crate = #serde_path)]
-            #helper_definition
-        }
-
-        impl #serialize_impl #serde::Serialize for #name #serialize_ty #serialize_where {
-            fn serialize<S>(&self, serializer: S) -> ::core::result::Result<S::Ok, S::Error>
-            where
-                S: #serde::Serializer,
-            {
-                match self { #(#serialize_arms)* }
-            }
-        }
-
-        impl #de_impl #serde::Deserialize<#de_lifetime> for #name #original_ty #de_where {
-            fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
-            where
-                D: #serde::Deserializer<#de_lifetime>,
-            {
-                let value = <#helper::#helper_type #original_ty as #serde::Deserialize<#de_lifetime>>::deserialize(deserializer)?;
-                match value { #(#deserialize_arms),* }
-            }
-        }
-    })
-}
-
 fn expand_single(
     input: &DeriveInput,
     attrs: Attributes,
@@ -765,13 +573,11 @@ fn expand_single(
         named_field.as_ref(),
     );
     let serde_impl = if attrs.serde {
-        Some(serde_impl_single(
-            name,
-            &input.generics,
-            inner_ty,
-            attrs.validator.is_some(),
+        Some(crate::serde::expand(
+            input,
+            attrs.validator.as_ref(),
             &core,
-            &member,
+            false,
         )?)
     } else {
         None
@@ -914,16 +720,11 @@ fn expand_multi(
             });
     let standard_impls = standard_impls_multi(name, &input.generics, &members, &types, named);
     let serde_impl = if attrs.serde {
-        Some(serde_impl_multi(
-            name,
-            &input.generics,
-            fields,
-            &members,
-            &types,
-            named,
-            attrs.validator.is_some(),
+        Some(crate::serde::expand(
+            input,
+            attrs.validator.as_ref(),
             &core,
-            "value object validation failed",
+            false,
         )?)
     } else {
         None
@@ -1260,224 +1061,5 @@ fn standard_impls_multi(
                 #(#hashes)*
             }
         }
-    }
-}
-
-fn serde_impl_single(
-    name: &syn::Ident,
-    original: &Generics,
-    inner_ty: &Type,
-    validated: bool,
-    core: &TokenStream,
-    member: &Member,
-) -> Result<TokenStream> {
-    let serde = quote!(#core::__private::serde);
-    let mut serialize_generics = original.clone();
-    serialize_generics
-        .make_where_clause()
-        .predicates
-        .push(parse_quote!(#inner_ty: #serde::Serialize));
-    let (serialize_impl, serialize_ty, serialize_where) = serialize_generics.split_for_impl();
-
-    let mut de_generics = original.clone();
-    let de_lifetime = fresh_lifetime(&de_generics);
-    de_generics
-        .params
-        .insert(0, GenericParam::Lifetime(parse_quote!(#de_lifetime)));
-    de_generics
-        .make_where_clause()
-        .predicates
-        .push(parse_quote!(
-            #inner_ty: #serde::Deserialize<#de_lifetime>
-        ));
-    let (de_impl, _, de_where) = de_generics.split_for_impl();
-    let (_, original_ty, _) = original.split_for_impl();
-    let build = if validated {
-        quote! {
-            Self::try_new(inner).map_err(|_| {
-                <D::Error as #serde::de::Error>::custom("value object validation failed")
-            })
-        }
-    } else {
-        quote!(Ok(Self::new(inner)))
-    };
-
-    Ok(quote! {
-        impl #serialize_impl #serde::Serialize for #name #serialize_ty #serialize_where {
-            fn serialize<S>(&self, serializer: S) -> ::core::result::Result<S::Ok, S::Error>
-            where
-                S: #serde::Serializer,
-            {
-                #serde::Serialize::serialize(&self.#member, serializer)
-            }
-        }
-
-        impl #de_impl #serde::Deserialize<#de_lifetime> for #name #original_ty #de_where {
-            fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
-            where
-                D: #serde::Deserializer<#de_lifetime>,
-            {
-                let inner = <#inner_ty as #serde::Deserialize<#de_lifetime>>::deserialize(deserializer)?;
-                #build
-            }
-        }
-    })
-}
-
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn serde_impl_multi(
-    name: &syn::Ident,
-    original: &Generics,
-    fields: &Fields,
-    members: &[Member],
-    types: &[&Type],
-    named: bool,
-    validated: bool,
-    core: &TokenStream,
-    validation_error: &str,
-) -> Result<TokenStream> {
-    let serde = quote!(#core::__private::serde);
-    let serde_path = LitStr::new(
-        &format!(
-            "{}::__private::serde",
-            core.to_string().replace(' ', "").trim_start_matches("::")
-        ),
-        Span::call_site(),
-    );
-    let helper = format_ident!("__ddd_value_object_{}", name);
-    let (helper_impl, _, helper_where) = original.split_for_impl();
-    let helper_type = format_ident!("__DddValueObjectFields{}", name);
-    let helper_definition = if named {
-        let defs = fields.iter().map(|field| {
-            let ident = field.ident.as_ref().expect("named field has an identifier");
-            let ty = &field.ty;
-            quote! { pub #ident: #ty }
-        });
-        quote! {
-            /// **English:**<br>
-            /// Holds named fields decoded before domain validation.
-            ///
-            /// **日本語:**<br>
-            /// ドメイン検証前に復号された名前付きフィールドを保持します。
-            pub struct #helper_type #helper_impl #helper_where { #(#defs),* }
-        }
-    } else {
-        quote! {
-            /// **English:**<br>
-            /// Holds tuple fields decoded before value-object construction.
-            ///
-            /// **日本語:**<br>
-            /// 値オブジェクト構築前に復号されたタプルフィールドを保持します。
-            pub struct #helper_type #helper_impl (#(pub #types),*) #helper_where;
-        }
-    };
-    let helper_values: Vec<TokenStream> = members
-        .iter()
-        .map(|member| quote! { fields.#member })
-        .collect();
-    let construct = if named {
-        quote! { Self { #(#members: #helper_values),* } }
-    } else {
-        quote! { Self(#(#helper_values),*) }
-    };
-
-    let mut serialize_generics = original.clone();
-    for ty in types {
-        serialize_generics
-            .make_where_clause()
-            .predicates
-            .push(parse_quote!(#ty: #serde::Serialize));
-    }
-    let (serialize_impl, serialize_ty, serialize_where) = serialize_generics.split_for_impl();
-    let mut de_generics = original.clone();
-    let de_lifetime = fresh_lifetime(&de_generics);
-    de_generics
-        .params
-        .insert(0, GenericParam::Lifetime(parse_quote!(#de_lifetime)));
-    for ty in types {
-        de_generics
-            .make_where_clause()
-            .predicates
-            .push(parse_quote!(#ty: #serde::Deserialize<#de_lifetime>));
-    }
-    let (de_impl, _, de_where) = de_generics.split_for_impl();
-    let (_, original_ty, _) = original.split_for_impl();
-
-    let field_count = members.len();
-    let serialize_body = if named {
-        let names: Vec<LitStr> = fields
-            .iter()
-            .map(|field| {
-                let ident = field.ident.as_ref().expect("named field has an identifier");
-                LitStr::new(&ident.unraw().to_string(), ident.span())
-            })
-            .collect();
-        quote! {
-            let mut state = #serde::Serializer::serialize_struct(serializer, stringify!(#name), #field_count)?;
-            #( #serde::ser::SerializeStruct::serialize_field(&mut state, #names, &self.#members)?; )*
-            #serde::ser::SerializeStruct::end(state)
-        }
-    } else {
-        quote! {
-            let mut state = #serde::Serializer::serialize_tuple(serializer, #field_count)?;
-            #( #serde::ser::SerializeTuple::serialize_element(&mut state, &self.#members)?; )*
-            #serde::ser::SerializeTuple::end(state)
-        }
-    };
-    let deserialize_build = if validated {
-        quote! {
-            Self::try_new(#(#helper_values),*).map_err(|_| {
-                <D::Error as #serde::de::Error>::custom(#validation_error)
-            })
-        }
-    } else {
-        quote! { Ok(#construct) }
-    };
-    Ok(quote! {
-        #[doc(hidden)]
-        #[allow(non_snake_case)]
-        mod #helper {
-            // Field types and generic bounds are written in the parent's scope.
-            #[allow(unused_imports)]
-            use super::*;
-
-            #[derive(#serde::Deserialize)]
-            #[serde(crate = #serde_path)]
-            #helper_definition
-        }
-
-        impl #serialize_impl #serde::Serialize for #name #serialize_ty #serialize_where {
-            fn serialize<S>(&self, serializer: S) -> ::core::result::Result<S::Ok, S::Error>
-            where
-                S: #serde::Serializer,
-            {
-                #serialize_body
-            }
-        }
-
-        impl #de_impl #serde::Deserialize<#de_lifetime> for #name #original_ty #de_where {
-            fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
-            where
-                D: #serde::Deserializer<#de_lifetime>,
-            {
-                let fields = <#helper::#helper_type #original_ty as #serde::Deserialize<#de_lifetime>>::deserialize(deserializer)?;
-                #deserialize_build
-            }
-        }
-    })
-}
-
-fn fresh_lifetime(generics: &Generics) -> Lifetime {
-    let mut suffix = String::new();
-    loop {
-        let candidate = format!("'__ddd_de{suffix}");
-        let exists = generics.params.iter().any(|param| match param {
-            GenericParam::Lifetime(param) => param.lifetime.ident == candidate[1..],
-            _ => false,
-        });
-        if !exists {
-            return Lifetime::new(&candidate, Span::call_site());
-        }
-        suffix.push('x');
     }
 }

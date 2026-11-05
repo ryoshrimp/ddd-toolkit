@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Delegate ValueObject and Entity Serde attributes (including `rename_all`) to
+  borrowed/owned Serde derive helpers, retaining validation and supplied Entity
+  IDs without cloning fields. Unsupported attributes now produce explicit
+  diagnostics; see `docs/macro-serde.md` for supported customizations (#51).
 - Shared named-struct serde helpers now place generic `where` clauses before
   the body and serialize raw identifier fields without the `r#` prefix.
 

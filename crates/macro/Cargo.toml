@@ -28,4 +28,5 @@ syn = { version = "3.0.6", features = ["derive", "parsing", "printing", "proc-ma
 # Macro expansion resolves the calling crate's direct core dependency
 # (including renamed dependencies); core is not needed to build the macros.
 ddd-toolkit-core = { workspace = true, features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
 trybuild = "1"
