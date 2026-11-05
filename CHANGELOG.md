@@ -7,12 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-11-05
+
+### Changed
+
+- Upgrade to macro 0.5.4 for opt-in Entity validation/serde and Serde attribute
+  delegation. Core remains at 0.4.6; the supported core/macro compatibility
+  range is unchanged.
+
 ### Added
 
 - Opt-in Entity validation and serde: `#[entity(validate = check, error = Error,
   serde)]` generates a state-only `try_new` and validates deserialization while
   preserving supplied IDs. Existing identity equality/hashing and default APIs
-  remain unchanged; `trait_only` cannot be combined with these options.
+  remain unchanged; `trait_only` cannot be combined with these options (#52).
 
 ### Fixed
 
@@ -21,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   IDs without cloning fields. Unsupported attributes now produce explicit
   diagnostics; see `docs/macro-serde.md` for supported customizations (#51).
 - Shared named-struct serde helpers now place generic `where` clauses before
-  the body and serialize raw identifier fields without the `r#` prefix.
+  the body and serialize raw identifier fields without the `r#` prefix (#52).
 
 ## [0.4.5] - 2026-11-03
 

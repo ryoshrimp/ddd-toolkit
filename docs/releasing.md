@@ -7,7 +7,7 @@ publishes them in order: `ddd-toolkit-core`, `ddd-toolkit-macro`, `ddd-toolkit`.
 ## Prepare a release PR
 
 1. Update the versions of changed crates in their `Cargo.toml` files.
-   Versions remain independent (currently facade 0.4.5, core 0.4.6, macro 0.5.3);
+   Versions remain independent (currently facade 0.4.6, core 0.4.6, macro 0.5.4);
    publishing is always an explicit operation.
 2. When core or macro changes, update `[workspace.dependencies]` in the root
    manifest. Bump dependent crates as needed so users can receive the update.
@@ -20,6 +20,28 @@ publishes them in order: `ddd-toolkit-core`, `ddd-toolkit-macro`, `ddd-toolkit`.
    workspace tests/feature matrix and `./scripts/check-ui-tests.sh` (latest stable
    with matching `rust-src`); functional tests alone intentionally skip trybuild.
    Release verification requires both paths before publishing.
+
+### Package contents and `exclude`
+
+Cargo interprets `exclude` relative to each package's directory, not the workspace
+root. The facade excludes `.github` and `scripts`; nested packages (`crates/core`,
+`crates/macro`, and `facade-tests`) are automatically omitted by Cargo. The child
+crates' `.github` exclusions are harmless but currently redundant: neither child
+contains that directory, and neither can package the workspace-root `.github`.
+There is no need to exclude `target` or add a restrictive `include` allowlist.
+
+Keep source files, licenses, both READMEs, changelogs, facade docs/examples and
+core/macro test fixtures (including trybuild `.stderr` snapshots) in the archives.
+Run the package-content regression check before publishing:
+
+```sh
+python3 -m unittest discover -s scripts -p 'test_package_contents.py'
+```
+
+It checks the actual `cargo package --list --locked` output for each published
+crate without resolving unpublished dependency versions or uploading packages.
+This validates file selection only, not packaged builds; use the release dry-run
+below for build verification, subject to registry availability.
 
 ### Generated-code compatibility gate
 

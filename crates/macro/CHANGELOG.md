@@ -7,8 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-11-05
+
+### Added
+
+- Opt-in `#[entity(validate = check, error = Error, serde)]` support. Validation
+  and serde can be enabled independently; `try_new` and deserialization validate
+  state without generating IDs or creation events. Preserve supplied IDs and
+  identity-based equality/hashing; reject combinations with `trait_only` (#52).
+
 ### Fixed
 
+- Place generic `where` clauses before shared named-struct serde helper bodies
+  and serialize raw identifier field names without the `r#` prefix (#52).
 - Delegate ValueObject and Entity `#[serde(...)]` wire-format customization to
   Serde derive, including all naming rules, aliases, field defaults/skips,
   flattening, tags, borrowing, bounds, and field codecs. Borrowed serialization
