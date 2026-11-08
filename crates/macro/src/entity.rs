@@ -13,6 +13,7 @@ use crate::path::core_path;
 /// 生成し、不正な形状、属性の誤配置、識別子の曖昧さをエラーにします。
 pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     let mut trait_only = false;
+    let mut getters = false;
     let mut validator: Option<syn::Path> = None;
     let mut error: Option<syn::Type> = None;
     let mut serde = false;
@@ -23,6 +24,16 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         let mut option_found = false;
         attr.parse_nested_meta(|meta| {
             option_found = true;
+            if meta.path.is_ident("getters") {
+                if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
+                    return Err(meta.error("getters is a flag and takes no value"));
+                }
+                if getters {
+                    return Err(meta.error("duplicate getters attribute"));
+                }
+                getters = true;
+                return Ok(());
+            }
             if meta.path.is_ident("validate") {
                 if validator.is_some() {
                     return Err(meta.error("duplicate validate attribute"));
@@ -73,6 +84,12 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
             "trait_only cannot be combined with validate, error, or serde",
         ));
     }
+    if trait_only && getters {
+        return Err(syn::Error::new_spanned(
+            &input.ident,
+            "trait_only cannot be combined with getters",
+        ));
+    }
     if validator.is_some() != error.is_some() {
         return Err(syn::Error::new_spanned(
             &input.ident,
@@ -99,8 +116,26 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     };
 
     let mut id_field = None;
+    let mut getter_fields = Vec::new();
     for field in fields {
-        if has_id_attribute(field)? {
+        let (is_id, skip_getter) = field_attributes(field)?;
+        if skip_getter && !getters {
+            return Err(syn::Error::new_spanned(
+                field,
+                "skip_getter requires #[entity(getters)]",
+            ));
+        }
+        if getters && !is_id && !skip_getter {
+            let field_name = field.ident.as_ref().expect("named fields have names");
+            if field_name == "id" {
+                return Err(syn::Error::new_spanned(
+                    field,
+                    "getter conflicts with id(); use #[entity(skip_getter)] on this field",
+                ));
+            }
+            getter_fields.push(field);
+        }
+        if is_id {
             if id_field.is_some() {
                 return Err(syn::Error::new_spanned(
                     field,
@@ -167,6 +202,20 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         }),
         _ => None,
     };
+    let accessors = getter_fields.iter().map(|field| {
+        let field_name = &field.ident;
+        let ty = &field.ty;
+        quote! {
+            /// **English:**<br>
+            /// Borrows this field, keeping ownership in the entity.
+            ///
+            /// **日本語:**<br>
+            /// エンティティに所有権を残してこのフィールドを借用します。
+            pub fn #field_name(&self) -> &#ty {
+                &self.#field_name
+            }
+        }
+    });
     let serde_impl = if serde {
         Some(crate::serde::expand(
             &input,
@@ -214,6 +263,7 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
             }
 
             #constructor
+            #(#accessors)*
         }
 
         impl #partial_eq_impl ::core::cmp::PartialEq for #name #partial_eq_ty #partial_eq_where {
@@ -230,8 +280,9 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     })
 }
 
-fn has_id_attribute(field: &syn::Field) -> Result<bool> {
-    let mut found = false;
+fn field_attributes(field: &syn::Field) -> Result<(bool, bool)> {
+    let mut id = false;
+    let mut skip_getter = false;
     for attr in &field.attrs {
         if !attr.path().is_ident("entity") {
             continue;
@@ -239,21 +290,25 @@ fn has_id_attribute(field: &syn::Field) -> Result<bool> {
         let mut option_found = false;
         attr.parse_nested_meta(|meta| {
             option_found = true;
-            if !meta.path.is_ident("id") {
+            let (flag, name) = if meta.path.is_ident("id") {
+                (&mut id, "id")
+            } else if meta.path.is_ident("skip_getter") {
+                (&mut skip_getter, "skip_getter")
+            } else {
                 return Err(meta.error("unknown entity attribute"));
+            };
+            if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
+                return Err(meta.error(format!("{name} is a flag and takes no value")));
             }
-            if !meta.input.is_empty() {
-                return Err(meta.error("id is a flag and takes no value"));
+            if *flag {
+                return Err(meta.error(format!("duplicate {name} attribute")));
             }
-            if found {
-                return Err(meta.error("duplicate id attribute"));
-            }
-            found = true;
+            *flag = true;
             Ok(())
         })?;
         if !option_found {
             return Err(syn::Error::new_spanned(attr, "entity requires the id flag"));
         }
     }
-    Ok(found)
+    Ok((id, skip_getter))
 }

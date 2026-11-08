@@ -243,6 +243,29 @@ ValueObject／Entity ともに対応する `#[serde(...)]` 属性は Serde deriv
 使いません。識別子を借用する固有メソッド `id()` を生成します。
 既定ではコンストラクターや検証は生成しません。
 
+`#[entity(getters)]` を指定すると、フィールド名で `&T` を返す公開 getter を生成します:
+
+```rust
+#[derive(ddd_toolkit::Entity)]
+#[entity(getters)]
+struct Account {
+    #[entity(id)]
+    key: u64,
+    name: String,
+    #[entity(skip_getter)]
+    secret: String,
+}
+// id() -> &u64 と name() -> &String を生成し、key() と secret() は生成しません。
+```
+
+`#[entity(skip_getter)]` は `getters` の指定が必要で、対象フィールドを除外します。
+手書き getter との名前衝突を避ける場合にも使えます。識別子には `skip_getter` を
+指定しても従来の `id()` を生成し、フィールド名での追加 getter は生成しません。
+識別子以外に `id` という名前のフィールドがある場合は衝突を避けるため除外してください。
+`getters` の指定がなければ従来どおりです。`trait_only` との併用はできませんが、
+検証や serde とは併用できます。getter の除外は Serde の対象を変更しません。
+また、参照を返しても内部可変性を持つ型の状態変更は防げません。
+
 検証と serde はそれぞれ独立して、または組み合わせて指定できます:
 
 ```rust
