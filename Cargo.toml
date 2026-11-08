@@ -1,6 +1,6 @@
 [package]
 name = "ddd-toolkit"
-version = "0.4.6"
+version = "0.4.7"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Domain-Driven Design building blocks for Rust: a facade over ddd-toolkit-core and its derive macros."
@@ -40,7 +40,7 @@ resolver = "3"
 
 [workspace.dependencies]
 ddd-toolkit-core = { version = "0.4.6", path = "crates/core" }
-ddd-toolkit-macro = { version = "0.5.4", path = "crates/macro" }
+ddd-toolkit-macro = { version = "0.5.5", path = "crates/macro" }
 
 
 [dependencies]
