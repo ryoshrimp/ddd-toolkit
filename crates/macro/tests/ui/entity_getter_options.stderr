@@ -1,0 +1,54 @@
+error: duplicate getters attribute
+ --> tests/ui/entity_getter_options.rs:4:19
+  |
+4 | #[entity(getters, getters)]
+  |                   ^^^^^^^
+
+error: getters is a flag and takes no value
+  --> tests/ui/entity_getter_options.rs:11:10
+   |
+11 | #[entity(getters = true)]
+   |          ^^^^^^^
+
+error: trait_only cannot be combined with getters
+  --> tests/ui/entity_getter_options.rs:19:8
+   |
+19 | struct TraitOnly {
+   |        ^^^^^^^^^
+
+error: skip_getter requires #[entity(getters)]
+  --> tests/ui/entity_getter_options.rs:28:5
+   |
+28 | /     #[entity(skip_getter)]
+29 | |     secret: String,
+   | |__________________^
+
+error: duplicate skip_getter attribute
+  --> tests/ui/entity_getter_options.rs:37:27
+   |
+37 |     #[entity(skip_getter, skip_getter)]
+   |                           ^^^^^^^^^^^
+
+error: skip_getter is a flag and takes no value
+  --> tests/ui/entity_getter_options.rs:46:14
+   |
+46 |     #[entity(skip_getter = true)]
+   |              ^^^^^^^^^^^
+
+error: entity(id) must be placed on a named field
+  --> tests/ui/entity_getter_options.rs:51:10
+   |
+51 | #[entity(skip_getter)]
+   |          ^^^^^^^^^^^
+
+error: unknown entity attribute
+  --> tests/ui/entity_getter_options.rs:61:14
+   |
+61 |     #[entity(getters)]
+   |              ^^^^^^^
+
+error: getter conflicts with id(); use #[entity(skip_getter)] on this field
+  --> tests/ui/entity_getter_options.rs:70:5
+   |
+70 |     id: String,
+   |     ^^^^^^^^^^

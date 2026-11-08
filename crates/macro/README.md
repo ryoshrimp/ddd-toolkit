@@ -251,6 +251,29 @@ Deserialization runs the configured validator; validation errors become
 do not participate. It provides an inherent borrowed `id()` accessor. By default,
 no constructor or validation is generated.
 
+Opt into public field-named getters returning `&T` with `#[entity(getters)]`:
+
+```rust
+#[derive(ddd_toolkit::Entity)]
+#[entity(getters)]
+struct Account {
+    #[entity(id)]
+    key: u64,
+    name: String,
+    #[entity(skip_getter)]
+    secret: String,
+}
+// Generates id() -> &u64 and name() -> &String, but no key() or secret().
+```
+
+`#[entity(skip_getter)]` requires `getters` and excludes a field, allowing a
+handwritten accessor without a name conflict. The identifier always keeps `id()`
+(even with `skip_getter`) and never gets an extra field-named getter. Exclude a
+non-identifier field named `id` to avoid a conflict. Without `getters`, behavior
+is unchanged. `getters` cannot be combined with `trait_only`, but works with
+validation and serde. Excluding a getter does not exclude the field from Serde;
+borrowed getters do not prevent mutation through interior-mutability types.
+
 Optional validation and serde can be used independently or together:
 
 ```rust

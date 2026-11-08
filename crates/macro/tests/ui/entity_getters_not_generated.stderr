@@ -1,0 +1,32 @@
+error[E0599]: no method named `secret` found for struct `Account` in the current scope
+  --> tests/ui/entity_getters_not_generated.rs:24:13
+   |
+ 8 |     pub struct Account {
+   |     ------------------ method `secret` not found for this struct
+...
+24 |     account.secret();
+   |             ^^^^^^ private field, not a method
+
+error[E0599]: no method named `key` found for struct `Account` in the current scope
+  --> tests/ui/entity_getters_not_generated.rs:25:13
+   |
+ 8 |     pub struct Account {
+   |     ------------------ method `key` not found for this struct
+...
+25 |     account.key();
+   |             ^^^ private field, not a method
+
+error[E0599]: no method named `name` found for struct `Legacy` in the current scope
+  --> tests/ui/entity_getters_not_generated.rs:26:12
+   |
+16 |     pub struct Legacy {
+   |     ----------------- method `name` not found for this struct
+...
+26 |     legacy.name();
+   |            ^^^^ private field, not a method
+   |
+help: there is a method `ne` with a similar name, but with different arguments
+  --> $RUST/core/src/cmp.rs
+   |
+   |     fn ne(&self, other: &Rhs) -> bool {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

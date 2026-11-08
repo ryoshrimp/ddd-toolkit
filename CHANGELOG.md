@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Opt-in Entity field getters via `#[entity(getters)]`, with per-field
+  `#[entity(skip_getter)]` exclusions. Existing `id()` and default behavior
+  remain unchanged.
+
 ## [0.4.6] - 2026-11-05
 
 ### Changed
