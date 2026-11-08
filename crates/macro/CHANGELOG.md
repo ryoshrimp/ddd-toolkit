@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2026-11-08
+
 ### Added
 
 - Opt-in `#[entity(getters)]` generates borrowed public field accessors;
   `#[entity(skip_getter)]` excludes individual fields. Preserve the existing
   `id()` accessor and default behavior, support validation/serde, and reject
-  combinations with `trait_only`.
+  combinations with `trait_only` (#56).
 
 ## [0.5.4] - 2026-11-05
 

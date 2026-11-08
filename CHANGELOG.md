@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.7] - 2026-11-08
+
+### Changed
+
+- Upgrade to macro 0.5.5 for opt-in Entity field getters. Core remains at
+  0.4.6; the supported core/macro compatibility range is unchanged.
+
 ### Added
 
 - Opt-in Entity field getters via `#[entity(getters)]`, with per-field
