@@ -12,5 +12,7 @@ help: the trait `DomainEvent` is not implemented for `NotEvent`
 note: required by a bound in `ddd_toolkit_core::AggregateRoot::Event`
  --> src/aggregate_root.rs
   |
+  | pub trait AggregateRoot: Entity {
+...
   |     type Event: DomainEvent;
   |                 ^^^^^^^^^^^ required by this bound in `AggregateRoot::Event`

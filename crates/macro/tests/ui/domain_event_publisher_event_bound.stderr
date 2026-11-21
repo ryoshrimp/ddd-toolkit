@@ -12,5 +12,7 @@ help: the trait `DomainEvent` is not implemented for `NotADomainEvent`
 note: required by a bound in `ddd_toolkit_core::DomainEventPublisher::Event`
  --> $WORKSPACE/crates/core/src/domain_event_publisher.rs
   |
+  | pub trait DomainEventPublisher {
+...
   |     type Event: DomainEvent;
   |                 ^^^^^^^^^^^ required by this bound in `DomainEventPublisher::Event`
