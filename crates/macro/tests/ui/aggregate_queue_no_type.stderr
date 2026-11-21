@@ -13,8 +13,10 @@ error[E0107]: missing generics for struct `Vec`
 note: struct defined here, with at least 1 generic parameter: `T`
  --> $RUST/alloc/src/vec/mod.rs
   |
-  | pub struct Vec<T, #[unstable(feature = "allocator_api", issue = "32838")] A: Allocator = Global> {
-  |            ^^^ -
+  | pub struct Vec<
+  |            ^^^
+  |     T,
+  |     -
 help: add missing generic argument
   |
 6 |     events: Vec<T>,
