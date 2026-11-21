@@ -1,0 +1,53 @@
+error: field `new` conflicts with the generated `new()` constructor; rename the field
+ --> tests/ui/value_object_name_conflict.rs:5:5
+  |
+5 |     new: u32,
+  |     ^^^
+
+error: field `as_inner` conflicts with the generated `as_inner()` method; rename the field
+  --> tests/ui/value_object_name_conflict.rs:11:5
+   |
+11 |     as_inner: u32,
+   |     ^^^^^^^^
+
+error: field `into_inner` conflicts with the generated `into_inner()` method; rename the field
+  --> tests/ui/value_object_name_conflict.rs:17:5
+   |
+17 |     into_inner: u32,
+   |     ^^^^^^^^^^
+
+error: field `try_new` conflicts with the generated `try_new()` constructor; rename the field
+  --> tests/ui/value_object_name_conflict.rs:24:5
+   |
+24 |     try_new: u32,
+   |     ^^^^^^^
+
+error: field `try_new` conflicts with the generated `try_new()` constructor; rename the field
+  --> tests/ui/value_object_name_conflict.rs:35:5
+   |
+35 |     r#try_new: u32,
+   |     ^^^^^^^^^
+
+error: field `new` conflicts with the generated `new()` constructor; rename the field
+  --> tests/ui/value_object_name_conflict.rs:45:5
+   |
+45 |     r#new: u32,
+   |     ^^^^^
+
+error: variant `Inner` conflicts with the generated `as_inner()` method (from `as_<variant>`); rename the variant
+  --> tests/ui/value_object_name_conflict.rs:51:5
+   |
+51 |     Inner,
+   |     ^^^^^
+
+error: variant `INNER` conflicts with the generated `as_inner()` method (from `as_<variant>`); rename the variant
+  --> tests/ui/value_object_name_conflict.rs:57:5
+   |
+57 |     INNER,
+   |     ^^^^^
+
+error: variant `Inner` conflicts with the generated `as_inner()` method (from `as_<variant>`); rename the variant
+  --> tests/ui/value_object_name_conflict.rs:62:5
+   |
+62 |     r#Inner,
+   |     ^^^^^^^

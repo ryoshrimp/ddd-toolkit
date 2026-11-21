@@ -52,3 +52,21 @@ error: getter conflicts with id(); use #[entity(skip_getter)] on this field
    |
 70 |     id: String,
    |     ^^^^^^^^^^
+
+error: getter conflicts with id(); use #[entity(skip_getter)] on this field
+  --> tests/ui/entity_getter_options.rs:78:5
+   |
+78 |     r#id: String,
+   |     ^^^^^^^^^^^^
+
+error: getter conflicts with the generated try_new(); use #[entity(skip_getter)] on this field
+  --> tests/ui/entity_getter_options.rs:86:5
+   |
+86 |     try_new: String,
+   |     ^^^^^^^
+
+error: getter conflicts with the generated try_new(); use #[entity(skip_getter)] on this field
+  --> tests/ui/entity_getter_options.rs:98:5
+   |
+98 |     r#try_new: String,
+   |     ^^^^^^^^^

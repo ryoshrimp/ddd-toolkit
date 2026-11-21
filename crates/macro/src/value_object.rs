@@ -104,7 +104,17 @@ fn expand_enum(
     let mut variants = Vec::with_capacity(data.variants.len());
     let mut suffixes = Vec::with_capacity(data.variants.len());
     for variant in &data.variants {
-        let suffix = variant.ident.to_string().to_lowercase();
+        let suffix = variant.ident.unraw().to_string().to_lowercase();
+        if suffix == "inner" {
+            return Err(syn::Error::new_spanned(
+                &variant.ident,
+                format!(
+                    "variant `{}` conflicts with the generated `as_inner()` method \
+                     (from `as_<variant>`); rename the variant",
+                    variant.ident.unraw()
+                ),
+            ));
+        }
         if suffixes.iter().any(|known| known == &suffix) {
             return Err(syn::Error::new_spanned(
                 &variant.ident,
@@ -643,6 +653,33 @@ fn expand_multi(
         Fields::Unnamed(fields) => fields.unnamed.iter().collect(),
         Fields::Unit => unreachable!("unit fields are rejected before expansion"),
     };
+    if named {
+        let constructor = if attrs.validator.is_some() {
+            "try_new"
+        } else {
+            "new"
+        };
+        for field in &field_list {
+            let ident = field.ident.as_ref().expect("named field has an identifier");
+            let name = ident.unraw().to_string();
+            if name == constructor {
+                return Err(syn::Error::new_spanned(
+                    ident,
+                    format!(
+                        "field `{name}` conflicts with the generated `{constructor}()` constructor; rename the field"
+                    ),
+                ));
+            }
+            if name == "as_inner" || name == "into_inner" {
+                return Err(syn::Error::new_spanned(
+                    ident,
+                    format!(
+                        "field `{name}` conflicts with the generated `{name}()` method; rename the field"
+                    ),
+                ));
+            }
+        }
+    }
     if attrs.validator.is_some()
         && let Some(field) = field_list
             .iter()

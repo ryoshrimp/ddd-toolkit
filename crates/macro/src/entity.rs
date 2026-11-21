@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, Result, parse_quote};
+use syn::{Data, DeriveInput, Fields, Result, ext::IdentExt, parse_quote};
 
 use crate::path::core_path;
 
@@ -127,10 +127,16 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         }
         if getters && !is_id && !skip_getter {
             let field_name = field.ident.as_ref().expect("named fields have names");
-            if field_name == "id" {
+            if field_name.unraw() == "id" {
                 return Err(syn::Error::new_spanned(
                     field,
                     "getter conflicts with id(); use #[entity(skip_getter)] on this field",
+                ));
+            }
+            if validator.is_some() && field_name.unraw() == "try_new" {
+                return Err(syn::Error::new_spanned(
+                    field_name,
+                    "getter conflicts with the generated try_new(); use #[entity(skip_getter)] on this field",
                 ));
             }
             getter_fields.push(field);
