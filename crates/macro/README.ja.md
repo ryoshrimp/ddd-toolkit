@@ -169,12 +169,43 @@ fn main() {
 }
 ```
 
-検証を指定すると `new` は `try_new` に、`new_<variant>` は `try_new_<variant>` に
-置き換わります。コンストラクターのエラーはそのまま伝播し、検証関数のパニックは捕捉しません。
+検証を指定すると `new` は `try_new` に置き換わります。コンストラクターのエラーは
+そのまま伝播し、検証関数のパニックは捕捉しません。
 
 検証付き構造体のフィールドを無制限の `pub` にすることはできません。ただし、すべての
-迂回を防ぐものではありません。定義モジュール内の直接構築、制限付きのフィールド公開、
-列挙型のバリアントの直接構築では検証を迂回できます。
+迂回を防ぐものではありません。定義モジュール内の直接構築と、制限付きのフィールド公開では
+検証を迂回できます。
+
+列挙型への `validate`／`error` はコンパイルエラーになります。列挙型のバリアントは常に
+公開のため、`Pct::Value(200)` のように検証を迂回できてしまうからです。列挙型は非公開の
+まま `validate` なしで `ValueObject` を導出し、`pub` でないフィールドを 1 つだけ持つ構造体で
+包んで、その構造体に `validate`／`error`（必要なら `serde`）を指定してください。単一フィールド
+構造体は内包値としてシリアライズされるため、ワイヤ形式は列挙型のままです。
+
+```rust
+use ddd_toolkit_macro::ValueObject;
+
+#[derive(ValueObject)]
+enum PctInner {
+    Value(u8),
+}
+
+#[derive(ValueObject)]
+#[value_object(validate = validate_pct, error = &'static str)]
+struct Pct(PctInner);
+
+fn validate_pct(value: &PctInner) -> Result<(), &'static str> {
+    match value {
+        PctInner::Value(percent) if *percent <= 100 => Ok(()),
+        PctInner::Value(_) => Err("out of range"),
+    }
+}
+
+fn main() {
+    assert!(Pct::try_new(PctInner::new_value(50)).is_ok());
+    assert_eq!(Pct::try_new(PctInner::new_value(200)), Err("out of range"));
+}
+```
 
 ### core の互換性
 
@@ -356,7 +387,7 @@ fn main() {
 
 | 属性 | 指定箇所 | 効果 |
 |---|---|---|
-| `#[value_object(validate = path, error = ErrorType)]` | `ValueObject` の構造体または列挙型 | 検証付きの失敗し得るコンストラクターを生成 |
+| `#[value_object(validate = path, error = ErrorType)]` | `ValueObject` の構造体 | 検証付きの失敗し得るコンストラクターを生成 |
 | `#[value_object(serde)]` | `ValueObject` の構造体または列挙型 | serde のシリアライズ・デシリアライズを生成。コアの `serde` feature が必要 |
 | `#[entity(id)]` | 名前付き構造体の一つのフィールド | エンティティの識別子を選択 |
 | `#[aggregate(events)]` | 名前付き構造体の一つのフィールド | 集約の保留イベントベクターを選択 |

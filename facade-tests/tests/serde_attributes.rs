@@ -103,9 +103,9 @@ fn field_alias_default_skip_and_directional_names_still_validate() {
 }
 
 #[derive(ValueObject)]
-#[value_object(validate = validate_message, error = &'static str, serde)]
+#[value_object(serde)]
 #[serde(tag = "kind", content = "data", rename_all = "snake_case")]
-enum Message {
+enum MessageInner {
     #[serde(alias = "legacy")]
     TextPayload {
         #[serde(rename = "text")]
@@ -115,8 +115,13 @@ enum Message {
     Pair(u64, u64),
     Nothing,
 }
-fn validate_message(value: &Message) -> Result<(), &'static str> {
-    if matches!(value, Message::Number(0)) {
+
+#[derive(ValueObject)]
+#[value_object(validate = validate_message, error = &'static str, serde)]
+struct Message(MessageInner);
+
+fn validate_message(value: &MessageInner) -> Result<(), &'static str> {
+    if matches!(value, MessageInner::Number(0)) {
         Err("zero")
     } else {
         Ok(())
@@ -127,24 +132,27 @@ fn validate_message(value: &Message) -> Result<(), &'static str> {
 fn tagged_enum_fields_and_aliases_use_serde_and_validate() {
     for (value, json) in [
         (
-            Message::TextPayload {
+            MessageInner::TextPayload {
                 body: "hello".into(),
             },
             r#"{"kind":"text_payload","data":{"text":"hello"}}"#,
         ),
-        (Message::Number(7), r#"{"kind":"number","data":7}"#),
-        (Message::Pair(1, 2), r#"{"kind":"pair","data":[1,2]}"#),
-        (Message::Nothing, r#"{"kind":"nothing"}"#),
+        (MessageInner::Number(7), r#"{"kind":"number","data":7}"#),
+        (MessageInner::Pair(1, 2), r#"{"kind":"pair","data":[1,2]}"#),
+        (MessageInner::Nothing, r#"{"kind":"nothing"}"#),
     ] {
+        let value = Message::try_new(value).unwrap();
         assert_eq!(serde_json::to_string(&value).unwrap(), json);
         assert_eq!(serde_json::from_str::<Message>(json).unwrap(), value);
     }
     assert_eq!(
         serde_json::from_str::<Message>(r#"{"kind":"legacy","data":{"text":"hello"}}"#).unwrap(),
-        Message::TextPayload {
+        Message::try_new(MessageInner::TextPayload {
             body: "hello".into()
-        }
+        })
+        .unwrap()
     );
+    assert!(Message::try_new(MessageInner::Number(0)).is_err());
     assert!(
         serde_json::from_str::<Message>(r#"{"kind":"number","data":0}"#)
             .unwrap_err()

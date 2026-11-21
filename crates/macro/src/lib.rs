@@ -69,12 +69,15 @@ mod value_object;
 /// fields, direct enum construction, or independently implemented deserialization.
 ///
 /// `#[value_object(validate = path, error = ErrorType)]` replaces `new` with
-/// `try_new` (or `try_new_<variant>`). Both options are required together. The
+/// `try_new`. Both options are required together. The
 /// validator receives `&Inner` for a single-field struct and `&Self` otherwise,
 /// returns `Result<(), ErrorType>`, and runs before the constructor returns the
 /// value. Its error is propagated; its panics are not caught. Validated struct
-/// fields cannot be unrestricted `pub`. Restricted visibility, direct construction
-/// inside the defining module, and enum variants can still bypass validation.
+/// fields cannot be unrestricted `pub`. Restricted visibility and direct
+/// construction inside the defining module can still bypass validation. Enums
+/// reject `validate` and `error` with a compile error because variants are always
+/// public; wrap a private enum in a single-field struct and put `validate` and
+/// `error` on the struct instead.
 ///
 /// `#[value_object(serde)]` additionally generates serialization through the core
 /// crate's serde re-export; enable the core crate's `serde` feature. Single-field
@@ -111,12 +114,13 @@ mod value_object;
 /// 公開フィールド、列挙型の直接構築、別途実装された逆直列化の不変条件は保証しません。
 ///
 /// `#[value_object(validate = path, error = ErrorType)]` は `new` を `try_new`
-/// （列挙型では `try_new_<variant>`）に置き換えます。両オプションの同時指定が必要です。
+/// に置き換えます。両オプションの同時指定が必要です。
 /// 検証関数は単一フィールドなら `&Inner`、それ以外なら `&Self` を受け取り、
 /// `Result<(), ErrorType>` を返します。値を返す前に検証し、エラーを伝播します。
 /// 検証関数のパニックは捕捉しません。検証付き構造体のフィールドは無制限の `pub` に
-/// できませんが、制限付き公開、定義モジュール内の直接構築、列挙型のバリアントからは
-/// 検証を迂回できます。
+/// できませんが、制限付き公開や定義モジュール内の直接構築では検証を迂回できます。
+/// 列挙型のバリアントは常に公開のため、列挙型への `validate`／`error` はコンパイル
+/// エラーです。非公開の列挙型を単一フィールド構造体で包み、その構造体に指定してください。
 ///
 /// `#[value_object(serde)]` はコアの serde 再公開を使う直列化実装も生成します。
 /// コアの `serde` feature を有効にしてください。単一フィールドは内包値、名前付き
