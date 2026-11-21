@@ -1,0 +1,16 @@
+error[E0277]: the trait bound `Wrapped: Hash` is not satisfied
+  --> tests/ui/value_object_no_hash_not_hash.rs:15:19
+   |
+15 |     assert_hash::<Wrapped>();
+   |                   ^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `Hash` is not implemented for `Wrapped`
+  --> tests/ui/value_object_no_hash_not_hash.rs:8:1
+   |
+ 8 | struct Wrapped(NoHash);
+   | ^^^^^^^^^^^^^^
+note: required by a bound in `assert_hash`
+  --> tests/ui/value_object_no_hash_not_hash.rs:11:19
+   |
+11 | fn assert_hash<T: std::hash::Hash>() {}
+   |                   ^^^^^^^^^^^^^^^ required by this bound in `assert_hash`

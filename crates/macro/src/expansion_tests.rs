@@ -468,3 +468,69 @@ fn aggregate_reports_attribute_and_queue_errors() {
         rejects(aggregate_root::expand, &[(source.as_str(), expected)]);
     }
 }
+
+#[test]
+fn value_object_no_eq_and_no_hash_skip_only_their_impls() {
+    for shape in [
+        "struct V(f64);",
+        "struct V { a: f64 }",
+        "struct V(f64, f64);",
+        "struct V { a: f64, b: f64 }",
+        "enum V { A, B(f64) }",
+    ] {
+        for (flags, eq, hash) in [
+            ("", true, true),
+            ("no_hash", true, false),
+            ("no_eq", false, false),
+            ("no_eq, no_hash", false, false),
+            ("no_hash, no_eq", false, false),
+        ] {
+            let source = if flags.is_empty() {
+                shape.to_owned()
+            } else {
+                format!("#[value_object({flags})] {shape}")
+            };
+            let output = value_object::expand(syn::parse_str(&source).unwrap())
+                .unwrap()
+                .to_string();
+            assert!(output.contains("PartialEq for V"), "{source}");
+            assert!(output.contains("Clone for V"), "{source}");
+            assert!(output.contains("Debug for V"), "{source}");
+            assert_eq!(output.contains(":: Eq for V"), eq, "{source}");
+            assert_eq!(output.contains(":: Hash for V"), hash, "{source}");
+        }
+    }
+}
+
+#[test]
+fn value_object_no_eq_and_no_hash_reject_invalid_options() {
+    rejects(
+        value_object::expand,
+        &[
+            (
+                "#[value_object(no_hash, no_hash)] struct V(f64);",
+                "duplicate no_hash attribute",
+            ),
+            (
+                "#[value_object(no_eq, no_eq)] struct V(f64);",
+                "duplicate no_eq attribute",
+            ),
+            (
+                "#[value_object(no_hash = true)] struct V(f64);",
+                "no_hash is a flag and takes no value",
+            ),
+            (
+                "#[value_object(no_eq = true)] struct V(f64);",
+                "no_eq is a flag and takes no value",
+            ),
+            (
+                "#[value_object(trait_only, no_hash)] struct V(f64);",
+                "trait_only cannot be combined with no_eq or no_hash",
+            ),
+            (
+                "#[value_object(no_eq, trait_only)] struct V(f64);",
+                "trait_only cannot be combined with no_eq or no_hash",
+            ),
+        ],
+    );
+}

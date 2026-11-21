@@ -1,0 +1,5 @@
+error: duplicate no_hash attribute
+ --> tests/ui/value_object_no_hash_duplicate.rs:4:25
+  |
+4 | #[value_object(no_hash, no_hash)]
+  |                         ^^^^^^^

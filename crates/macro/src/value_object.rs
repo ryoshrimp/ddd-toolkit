@@ -12,6 +12,8 @@ struct Attributes {
     error: Option<Type>,
     serde: bool,
     trait_only: bool,
+    no_eq: bool,
+    no_hash: bool,
 }
 
 /// **English:**<br>
@@ -150,7 +152,13 @@ fn expand_enum(
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     let constructors = enum_constructors(&variants);
     let accessors = enum_accessors(&variants);
-    let standard_impls = standard_impls_enum(name, &input.generics, &variants);
+    let standard_impls = standard_impls_enum(
+        name,
+        &input.generics,
+        &variants,
+        !attrs.no_eq,
+        !attrs.no_eq && !attrs.no_hash,
+    );
     let serde_impl = if attrs.serde {
         Some(crate::serde::expand(input, None, &core, false)?)
     } else {
@@ -318,6 +326,8 @@ fn standard_impls_enum(
     name: &syn::Ident,
     original: &Generics,
     variants: &[EnumVariant<'_>],
+    emit_eq: bool,
+    emit_hash: bool,
 ) -> TokenStream {
     let mut debug_generics = original.clone();
     for variant in variants {
@@ -462,6 +472,24 @@ fn standard_impls_enum(
         quote! { #pattern => { #(#hashes)* }, }
     });
 
+    let eq_impl_tokens = if emit_eq {
+        quote! { impl #eq_impl ::core::cmp::Eq for #name #eq_ty #eq_where {} }
+    } else {
+        TokenStream::new()
+    };
+    let hash_impl_tokens = if emit_hash {
+        quote! {
+            impl #hash_impl ::core::hash::Hash for #name #hash_ty #hash_where {
+                fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
+                    ::core::hash::Hash::hash(&::core::mem::discriminant(self), state);
+                    match self { #(#hash_arms)* }
+                }
+            }
+        }
+    } else {
+        TokenStream::new()
+    };
+
     quote! {
         impl #debug_impl ::core::fmt::Debug for #name #debug_ty #debug_where {
             fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
@@ -479,13 +507,8 @@ fn standard_impls_enum(
                 false
             }
         }
-        impl #eq_impl ::core::cmp::Eq for #name #eq_ty #eq_where {}
-        impl #hash_impl ::core::hash::Hash for #name #hash_ty #hash_where {
-            fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
-                ::core::hash::Hash::hash(&::core::mem::discriminant(self), state);
-                match self { #(#hash_arms)* }
-            }
-        }
+        #eq_impl_tokens
+        #hash_impl_tokens
     }
 }
 
@@ -553,6 +576,8 @@ fn expand_single(
         inner_ty,
         &member,
         named_field.as_ref(),
+        !attrs.no_eq,
+        !attrs.no_eq && !attrs.no_hash,
     );
     let serde_impl = if attrs.serde {
         Some(crate::serde::expand(
@@ -700,7 +725,15 @@ fn expand_multi(
                     }
                 }
             });
-    let standard_impls = standard_impls_multi(name, &input.generics, &members, &types, named);
+    let standard_impls = standard_impls_multi(
+        name,
+        &input.generics,
+        &members,
+        &types,
+        named,
+        !attrs.no_eq,
+        !attrs.no_eq && !attrs.no_hash,
+    );
     let serde_impl = if attrs.serde {
         Some(crate::serde::expand(
             input,
@@ -797,6 +830,8 @@ fn parse_attributes(input: &DeriveInput) -> Result<Attributes> {
         error: None,
         serde: false,
         trait_only: false,
+        no_eq: false,
+        no_hash: false,
     };
     if let Some(attr) = matching.first() {
         let mut option_found = false;
@@ -810,6 +845,26 @@ fn parse_attributes(input: &DeriveInput) -> Result<Attributes> {
                     return Err(meta.error("duplicate trait_only attribute"));
                 }
                 attributes.trait_only = true;
+                return Ok(());
+            }
+            if meta.path.is_ident("no_eq") {
+                if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
+                    return Err(meta.error("no_eq is a flag and takes no value"));
+                }
+                if attributes.no_eq {
+                    return Err(meta.error("duplicate no_eq attribute"));
+                }
+                attributes.no_eq = true;
+                return Ok(());
+            }
+            if meta.path.is_ident("no_hash") {
+                if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
+                    return Err(meta.error("no_hash is a flag and takes no value"));
+                }
+                if attributes.no_hash {
+                    return Err(meta.error("duplicate no_hash attribute"));
+                }
+                attributes.no_hash = true;
                 return Ok(());
             }
             if meta.path.is_ident("validate") {
@@ -846,6 +901,12 @@ fn parse_attributes(input: &DeriveInput) -> Result<Attributes> {
         }
     }
 
+    if attributes.trait_only && (attributes.no_eq || attributes.no_hash) {
+        return Err(syn::Error::new_spanned(
+            matching[0],
+            "trait_only cannot be combined with no_eq or no_hash",
+        ));
+    }
     if attributes.trait_only
         && (attributes.validator.is_some() || attributes.error.is_some() || attributes.serde)
     {
@@ -869,6 +930,8 @@ fn standard_impls_single(
     inner_ty: &Type,
     member: &Member,
     named_field: Option<&syn::Ident>,
+    emit_eq: bool,
+    emit_hash: bool,
 ) -> TokenStream {
     let mut debug_generics = original.clone();
     debug_generics
@@ -910,6 +973,23 @@ fn standard_impls_single(
         None => quote! { Self(self.#member.clone()) },
     };
 
+    let eq_impl_tokens = if emit_eq {
+        quote! { impl #eq_impl ::core::cmp::Eq for #name #eq_ty #eq_where {} }
+    } else {
+        TokenStream::new()
+    };
+    let hash_impl_tokens = if emit_hash {
+        quote! {
+            impl #hash_impl ::core::hash::Hash for #name #hash_ty #hash_where {
+                fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
+                    ::core::hash::Hash::hash(&self.#member, state);
+                }
+            }
+        }
+    } else {
+        TokenStream::new()
+    };
+
     quote! {
         impl #debug_impl ::core::fmt::Debug for #name #debug_ty #debug_where {
             fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
@@ -926,12 +1006,8 @@ fn standard_impls_single(
                 self.#member == other.#member
             }
         }
-        impl #eq_impl ::core::cmp::Eq for #name #eq_ty #eq_where {}
-        impl #hash_impl ::core::hash::Hash for #name #hash_ty #hash_where {
-            fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
-                ::core::hash::Hash::hash(&self.#member, state);
-            }
-        }
+        #eq_impl_tokens
+        #hash_impl_tokens
     }
 }
 
@@ -941,6 +1017,8 @@ fn standard_impls_multi(
     members: &[Member],
     types: &[&Type],
     named: bool,
+    emit_eq: bool,
+    emit_hash: bool,
 ) -> TokenStream {
     let mut debug_generics = original.clone();
     for ty in types {
@@ -1021,6 +1099,23 @@ fn standard_impls_multi(
         }
     };
 
+    let eq_impl_tokens = if emit_eq {
+        quote! { impl #eq_impl ::core::cmp::Eq for #name #eq_ty #eq_where {} }
+    } else {
+        TokenStream::new()
+    };
+    let hash_impl_tokens = if emit_hash {
+        quote! {
+            impl #hash_impl ::core::hash::Hash for #name #hash_ty #hash_where {
+                fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
+                    #(#hashes)*
+                }
+            }
+        }
+    } else {
+        TokenStream::new()
+    };
+
     quote! {
         impl #debug_impl ::core::fmt::Debug for #name #debug_ty #debug_where {
             fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
@@ -1037,11 +1132,7 @@ fn standard_impls_multi(
                 true #(&& #comparisons)*
             }
         }
-        impl #eq_impl ::core::cmp::Eq for #name #eq_ty #eq_where {}
-        impl #hash_impl ::core::hash::Hash for #name #hash_ty #hash_where {
-            fn hash<H: ::core::hash::Hasher>(&self, state: &mut H) {
-                #(#hashes)*
-            }
-        }
+        #eq_impl_tokens
+        #hash_impl_tokens
     }
 }

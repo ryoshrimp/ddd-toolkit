@@ -31,13 +31,18 @@ cargo add ddd-toolkit-core ddd-toolkit-macro
 
 | Derive | 対応する入力 | 生成する API |
 |---|---|---|
-| `ValueObject` | 空でない名前付き・タプル構造体、空でない列挙型 | コアの `ValueObject`、`Debug`、`Clone`、`PartialEq`、`Eq`、`Hash`、コンストラクター、アクセサー |
+| `ValueObject` | 空でない名前付き・タプル構造体、空でない列挙型 | コアの `ValueObject`、`Debug`、`Clone`、`PartialEq`、`Eq`、`Hash`（`no_eq` で `Eq` と `Hash`、`no_hash` で `Hash` だけを止められる）、コンストラクター、アクセサー |
 | `Entity` | `#[entity(id)]` フィールドをちょうど一つ持つ名前付き構造体 | コアの `Entity`、固有メソッド `id()`、識別子に基づく `PartialEq`、`Eq`、`Hash` |
 | `DomainEvent` | 構造体または列挙型 | コアの `DomainEvent` マーカー |
 | `AggregateRoot` | コアの `Entity` を実装し、`#[aggregate(events)]` フィールドをちょうど一つ持つ名前付き構造体 | `record_event` と `pull_events` を備えたコアの `AggregateRoot` |
 
 既定モードでは、マクロが生成するトレイトを重複して実装・derive しないでください。
 フィールドの型は、生成するトレイトに必要な境界を満たす必要があります。
+生成する各トレイトにはフィールド型の境界が付くため、`f64` や `Secret<String>` の
+ように `Eq` や `Hash` を持たない型には `#[value_object(no_eq)]`（`Eq` と `Hash` の
+両方を生成しない）または `#[value_object(no_hash)]`（`Hash` だけを生成しない）を
+使えます。どちらのフラグも `ValueObject` のすべての形で、`validate`、`error`、
+`serde` と併用できますが、`trait_only` とは併用できません。
 
 ### trait_only モード
 
@@ -82,7 +87,7 @@ impl Account {
 - 既存コンストラクター、検証、getter、秘匿用 `Debug`、`Clone` を実装しない方針などを
   維持できます。フィールドに新しいトレイト境界は追加しません。
   オプション未指定時の生成 API・意味は不変です。個別メソッドの生成選択は非対応です。
-- `validate`／`error`／`serde` との併用は無視せずエラーにします。
+- `validate`／`error`／`serde`／`no_eq`／`no_hash` との併用は無視せずエラーにします。
   検証とシリアライズは利用側で実装してください。
 
 これは生成コードの制限であり、公開フィールド、列挙型の直接構築、利用側の
