@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** `#[derive(ValueObject)]` on an enum now rejects `validate` and
+  `error` with a compile error, because enum variants are always public and
+  `Pct::Value(200)` bypassed `try_new_<variant>` validation (#60). Enums without
+  `validate` are unchanged. To migrate, keep the enum private, derive
+  `ValueObject` (and `serde`, with any `#[serde(..)]` attributes) on it without
+  `validate`, wrap it in a single-field struct with a non-`pub` field, and move
+  `validate`/`error` (and `serde`) to the struct. `Enum::try_new_<variant>(..)`
+  becomes `Wrapper::try_new(Enum::new_<variant>(..))`; the wire format is
+  unchanged because a single-field struct serializes as its inner value.
+
 ## [0.5.5] - 2026-11-08
 
 ### Added

@@ -87,21 +87,25 @@ fn legacy_tuple_wrapper_is_not_accepted_as_a_newtype_value() {
 }
 
 #[derive(ddd_toolkit::ValueObject)]
-#[value_object(validate = validate_code, error = &'static str, serde)]
-enum ValidatedStatus {
+#[value_object(serde)]
+enum StatusInner {
     Code(u32),
 }
 
-fn validate_code(value: &ValidatedStatus) -> Result<(), &'static str> {
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_code, error = &'static str, serde)]
+struct ValidatedStatus(StatusInner);
+
+fn validate_code(value: &StatusInner) -> Result<(), &'static str> {
     match value {
-        ValidatedStatus::Code(0) => Err("code must be positive"),
+        StatusInner::Code(0) => Err("code must be positive"),
         _ => Ok(()),
     }
 }
 
 #[test]
 fn newtype_enum_deserialization_still_validates() {
-    let value = ValidatedStatus::try_new_code(7).unwrap();
+    let value = ValidatedStatus::try_new(StatusInner::new_code(7)).unwrap();
     let json = serde_json::to_string(&value).unwrap();
     assert_eq!(json, r#"{"Code":7}"#);
     assert_eq!(
@@ -109,7 +113,7 @@ fn newtype_enum_deserialization_still_validates() {
         value
     );
     assert_eq!(
-        ValidatedStatus::try_new_code(0),
+        ValidatedStatus::try_new(StatusInner::new_code(0)),
         Err("code must be positive")
     );
     let error = serde_json::from_str::<ValidatedStatus>(r#"{"Code":0}"#).unwrap_err();

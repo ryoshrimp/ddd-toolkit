@@ -101,16 +101,19 @@ enum NamedVariant {
 }
 
 #[derive(ddd_toolkit::ValueObject)]
-#[value_object(validate = valid_variant, error = &'static str)]
-enum ValidatedVariant {
+enum VariantInner {
     One { count: u32 },
     Two { start: u32, end: u32 },
 }
 
-fn valid_variant(value: &ValidatedVariant) -> Result<(), &'static str> {
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = valid_variant, error = &'static str)]
+struct ValidatedVariant(VariantInner);
+
+fn valid_variant(value: &VariantInner) -> Result<(), &'static str> {
     match value {
-        ValidatedVariant::One { count } if *count > 0 => Ok(()),
-        ValidatedVariant::Two { start, end } if start <= end => Ok(()),
+        VariantInner::One { count } if *count > 0 => Ok(()),
+        VariantInner::Two { start, end } if start <= end => Ok(()),
         _ => Err("invalid"),
     }
 }
@@ -132,15 +135,25 @@ fn named_constructors_preserve_fields_and_validation() {
         NamedVariant::Two { start: 2, end: 5 }
     );
     assert_eq!(
-        ValidatedVariant::try_new_one(3).unwrap(),
-        ValidatedVariant::One { count: 3 }
+        ValidatedVariant::try_new(VariantInner::new_one(3))
+            .unwrap()
+            .into_inner(),
+        VariantInner::One { count: 3 }
     );
     assert_eq!(
-        ValidatedVariant::try_new_two(2, 5).unwrap(),
-        ValidatedVariant::Two { start: 2, end: 5 }
+        ValidatedVariant::try_new(VariantInner::new_two(2, 5))
+            .unwrap()
+            .into_inner(),
+        VariantInner::Two { start: 2, end: 5 }
     );
-    assert_eq!(ValidatedVariant::try_new_one(0), Err("invalid"));
-    assert_eq!(ValidatedVariant::try_new_two(5, 2), Err("invalid"));
+    assert_eq!(
+        ValidatedVariant::try_new(VariantInner::new_one(0)),
+        Err("invalid")
+    );
+    assert_eq!(
+        ValidatedVariant::try_new(VariantInner::new_two(5, 2)),
+        Err("invalid")
+    );
 }
 
 #[derive(Debug, Clone, PartialEq, ddd_toolkit::DomainEvent)]

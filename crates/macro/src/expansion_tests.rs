@@ -51,8 +51,12 @@ fn value_object_expands_all_shapes_with_validation_and_serde() {
         ),
     ];
     for shape in shapes {
+        let is_enum = shape.to_string().starts_with("enum");
         for validated in [false, true] {
             for serde in [false, true] {
+                if is_enum && validated {
+                    continue; // enums reject validation; see the UI test
+                }
                 let attributes = match (validated, serde) {
                     (false, false) => quote!(),
                     (true, false) => quote!(#[value_object(validate = check, error = Error)]),

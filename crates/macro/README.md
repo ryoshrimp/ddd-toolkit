@@ -150,7 +150,7 @@ method names must not collide with other methods or field accessors.
 
 Specify `validate` and `error` together. The validator is a Rust path, not a
 quoted string. It receives `&Inner` for a single-field struct or `&Self` for a
-multi-field struct or enum, and returns `Result<(), ErrorType>`.
+multi-field struct, and returns `Result<(), ErrorType>`.
 
 ```rust
 use ddd_toolkit_macro::ValueObject;
@@ -174,13 +174,44 @@ fn main() {
 }
 ```
 
-Validation replaces `new` with `try_new` (or `new_<variant>` with
-`try_new_<variant>`). Constructor errors are propagated unchanged; validator
-panics are not caught.
+Validation replaces `new` with `try_new`. Constructor errors are propagated
+unchanged; validator panics are not caught.
 
 Validated struct fields cannot be unrestricted `pub`. This does not prevent all
-bypasses: direct construction within the defining module, restricted field
-visibility, and direct enum variant construction can bypass validation.
+bypasses: direct construction within the defining module and restricted field
+visibility can bypass validation.
+
+`validate` and `error` are rejected on enums with a compile error, because enum
+variants are always public and `Pct::Value(200)` would bypass validation. Keep
+the enum private, derive `ValueObject` on it without `validate`, and wrap it in a
+single-field struct with a non-`pub` field that carries `validate` and `error`
+(and `serde`, if needed). A single-field struct serializes as its inner value, so
+the wire format stays that of the enum.
+
+```rust
+use ddd_toolkit_macro::ValueObject;
+
+#[derive(ValueObject)]
+enum PctInner {
+    Value(u8),
+}
+
+#[derive(ValueObject)]
+#[value_object(validate = validate_pct, error = &'static str)]
+struct Pct(PctInner);
+
+fn validate_pct(value: &PctInner) -> Result<(), &'static str> {
+    match value {
+        PctInner::Value(percent) if *percent <= 100 => Ok(()),
+        PctInner::Value(_) => Err("out of range"),
+    }
+}
+
+fn main() {
+    assert!(Pct::try_new(PctInner::new_value(50)).is_ok());
+    assert_eq!(Pct::try_new(PctInner::new_value(200)), Err("out of range"));
+}
+```
 
 ### Core compatibility
 
@@ -365,7 +396,7 @@ persists them, or updates domain state.
 
 | Attribute | Placement | Effect |
 |---|---|---|
-| `#[value_object(validate = path, error = ErrorType)]` | `ValueObject` struct or enum | Generates fallible, validated constructors |
+| `#[value_object(validate = path, error = ErrorType)]` | `ValueObject` struct | Generates fallible, validated constructors |
 | `#[value_object(serde)]` | `ValueObject` struct or enum | Generates serde serialization and deserialization; requires core's `serde` feature |
 | `#[entity(id)]` | One named struct field | Selects the entity identifier |
 | `#[aggregate(events)]` | One named struct field | Selects the aggregate's pending event vector |

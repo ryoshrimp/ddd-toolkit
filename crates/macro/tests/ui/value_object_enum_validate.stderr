@@ -1,0 +1,5 @@
+error: ValueObject enums cannot be validated because their variants are always public; wrap a private enum in a single-field struct and put validate and error on the struct
+  --> tests/ui/value_object_enum_validate.rs:11:27
+   |
+11 | #[value_object(validate = validate, error = &'static str)]
+   |                           ^^^^^^^^

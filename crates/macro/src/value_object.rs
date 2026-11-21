@@ -87,6 +87,14 @@ fn expand_enum(
         ));
     }
 
+    if let Some(validator) = &attrs.validator {
+        return Err(syn::Error::new_spanned(
+            validator,
+            "ValueObject enums cannot be validated because their variants are always public; \
+             wrap a private enum in a single-field struct and put validate and error on the struct",
+        ));
+    }
+
     if attrs.trait_only {
         return trait_only_impl(input, None);
     }
@@ -140,16 +148,11 @@ fn expand_enum(
     let core = core_path()?;
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-    let constructors = enum_constructors(&variants, &attrs);
+    let constructors = enum_constructors(&variants);
     let accessors = enum_accessors(&variants);
     let standard_impls = standard_impls_enum(name, &input.generics, &variants);
     let serde_impl = if attrs.serde {
-        Some(crate::serde::expand(
-            input,
-            attrs.validator.as_ref(),
-            &core,
-            false,
-        )?)
+        Some(crate::serde::expand(input, None, &core, false)?)
     } else {
         None
     };
@@ -223,42 +226,21 @@ fn enum_construct(variant: &EnumVariant<'_>, arguments: &[syn::Ident]) -> TokenS
     }
 }
 
-fn enum_constructors(variants: &[EnumVariant<'_>], attrs: &Attributes) -> TokenStream {
+fn enum_constructors(variants: &[EnumVariant<'_>]) -> TokenStream {
     let methods = variants.iter().map(|variant| {
-        let method = if attrs.validator.is_some() {
-            format_ident!("try_new_{}", variant.suffix)
-        } else {
-            format_ident!("new_{}", variant.suffix)
-        };
+        let method = format_ident!("new_{}", variant.suffix);
         let arguments = enum_arguments(variant);
         let types = &variant.types;
         let construct = enum_construct(variant, &arguments);
-        match (&attrs.validator, &attrs.error) {
-            (Some(validator), Some(error)) => quote! {
-                /// **English:**<br>
-                /// Constructs this variant after validating the candidate;
-                /// propagates the validator's error or panic.
-                ///
-                /// **日本語:**<br>
-                /// 候補を検証してこのバリアントを構築し、検証関数の
-                /// エラーやパニックを伝播します。
-                pub fn #method(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
-                    let candidate = #construct;
-                    #validator(&candidate)?;
-                    Ok(candidate)
-                }
-            },
-            (None, None) => quote! {
-                /// **English:**<br>
-                /// Constructs this variant from its fields without validation.
-                ///
-                /// **日本語:**<br>
-                /// 検証せずにフィールドからこのバリアントを構築します。
-                pub fn #method(#(#arguments: #types),*) -> Self {
-                    #construct
-                }
-            },
-            _ => unreachable!("validation attributes were checked together"),
+        quote! {
+            /// **English:**<br>
+            /// Constructs this variant from its fields without validation.
+            ///
+            /// **日本語:**<br>
+            /// 検証せずにフィールドからこのバリアントを構築します。
+            pub fn #method(#(#arguments: #types),*) -> Self {
+                #construct
+            }
         }
     });
     quote! { #(#methods)* }

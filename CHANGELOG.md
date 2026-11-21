@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking (macro):** `#[derive(ValueObject)]` on an enum now rejects
+  `validate`/`error`; wrap a private enum in a single-field struct instead. See
+  the macro changelog for the migration recipe (#60).
+
 ## [0.4.7] - 2026-11-08
 
 ### Changed
