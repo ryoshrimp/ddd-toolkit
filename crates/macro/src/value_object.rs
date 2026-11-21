@@ -104,7 +104,7 @@ fn expand_enum(
     let mut variants = Vec::with_capacity(data.variants.len());
     let mut suffixes = Vec::with_capacity(data.variants.len());
     for variant in &data.variants {
-        let suffix = variant.ident.unraw().to_string().to_lowercase();
+        let suffix = snake_case(&variant.ident.unraw().to_string());
         if suffix == "inner" {
             return Err(syn::Error::new_spanned(
                 &variant.ident,
@@ -118,7 +118,7 @@ fn expand_enum(
         if suffixes.iter().any(|known| known == &suffix) {
             return Err(syn::Error::new_spanned(
                 &variant.ident,
-                "ValueObject variant method names must be unique after lower-casing",
+                "ValueObject variant method names must be unique after converting to snake_case",
             ));
         }
         suffixes.push(suffix.clone());
@@ -1174,5 +1174,55 @@ fn standard_impls_multi(
         }
         #eq_impl_tokens
         #hash_impl_tokens
+    }
+}
+
+/// Converts a variant identifier to snake_case without extra dependencies.
+fn snake_case(name: &str) -> String {
+    let chars: Vec<char> = name.chars().collect();
+    let mut out = String::with_capacity(name.len() + 4);
+    for (i, &c) in chars.iter().enumerate() {
+        if c.is_uppercase() && i > 0 {
+            let prev = chars[i - 1];
+            let next_lower = chars.get(i + 1).is_some_and(|n| n.is_lowercase());
+            if (prev.is_lowercase() || prev.is_numeric() || (prev.is_uppercase() && next_lower))
+                && !out.ends_with('_')
+            {
+                out.push('_');
+            }
+        }
+        out.extend(c.to_lowercase());
+    }
+    out
+}
+
+#[cfg(test)]
+mod snake_case_tests {
+    use super::snake_case;
+
+    #[test]
+    fn converts() {
+        for (input, expected) in [
+            ("Active", "active"),
+            ("PendingPayment", "pending_payment"),
+            ("HTTPError", "http_error"),
+            ("AB", "ab"),
+            ("Ab", "ab"),
+            ("IOStream", "io_stream"),
+            ("V2", "v2"),
+            ("Http2Server", "http2_server"),
+            ("Foo_Bar", "foo_bar"),
+            ("FooBar", "foo_bar"),
+            ("Foo_bar", "foo_bar"),
+            ("Foo__Bar", "foo__bar"),
+            ("_Foo", "_foo"),
+            ("Foo_", "foo_"),
+            ("V2Beta", "v2_beta"),
+            ("FOO", "foo"),
+            ("XMLHttpRequest", "xml_http_request"),
+            ("ÉcoleNormale", "école_normale"),
+        ] {
+            assert_eq!(snake_case(input), expected, "{input}");
+        }
     }
 }

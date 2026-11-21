@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking (macro):** `#[derive(ValueObject)]` on an enum now rejects
   `validate`/`error`; wrap a private enum in a single-field struct instead. See
   the macro changelog for the migration recipe (#60).
+- **Breaking (macro):** `#[derive(ValueObject)]` enum method names now use
+  snake_case (`new_pending_payment` instead of `new_pendingpayment`). See the
+  macro changelog for the mapping (#64).
 
 ## [0.4.7] - 2026-11-08
 

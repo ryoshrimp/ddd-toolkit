@@ -56,13 +56,15 @@ mod value_object;
 /// `into_inner`; multi-field structs and enums use `Self` instead. Structs get
 /// `new` with fields in declaration order. Multi-field structs also get borrowed
 /// accessors named after fields, or `field_0`, `field_1`, etc. for tuple fields.
-/// Enums get `new_<variant>`, `is_<variant>`, and `as_<variant>`, using the fully
-/// lowercased variant name (not snake case). Variant accessors return `None` for
+/// Enums get `new_<variant>`, `is_<variant>`, and `as_<variant>`, using the
+/// snake_case variant name (`PendingPayment` becomes `new_pending_payment`;
+/// `HTTPError` becomes `http_error`; digits attach to the preceding word, so
+/// `Http2Server` becomes `http2_server`). Variant accessors return `None` for
 /// another variant, `Some(())` for unit variants, or a tuple of field references.
-/// Lowercased variant names must be distinct. A field or variant name that
-/// collides with a generated method (for example a field named `new`, or a
-/// variant named `Inner`) is a compile error; collisions with handwritten
-/// methods are not detected.
+/// Variant names must be distinct after snake_case conversion. A field or
+/// variant name that collides with a generated method (for example a field
+/// named `new`, or a variant named `Inner`) is a compile error; collisions with
+/// handwritten methods are not detected.
 ///
 /// `#[value_object(trait_only)]` generates only the domain trait implementation,
 /// with the same `Inner` mapping but no inherent methods, constructors, standard
@@ -120,10 +122,12 @@ mod value_object;
 /// 複数フィールド構造体と列挙型では `Self` を扱います。構造体には宣言順の引数を取る
 /// `new` を生成します。複数フィールドの場合は名前付きフィールド名、またはタプルの
 /// `field_0`、`field_1` などの名前で借用アクセサーも生成します。
-/// 列挙型にはバリアント名をすべて小文字にした（snake case ではない）接尾辞で
-/// `new_<variant>`、`is_<variant>`、`as_<variant>` を生成します。
+/// 列挙型にはバリアント名を snake_case にした接尾辞で
+/// `new_<variant>`、`is_<variant>`、`as_<variant>` を生成します（`PendingPayment` は
+/// `new_pending_payment`、`HTTPError` は `http_error`、数字は直前の語に続けて
+/// `Http2Server` は `http2_server`）。
 /// バリアントアクセサーは不一致なら `None`、ユニットなら `Some(())`、それ以外は
-/// フィールド参照のタプルを返します。小文字化した名前は一意である必要があります。
+/// フィールド参照のタプルを返します。snake_case 化した後のバリアント名は一意である必要があります。
 /// フィールド名・バリアント名が生成メソッド（`new` フィールドや `Inner` バリアント
 /// など）と衝突するとコンパイルエラーになります（手書きメソッドとの衝突は検出しません）。
 ///

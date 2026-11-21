@@ -69,8 +69,8 @@ fn enum_json_shapes_follow_serde_and_round_trip() {
         (Status::new_codes(vec![7, 8]), r#"{"Codes":[7,8]}"#),
         (Status::new_codes(vec![]), r#"{"Codes":[]}"#),
         (Status::new_pair(7, true), r#"{"Pair":[7,true]}"#),
-        (Status::new_emptytuple(), r#"{"EmptyTuple":[]}"#),
-        (Status::new_emptynamed(), r#"{"EmptyNamed":{}}"#),
+        (Status::new_empty_tuple(), r#"{"EmptyTuple":[]}"#),
+        (Status::new_empty_named(), r#"{"EmptyNamed":{}}"#),
     ] {
         let json = serde_json::to_string(&value).unwrap();
         assert_eq!(json, expected);
