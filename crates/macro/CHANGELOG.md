@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `#[derive(ValueObject)]` and `#[derive(Entity)]` now detect field and variant
+  names that collide with generated methods (such as a `new` field, or an `Inner`
+  enum variant) and report an error pointing at the field or variant instead of
+  an `E0592` in generated code (#62).
 - `#[value_object(no_eq)]` skips the generated `Eq` and `Hash` impls and
   `#[value_object(no_hash)]` skips only `Hash`, so field types such as `f64` or
   `Secret<String>` can use `ValueObject` together with `validate`, `error`, and
@@ -26,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `validate`/`error` (and `serde`) to the struct. `Enum::try_new_<variant>(..)`
   becomes `Wrapper::try_new(Enum::new_<variant>(..))`; the wire format is
   unchanged because a single-field struct serializes as its inner value.
+
+### Fixed
+
+- `Entity` getter conflict check now catches a raw-identifier `r#id` field.
+- `ValueObject` enum duplicate-name check after lower-casing now also catches raw
+  identifiers (for example `r#Foo` and `FOO`), which previously failed with an
+  `E0592` in generated code instead of a macro error.
 
 ## [0.5.5] - 2026-11-08
 
