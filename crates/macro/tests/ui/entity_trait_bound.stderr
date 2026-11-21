@@ -58,8 +58,6 @@ note: required for `Item` to implement `Hash`
    |          ------ type parameter would need to implement `Hash`
  6 | struct Item {
    |        ^^^^
-   = help: consider manually implementing `Hash` to avoid undesired bounds caused by "imperfect derives"
-   = note: to learn more, visit <https://github.com/rust-lang/rust/issues/26925>
    = note: this error originates in the derive macro `Entity` (in Nightly builds, run with -Z macro-backtrace for more info)
 help: consider annotating `NotHash` with `#[derive(Hash)]`
    |

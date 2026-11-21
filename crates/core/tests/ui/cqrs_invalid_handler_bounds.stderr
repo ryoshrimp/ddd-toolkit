@@ -17,6 +17,8 @@ help: the trait `AggregateRoot` is implemented for `Aggregate`
 note: required by a bound in `ddd_toolkit_core::Repository::Aggregate`
   --> src/repository.rs
    |
+   | pub trait Repository {
+...
    |     type Aggregate: AggregateRoot;
    |                     ^^^^^^^^^^^^^ required by this bound in `Repository::Aggregate`
 
@@ -90,6 +92,8 @@ help: the trait `AggregateRoot` is implemented for `Aggregate`
 note: required by a bound in `ddd_toolkit_core::CommandHandler::Aggregate`
   --> src/cqrs/query_handler.rs
    |
+   | pub trait CommandHandler {
+   |     type Command;
    |     type Aggregate: AggregateRoot;
    |                     ^^^^^^^^^^^^^ required by this bound in `CommandHandler::Aggregate`
 

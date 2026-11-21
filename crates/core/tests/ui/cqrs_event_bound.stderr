@@ -13,7 +13,6 @@ note: required by a bound in `requires_matching_publisher`
   --> tests/ui/cqrs_event_bound.rs:29:29
    |
 26 | fn requires_matching_publisher<A, P>()
-   |    --------------------------- required by a bound in this function
 ...
 29 |     P: DomainEventPublisher<Event = A::Event>,
    |                             ^^^^^^^^^^^^^^^^ required by this bound in `requires_matching_publisher`
