@@ -30,13 +30,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `validate`/`error` (and `serde`) to the struct. `Enum::try_new_<variant>(..)`
   becomes `Wrapper::try_new(Enum::new_<variant>(..))`; the wire format is
   unchanged because a single-field struct serializes as its inner value.
+- **Breaking:** `#[derive(ValueObject)]` on an enum now builds the
+  `new_<variant>`/`is_<variant>`/`as_<variant>` suffix in snake_case instead of
+  fully lowercasing the variant name (#64). `PendingPayment` now generates
+  `new_pending_payment`, `is_pending_payment`, and `as_pending_payment`; acronym
+  runs stay together (`HTTPError` becomes `http_error`) and digits attach to the
+  preceding word (`Http2Server` becomes `http2_server`). The old names are
+  removed with no deprecated aliases. To migrate, rename call sites, for example
+  `new_pendingpayment` to `new_pending_payment` and `is_httperror` to
+  `is_http_error`. Single-word variants (`Active` gives `is_active`) are
+  unchanged. Variants that collide after conversion (`FooBar` and `Foo_Bar`) are
+  reported as a duplicate-name error.
 
 ### Fixed
 
 - `Entity` getter conflict check now catches a raw-identifier `r#id` field.
-- `ValueObject` enum duplicate-name check after lower-casing now also catches raw
-  identifiers (for example `r#Foo` and `FOO`), which previously failed with an
-  `E0592` in generated code instead of a macro error.
+- `ValueObject` enum duplicate-name check after snake_case conversion now also
+  catches raw identifiers (for example `r#Foo` and `FOO`), which previously
+  failed with an `E0592` in generated code instead of a macro error.
 - Attribute parsers of `Entity`, `ValueObject`, and `AggregateRoot` now name the
   unknown option and list the valid ones. `Entity` options placed on the wrong
   target (for example `skip_getter` on the struct, or `getters` on a field) get a

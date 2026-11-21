@@ -145,11 +145,14 @@ fn main() {
 ```
 
 Enums receive `new_<variant>`, `is_<variant>`, and `as_<variant>` methods.
-The suffix is the fully lowercased variant name, not snake case: `InProgress`
-becomes `inprogress`. A variant accessor returns `None` for another variant,
-`Some(())` for a unit variant, or a tuple of field references for a data variant,
-even when it has only one field. Lowercased names must be distinct, and generated
-method names must not collide with other methods or field accessors.
+The suffix is the snake_case variant name: `PendingPayment` becomes
+`new_pending_payment`, `is_pending_payment`, and `as_pending_payment`.
+Acronym runs stay together (`HTTPError` becomes `http_error`) and digits attach
+to the preceding word (`Http2Server` becomes `http2_server`). A variant accessor
+returns `None` for another variant, `Some(())` for a unit variant, or a tuple of
+field references for a data variant, even when it has only one field. Variant
+names must be distinct after snake_case conversion, and generated method names
+must not collide with other methods or field accessors.
 
 ### Validation
 

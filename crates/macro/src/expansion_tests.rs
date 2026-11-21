@@ -258,7 +258,18 @@ fn value_object_reports_invalid_shapes_and_options() {
             ("struct Empty();", "at least one field"),
             ("enum Empty {}", "at least one variant"),
             ("union Value { a: u32 }", "struct or enum"),
-            ("enum Value { AB, Ab }", "unique after lower-casing"),
+            (
+                "enum Value { AB, Ab }",
+                "unique after converting to snake_case",
+            ),
+            (
+                "enum Value { r#Foo, FOO }",
+                "unique after converting to snake_case",
+            ),
+            (
+                "enum Value { FooBar, Foo_Bar }",
+                "unique after converting to snake_case",
+            ),
             ("#[value_object()] struct V(u32);", "at least one option"),
             (
                 "#[value_object(other)] struct V(u32);",

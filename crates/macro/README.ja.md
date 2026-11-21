@@ -140,10 +140,12 @@ fn main() {
 ```
 
 列挙型には `new_<variant>`、`is_<variant>`、`as_<variant>` を生成します。
-接尾辞は snake case ではなくバリアント名全体を小文字にした名前です。
-たとえば `InProgress` は `inprogress` になります。バリアントのアクセサーは、不一致なら
+接尾辞はバリアント名を snake_case にした名前です。たとえば `PendingPayment` は
+`new_pending_payment`、`is_pending_payment`、`as_pending_payment` になります。
+連続する大文字は一語として扱い（`HTTPError` は `http_error`）、数字は直前の語に
+続けます（`Http2Server` は `http2_server`）。バリアントのアクセサーは、不一致なら
 `None`、ユニットバリアントなら `Some(())`、データを持つバリアントならフィールド参照の
-タプルを返します。フィールドが一つでもタプルです。小文字化した名前は一意である必要があり、
+タプルを返します。フィールドが一つでもタプルです。snake_case 化した後のバリアント名は一意である必要があり、
 生成するメソッド名を他のメソッドやフィールドのアクセサーと衝突させないでください。
 
 ### 検証
