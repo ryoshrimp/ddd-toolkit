@@ -2,7 +2,10 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, Result, ext::IdentExt, parse_quote};
 
-use crate::path::core_path;
+use crate::path::{core_path, option_name};
+
+const CONTAINER_OPTIONS: [&str; 5] = ["getters", "validate", "error", "serde", "trait_only"];
+const FIELD_OPTIONS: [&str; 2] = ["id", "skip_getter"];
 
 /// **English:**<br>
 /// Generates identity access, equality, and hashing from one marked
@@ -59,7 +62,17 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
                 return Ok(());
             }
             if !meta.path.is_ident("trait_only") {
-                return Err(meta.error("entity(id) must be placed on a named field"));
+                if FIELD_OPTIONS.contains(&option_name(&meta.path).as_str()) {
+                    return Err(meta.error(format!(
+                        "entity({}) must be placed on a named field",
+                        option_name(&meta.path)
+                    )));
+                }
+                return Err(meta.error(format!(
+                    "unknown entity option `{}`; expected one of {}",
+                    option_name(&meta.path),
+                    CONTAINER_OPTIONS.join(", ")
+                )));
             }
             if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
                 return Err(meta.error("trait_only is a flag and takes no value"));
@@ -301,7 +314,15 @@ fn field_attributes(field: &syn::Field) -> Result<(bool, bool)> {
             } else if meta.path.is_ident("skip_getter") {
                 (&mut skip_getter, "skip_getter")
             } else {
-                return Err(meta.error("unknown entity attribute"));
+                let option = option_name(&meta.path);
+                return Err(meta.error(if CONTAINER_OPTIONS.contains(&option.as_str()) {
+                    format!("entity({option}) must be placed on the struct, not on a field")
+                } else {
+                    format!(
+                        "unknown entity field option `{option}`; expected one of {}",
+                        FIELD_OPTIONS.join(", ")
+                    )
+                }));
             };
             if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
                 return Err(meta.error(format!("{name} is a flag and takes no value")));

@@ -1,0 +1,5 @@
+error: unknown entity option `getter`; expected one of getters, validate, error, serde, trait_only
+ --> tests/ui/entity_unknown_container_option.rs:4:10
+  |
+4 | #[entity(getter)]
+  |          ^^^^^^

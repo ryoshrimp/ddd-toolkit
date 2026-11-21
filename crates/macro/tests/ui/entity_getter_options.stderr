@@ -35,13 +35,13 @@ error: skip_getter is a flag and takes no value
 46 |     #[entity(skip_getter = true)]
    |              ^^^^^^^^^^^
 
-error: entity(id) must be placed on a named field
+error: entity(skip_getter) must be placed on a named field
   --> tests/ui/entity_getter_options.rs:51:10
    |
 51 | #[entity(skip_getter)]
    |          ^^^^^^^^^^^
 
-error: unknown entity attribute
+error: entity(getters) must be placed on the struct, not on a field
   --> tests/ui/entity_getter_options.rs:61:14
    |
 61 |     #[entity(getters)]

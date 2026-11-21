@@ -1,4 +1,4 @@
-error: unknown entity attribute
+error: unknown entity field option `key`; expected one of id, skip_getter
  --> tests/ui/entity_unknown_attribute.rs:5:14
   |
 5 |     #[entity(key)]

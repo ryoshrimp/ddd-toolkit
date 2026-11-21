@@ -5,7 +5,7 @@ use syn::{
     parse_quote,
 };
 
-use crate::path::core_path;
+use crate::path::{core_path, option_name};
 
 struct Attributes {
     validator: Option<syn::Path>,
@@ -928,7 +928,10 @@ fn parse_attributes(input: &DeriveInput) -> Result<Attributes> {
                 attributes.serde = true;
                 return Ok(());
             }
-            Err(meta.error("unknown value_object attribute"))
+            Err(meta.error(format!(
+                "unknown value_object option `{}`; expected one of validate, error, serde, trait_only, no_eq, no_hash",
+                option_name(&meta.path)
+            )))
         })?;
         if !option_found {
             return Err(syn::Error::new_spanned(

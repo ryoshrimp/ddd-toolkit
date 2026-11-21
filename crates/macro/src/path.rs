@@ -33,6 +33,13 @@ fn path_for_found_crate(package: &str, found: proc_macro_crate::FoundCrate) -> T
     quote!(::#ident)
 }
 
+/// Renders an attribute option path as written, without token spacing.
+pub(crate) fn option_name(path: &syn::Path) -> String {
+    quote::ToTokens::to_token_stream(path)
+        .to_string()
+        .replace(' ', "")
+}
+
 #[cfg(test)]
 mod tests {
     use super::path_for_found_crate;
