@@ -228,3 +228,67 @@ mod imported_types {
         assert_eq!(account.pull_events(), vec![event]);
     }
 }
+
+// no_eq / no_hash allow field types without Eq or Hash, alongside validate and serde.
+mod without_eq_or_hash {
+    use ddd_toolkit::Secret;
+
+    #[derive(ddd_toolkit::ValueObject)]
+    #[value_object(no_eq, validate = finite, error = &'static str)]
+    struct Price(f64);
+
+    fn finite(value: &f64) -> Result<(), &'static str> {
+        if value.is_finite() {
+            Ok(())
+        } else {
+            Err("not finite")
+        }
+    }
+
+    #[derive(ddd_toolkit::ValueObject)]
+    #[value_object(no_eq)]
+    struct Point {
+        x: f64,
+        y: f64,
+    }
+
+    #[derive(ddd_toolkit::ValueObject)]
+    #[value_object(no_eq, serde)]
+    struct Ratio(f64);
+
+    #[derive(ddd_toolkit::ValueObject)]
+    #[value_object(no_hash)]
+    struct Token(Secret<String>);
+
+    #[derive(ddd_toolkit::ValueObject)]
+    #[value_object(no_eq)]
+    enum Measure {
+        Unset,
+        Value(f64),
+    }
+
+    #[test]
+    fn serde_round_trips_with_no_eq() {
+        let json = serde_json::to_string(&Ratio::new(0.5)).unwrap();
+        assert_eq!(json, "0.5");
+        assert!(serde_json::from_str::<Ratio>(&json).unwrap() == Ratio::new(0.5));
+    }
+
+    #[test]
+    fn partial_eq_clone_and_debug_remain() {
+        let price = Price::try_new(1.5).unwrap();
+        assert_eq!(price.clone(), price);
+        assert_eq!(format!("{price:?}"), "1.5");
+        assert_eq!(Price::try_new(f64::NAN), Err("not finite"));
+
+        let point = Point::new(1.0, 2.0);
+        assert!(point.clone() == point);
+
+        let token = Token::new(Secret::new("a".to_owned()));
+        assert!(token.clone() == token);
+
+        let measure = Measure::new_value(1.0);
+        assert!(measure.clone() == measure);
+        assert!(measure != Measure::new_unset());
+    }
+}

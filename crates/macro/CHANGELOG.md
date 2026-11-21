@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `#[value_object(no_eq)]` skips the generated `Eq` and `Hash` impls and
+  `#[value_object(no_hash)]` skips only `Hash`, so field types such as `f64` or
+  `Secret<String>` can use `ValueObject` together with `validate`, `error`, and
+  `serde` (#61). Both flags work on every shape, may be combined (same as
+  `no_eq`), and cannot be combined with `trait_only`. Default output is unchanged.
+
 ### Changed
 
 - **Breaking:** `#[derive(ValueObject)]` on an enum now rejects `validate` and

@@ -93,7 +93,8 @@ fn main() {
 }
 ```
 
-`ValueObject` derives `Debug`, `Clone`, `PartialEq`, `Eq`, and `Hash`;
+`ValueObject` derives `Debug`, `Clone`, `PartialEq`, `Eq`, and `Hash`
+(`Eq` and `Hash` can be skipped with `no_eq`, `Hash` alone with `no_hash`);
 do not derive these again. Unvalidated structs use `new`; validated structs use
 `try_new`. Named/multi-field structs and data-carrying enums are also supported.
 `Entity` derives equality and hashing using only the `#[entity(id)]` field.

@@ -91,7 +91,8 @@ fn main() {
 }
 ```
 
-`ValueObject` は `Debug`、`Clone`、`PartialEq`、`Eq`、`Hash` を生成するため、
+`ValueObject` は `Debug`、`Clone`、`PartialEq`、`Eq`、`Hash` を生成する
+（`no_eq` で `Eq` と `Hash`、`no_hash` で `Hash` だけを止められる）ため、
 重複して derive しないでください。検証なしの構造体では `new`、検証付きでは
 `try_new` を使います。名前付き・複数フィールドの構造体と、データを持つ列挙型にも対応します。
 `Entity` は `#[entity(id)]` フィールドだけを使った等値比較とハッシュを生成します。

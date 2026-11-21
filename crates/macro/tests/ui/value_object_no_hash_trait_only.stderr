@@ -1,0 +1,5 @@
+error: trait_only cannot be combined with no_eq or no_hash
+ --> tests/ui/value_object_no_hash_trait_only.rs:4:1
+  |
+4 | #[value_object(trait_only, no_hash)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

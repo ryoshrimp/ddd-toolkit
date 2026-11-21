@@ -1,0 +1,5 @@
+error: no_eq is a flag and takes no value
+ --> tests/ui/value_object_no_eq_value.rs:4:16
+  |
+4 | #[value_object(no_eq = true)]
+  |                ^^^^^

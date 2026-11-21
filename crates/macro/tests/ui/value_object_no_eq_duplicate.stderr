@@ -1,0 +1,5 @@
+error: duplicate no_eq attribute
+ --> tests/ui/value_object_no_eq_duplicate.rs:4:23
+  |
+4 | #[value_object(no_eq, no_eq)]
+  |                       ^^^^^

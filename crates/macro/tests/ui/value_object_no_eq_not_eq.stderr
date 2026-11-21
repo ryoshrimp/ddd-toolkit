@@ -1,0 +1,33 @@
+error[E0277]: the trait bound `Price: Eq` is not satisfied
+  --> tests/ui/value_object_no_eq_not_eq.rs:11:17
+   |
+11 |     assert_eq::<Price>();
+   |                 ^^^^^ unsatisfied trait bound
+   |
+help: the trait `Eq` is not implemented for `Price`
+  --> tests/ui/value_object_no_eq_not_eq.rs:5:1
+   |
+ 5 | struct Price(f64);
+   | ^^^^^^^^^^^^
+note: required by a bound in `assert_eq`
+  --> tests/ui/value_object_no_eq_not_eq.rs:7:17
+   |
+ 7 | fn assert_eq<T: Eq>() {}
+   |                 ^^ required by this bound in `assert_eq`
+
+error[E0277]: the trait bound `Price: Hash` is not satisfied
+  --> tests/ui/value_object_no_eq_not_eq.rs:12:19
+   |
+12 |     assert_hash::<Price>();
+   |                   ^^^^^ unsatisfied trait bound
+   |
+help: the trait `Hash` is not implemented for `Price`
+  --> tests/ui/value_object_no_eq_not_eq.rs:5:1
+   |
+ 5 | struct Price(f64);
+   | ^^^^^^^^^^^^
+note: required by a bound in `assert_hash`
+  --> tests/ui/value_object_no_eq_not_eq.rs:8:19
+   |
+ 8 | fn assert_hash<T: std::hash::Hash>() {}
+   |                   ^^^^^^^^^^^^^^^ required by this bound in `assert_hash`

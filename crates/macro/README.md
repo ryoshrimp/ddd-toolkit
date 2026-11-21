@@ -31,13 +31,18 @@ only the facade with its default `derive` feature is also supported.
 
 | Derive | Supported input | Generated API |
 |---|---|---|
-| `ValueObject` | Nonempty named or tuple structs, nonempty enums | Core `ValueObject`, `Debug`, `Clone`, `PartialEq`, `Eq`, `Hash`, constructors, and accessors |
+| `ValueObject` | Nonempty named or tuple structs, nonempty enums | Core `ValueObject`, `Debug`, `Clone`, `PartialEq`, `Eq`, `Hash` (`Eq`/`Hash` skippable with `no_eq`, `Hash` alone with `no_hash`), constructors, and accessors |
 | `Entity` | Named struct with exactly one `#[entity(id)]` field | Core `Entity`, inherent `id()`, and identity-based `PartialEq`, `Eq`, `Hash` |
 | `DomainEvent` | Struct or enum | Core `DomainEvent` marker |
 | `AggregateRoot` | Named struct implementing core `Entity`, with exactly one `#[aggregate(events)]` field | Core `AggregateRoot` with `record_event` and `pull_events` |
 
 In the default mode, do not separately implement or derive traits already generated
 by a macro. Field types must satisfy the corresponding generated trait bounds.
+Each generated trait is bounded on the field types, so a type without `Eq` or
+`Hash`, such as `f64` or `Secret<String>`, needs `#[value_object(no_eq)]`
+(skips both `Eq` and `Hash`) or `#[value_object(no_hash)]` (skips only `Hash`).
+Both flags work on every `ValueObject` shape and with `validate`, `error`, and
+`serde`, but not with `trait_only`.
 
 ### Trait-only mode
 
@@ -85,9 +90,9 @@ impl Account {
   and whether `Clone` or other standard traits exist at all. No new field trait
   bounds are added. Omitting `trait_only` preserves the existing generated API
   and semantics. Selecting individual generated methods is not supported.
-- `trait_only` cannot be combined with `validate`, `error`, or `serde`; these
-  combinations are errors, not silently ignored options. Keep validation and
-  serialization in your own implementations.
+- `trait_only` cannot be combined with `validate`, `error`, `serde`, `no_eq`, or
+  `no_hash`; these combinations are errors, not silently ignored options. Keep
+  validation and serialization in your own implementations.
 
 This mode limits generated code; it does **not** guarantee invariants against
 public fields, direct enum construction, or consumer-defined deserialization.

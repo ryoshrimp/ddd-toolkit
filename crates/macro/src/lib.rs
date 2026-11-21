@@ -68,6 +68,22 @@ mod value_object;
 /// with `validate`, `error`, or `serde`. It does not enforce invariants on public
 /// fields, direct enum construction, or independently implemented deserialization.
 ///
+/// `#[value_object(no_eq)]` skips `Eq` and `Hash`; `#[value_object(no_hash)]`
+/// skips only `Hash`. Use them for field types such as `f64` or `Secret<String>`
+/// that lack `Eq` or `Hash`; `Debug`, `Clone`, and `PartialEq` are still generated.
+/// Both may be combined (equivalent to `no_eq`), work with `validate`, `error`,
+/// and `serde`, and cannot be combined with `trait_only`.
+///
+/// ```
+/// use ddd_toolkit_macro::ValueObject;
+///
+/// #[derive(ValueObject)]
+/// #[value_object(no_eq)]
+/// struct Price(f64);
+///
+/// assert!(Price::new(1.5) == Price::new(1.5));
+/// ```
+///
 /// `#[value_object(validate = path, error = ErrorType)]` replaces `new` with
 /// `try_new`. Both options are required together. The
 /// validator receives `&Inner` for a single-field struct and `&Self` otherwise,
@@ -112,6 +128,12 @@ mod value_object;
 /// 生成し、固有メソッド、コンストラクター、標準トレイト、追加の境界は生成しません。
 /// 手書きの API を維持でき、`validate`、`error`、`serde` とは併用できません。
 /// 公開フィールド、列挙型の直接構築、別途実装された逆直列化の不変条件は保証しません。
+///
+/// `#[value_object(no_eq)]` は `Eq` と `Hash` を、`#[value_object(no_hash)]` は
+/// `Hash` だけを生成しません。`f64` や `Secret<String>` のように `Eq` や `Hash` を
+/// 持たない型に使います。`Debug`、`Clone`、`PartialEq` は引き続き生成されます。
+/// 両方の併記は `no_eq` 単独と同じで、`validate`、`error`、`serde` と併用でき、
+/// `trait_only` とは併用できません。
 ///
 /// `#[value_object(validate = path, error = ErrorType)]` は `new` を `try_new`
 /// に置き換えます。両オプションの同時指定が必要です。
