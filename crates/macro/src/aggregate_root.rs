@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, GenericArgument, PathArguments, Result, Type, parse_quote};
 
-use crate::path::core_path;
+use crate::path::{core_path, option_name};
 
 /// **English:**<br>
 /// Generates append-and-drain aggregate methods for one marked vector;
@@ -91,14 +91,17 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
 fn parse_queue_attribute(attr: &syn::Attribute) -> Result<()> {
     let mut found = false;
     attr.parse_nested_meta(|meta| {
-        if found {
-            return Err(meta.error("aggregate accepts only the events flag"));
-        }
         if !meta.path.is_ident("events") {
-            return Err(meta.error("aggregate accepts only the events flag"));
+            return Err(meta.error(format!(
+                "unknown aggregate option `{}`; expected events",
+                option_name(&meta.path)
+            )));
         }
-        if !meta.input.is_empty() {
+        if !meta.input.is_empty() && !meta.input.peek(syn::Token![,]) {
             return Err(meta.error("events is a flag and takes no value"));
+        }
+        if found {
+            return Err(meta.error("duplicate events attribute"));
         }
         found = true;
         Ok(())

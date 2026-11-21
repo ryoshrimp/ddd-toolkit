@@ -1,4 +1,4 @@
-error: unknown value_object attribute
+error: unknown value_object option `unknown`; expected one of validate, error, serde, trait_only, no_eq, no_hash
  --> tests/ui/value_object_unknown_attribute.rs:4:16
   |
 4 | #[value_object(unknown)]

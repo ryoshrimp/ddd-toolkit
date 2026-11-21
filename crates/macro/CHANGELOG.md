@@ -37,6 +37,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ValueObject` enum duplicate-name check after lower-casing now also catches raw
   identifiers (for example `r#Foo` and `FOO`), which previously failed with an
   `E0592` in generated code instead of a macro error.
+- Attribute parsers of `Entity`, `ValueObject`, and `AggregateRoot` now name the
+  unknown option and list the valid ones. `Entity` options placed on the wrong
+  target (for example `skip_getter` on the struct, or `getters` on a field) get a
+  placement message instead of a misleading one, and a repeated `events` in
+  `#[aggregate(...)]` reports `duplicate events attribute`. `#[aggregate(events,)]`
+  (trailing comma) is now accepted, and `#[aggregate(events, other)]` now reports
+  the unknown option instead of "events is a flag and takes no value" (#63).
 
 ## [0.5.5] - 2026-11-08
 

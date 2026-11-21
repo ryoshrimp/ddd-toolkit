@@ -218,7 +218,19 @@ fn trait_only_rejects_invalid_options_and_shapes() {
             ("#[entity(trait_only)] struct V(u32);", "named-field struct"),
             (
                 "struct V { #[entity(trait_only)] id: u32 }",
-                "unknown entity attribute",
+                "entity(trait_only) must be placed on the struct, not on a field",
+            ),
+            (
+                "#[entity(getter)] struct V { #[entity(id)] id: u32 }",
+                "unknown entity option `getter`; expected one of getters, validate, error, serde, trait_only",
+            ),
+            (
+                "#[entity(skip_getter)] struct V { #[entity(id)] id: u32 }",
+                "entity(skip_getter) must be placed on a named field",
+            ),
+            (
+                "#[entity(a::b)] struct V { #[entity(id)] id: u32 }",
+                "unknown entity option `a::b`",
             ),
         ],
     );
@@ -250,7 +262,7 @@ fn value_object_reports_invalid_shapes_and_options() {
             ("#[value_object()] struct V(u32);", "at least one option"),
             (
                 "#[value_object(other)] struct V(u32);",
-                "unknown value_object attribute",
+                "unknown value_object option `other`; expected one of validate, error, serde, trait_only, no_eq, no_hash",
             ),
             (
                 "#[value_object(serde = true)] struct V(u32);",
@@ -320,7 +332,11 @@ fn entity_reports_attribute_and_shape_errors() {
             ("struct V { #[entity()] a: u64 }", "requires the id flag"),
             (
                 "struct V { #[entity(other)] a: u64 }",
-                "unknown entity attribute",
+                "unknown entity field option `other`; expected one of id, skip_getter",
+            ),
+            (
+                "struct V { #[entity(id)] #[entity(getters)] a: u64 }",
+                "entity(getters) must be placed on the struct, not on a field",
             ),
             ("struct V { #[entity(id = true)] a: u64 }", "id is a flag"),
             (
@@ -439,7 +455,11 @@ fn aggregate_reports_attribute_and_queue_errors() {
             ),
             (
                 "struct V { #[aggregate(other)] a: Vec<E> }",
-                "only the events flag",
+                "unknown aggregate option `other`; expected events",
+            ),
+            (
+                "struct V { #[aggregate(events, events)] a: Vec<E> }",
+                "duplicate events attribute",
             ),
             (
                 "struct V { #[aggregate(events = true)] a: Vec<E> }",
