@@ -5,8 +5,7 @@ English | [日本語](guide.ja.md)
 ddd-toolkit is meant to be adopted in stages. **Stage 1 alone is enough for many
 applications; every later stage is optional.** Move on only when you hit the
 problem the "Move on when" hint describes. For the complete list of public items
-grouped by area, see the API map in the [crate documentation](https://docs.rs/ddd-toolkit)
-(it appears on docs.rs from the next release; until then see `src/lib.rs` or run `cargo doc --open`);
+grouped by area, see the API map in the [crate documentation](https://docs.rs/ddd-toolkit);
 for per-API examples and contract tests, see the
 [public contract map](public-contracts.md).
 

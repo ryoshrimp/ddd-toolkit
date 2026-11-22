@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-22
+
 ### Changed
 
 - **Breaking:** with `default-features = false`, enable the `cqrs`, `event_sourcing`,
@@ -51,6 +53,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Document in the crate-level rustdoc that async ports require `Send` futures, so `!Send`
   implementations (WASM, single-threaded executors) do not fit, and that native `async fn` in
   traits is deferred until return type notation is stable (#75).
+- Document when the thin traits `DomainEvent`, `DomainService`, `Policy`, `DomainFactory`,
+  and `Specification` help (generic bounds, test stubs, naming the domain role) and that
+  they are optional and add no transaction, retry, persistence, or thread-safety behavior,
+  in the README and rustdoc, with a crate-level example (#74).
 
 ### Added
 

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-22
+
 ### Added
 
 - `#[derive(AggregateRoot)]` now accepts `alloc::vec::Vec<Event>` (and the
@@ -26,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The core compatibility contract is now >=0.4.1, <0.6.0, adding core 0.5.0. Generated
+  code still uses only the four derived traits and core's serde re-export, so the
+  released minimum 0.4.1 remains supported and tested.
 - `#[derive(ValueObject)]` now reports unsatisfied `Debug`/`Clone`/`PartialEq`/`Eq`/`Hash`
   bounds, and `#[derive(Entity)]` unsatisfied `PartialEq`/`Eq`/`Hash` bounds on the id
   type, at the offending field type instead of the derive attribute (#81).
