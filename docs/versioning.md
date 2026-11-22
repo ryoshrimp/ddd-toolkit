@@ -36,10 +36,10 @@ The crate root of `ddd-toolkit-core` (and the facade) keeps the central items:
 repository and publisher ports with `dispatch_events`, `UnitOfWork`,
 `Specification`, `DomainService`, `Policy`, `DomainFactory`. Items in the
 `cqrs`, `event_sourcing`, `delivery`, `process`, and `secret` modules are
-**experimental**: they may change during 0.x. Each module is behind a feature of the same name,
-enabled by default (`delivery` includes `event_sourcing`; `secret` is also
-required by `serde_with`). Core's `subtle` and `zeroize` dependencies are only
-pulled in by `secret`.
+**experimental**: they may change during 0.x. Each module is behind a feature of
+the same name, enabled by default (`delivery` includes `event_sourcing`; `secret`
+is also required by `serde_with`). Core's `subtle` and `zeroize` dependencies are
+only pulled in by `secret`.
 
 ## MSRV policy
 
@@ -110,7 +110,8 @@ For the precise support range when depending on core and macro directly, see
 `ValueObject`、`Entity`、`AggregateRoot`、`DomainEvent` とその補助、リポジトリと
 パブリッシャーのポートおよび `dispatch_events`、`UnitOfWork`、`Specification`、
 `DomainService`、`Policy`、`DomainFactory`。`cqrs`、`event_sourcing`、`delivery`、
-`process`、`secret` の各モジュールの項目は**実験的**で、0.x の間は変わる可能性があります。各モジュールは同名の feature（既定で有効）の背後にあり、
+`process`、`secret` の各モジュールの項目は**実験的**で、
+0.x の間は変わる可能性があります。各モジュールは同名の feature（既定で有効）の背後にあり、
 `delivery` は `event_sourcing` を含み、`secret` は `serde_with` にも必要です。
 core の `subtle` と `zeroize` は `secret` のときだけ依存に加わります。
 

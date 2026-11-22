@@ -29,7 +29,8 @@
 //! New to the crate? Follow the staged
 //! [getting-started guide](https://github.com/ryoshrimp/ddd-toolkit/blob/main/docs/guide.md);
 //! the API map below lists the public items by area; items in feature-gated modules
-//! are shown as code and need the feature of the same name. For per-API examples and contract tests, see the
+//! are shown as code and need the feature of the same name. For per-API examples and contract tests,
+//! see the
 //! [public contract map](https://github.com/ryoshrimp/ddd-toolkit/blob/main/docs/public-contracts.md).
 //! The map's areas roughly follow the guide's stages. The four derive macros (`ValueObject`,
 //! `Entity`, `DomainEvent`, `AggregateRoot`; feature `derive`) share names with
