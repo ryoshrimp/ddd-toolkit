@@ -1,6 +1,8 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, Result, ext::IdentExt, parse_quote};
+use syn::{
+    Data, DeriveInput, Fields, Result, ext::IdentExt, parse_quote_spanned, spanned::Spanned,
+};
 
 use crate::path::{core_path, option_name};
 
@@ -250,21 +252,21 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
     partial_eq_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#id_ty: ::core::cmp::PartialEq));
+        .push(parse_quote_spanned!(id_ty.span()=> #id_ty: ::core::cmp::PartialEq));
     let (partial_eq_impl, partial_eq_ty, partial_eq_where) = partial_eq_generics.split_for_impl();
 
     let mut eq_generics = input.generics.clone();
     eq_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#id_ty: ::core::cmp::Eq));
+        .push(parse_quote_spanned!(id_ty.span()=> #id_ty: ::core::cmp::Eq));
     let (eq_impl, eq_ty, eq_where) = eq_generics.split_for_impl();
 
     let mut hash_generics = input.generics.clone();
     hash_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#id_ty: ::core::hash::Hash));
+        .push(parse_quote_spanned!(id_ty.span()=> #id_ty: ::core::hash::Hash));
     let (hash_impl, hash_ty, hash_where) = hash_generics.split_for_impl();
 
     Ok(quote! {

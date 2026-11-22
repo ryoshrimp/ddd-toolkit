@@ -2,7 +2,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
     Data, DeriveInput, Field, Fields, Generics, LitStr, Member, Result, Type, ext::IdentExt,
-    parse_quote,
+    parse_quote_spanned, spanned::Spanned,
 };
 
 use crate::path::{core_path, option_name};
@@ -345,7 +345,7 @@ fn standard_impls_enum(
             debug_generics
                 .make_where_clause()
                 .predicates
-                .push(parse_quote!(#ty: ::core::fmt::Debug));
+                .push(parse_quote_spanned!(ty.span()=> #ty: ::core::fmt::Debug));
         }
     }
     let (debug_impl, debug_ty, debug_where) = debug_generics.split_for_impl();
@@ -391,7 +391,7 @@ fn standard_impls_enum(
             clone_generics
                 .make_where_clause()
                 .predicates
-                .push(parse_quote!(#ty: ::core::clone::Clone));
+                .push(parse_quote_spanned!(ty.span()=> #ty: ::core::clone::Clone));
         }
     }
     let (clone_impl, clone_ty, clone_where) = clone_generics.split_for_impl();
@@ -418,7 +418,7 @@ fn standard_impls_enum(
             partial_eq_generics
                 .make_where_clause()
                 .predicates
-                .push(parse_quote!(#ty: ::core::cmp::PartialEq));
+                .push(parse_quote_spanned!(ty.span()=> #ty: ::core::cmp::PartialEq));
         }
     }
     let (partial_eq_impl, partial_eq_ty, partial_eq_where) = partial_eq_generics.split_for_impl();
@@ -456,7 +456,7 @@ fn standard_impls_enum(
             eq_generics
                 .make_where_clause()
                 .predicates
-                .push(parse_quote!(#ty: ::core::cmp::Eq));
+                .push(parse_quote_spanned!(ty.span()=> #ty: ::core::cmp::Eq));
         }
     }
     let (eq_impl, eq_ty, eq_where) = eq_generics.split_for_impl();
@@ -467,7 +467,7 @@ fn standard_impls_enum(
             hash_generics
                 .make_where_clause()
                 .predicates
-                .push(parse_quote!(#ty: ::core::hash::Hash));
+                .push(parse_quote_spanned!(ty.span()=> #ty: ::core::hash::Hash));
         }
     }
     let (hash_impl, hash_ty, hash_where) = hash_generics.split_for_impl();
@@ -977,35 +977,35 @@ fn standard_impls_single(
     debug_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#inner_ty: ::core::fmt::Debug));
+        .push(parse_quote_spanned!(inner_ty.span()=> #inner_ty: ::core::fmt::Debug));
     let (debug_impl, debug_ty, debug_where) = debug_generics.split_for_impl();
 
     let mut clone_generics = original.clone();
     clone_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#inner_ty: ::core::clone::Clone));
+        .push(parse_quote_spanned!(inner_ty.span()=> #inner_ty: ::core::clone::Clone));
     let (clone_impl, clone_ty, clone_where) = clone_generics.split_for_impl();
 
     let mut partial_eq_generics = original.clone();
     partial_eq_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#inner_ty: ::core::cmp::PartialEq));
+        .push(parse_quote_spanned!(inner_ty.span()=> #inner_ty: ::core::cmp::PartialEq));
     let (partial_eq_impl, partial_eq_ty, partial_eq_where) = partial_eq_generics.split_for_impl();
 
     let mut eq_generics = original.clone();
     eq_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#inner_ty: ::core::cmp::Eq));
+        .push(parse_quote_spanned!(inner_ty.span()=> #inner_ty: ::core::cmp::Eq));
     let (eq_impl, eq_ty, eq_where) = eq_generics.split_for_impl();
 
     let mut hash_generics = original.clone();
     hash_generics
         .make_where_clause()
         .predicates
-        .push(parse_quote!(#inner_ty: ::core::hash::Hash));
+        .push(parse_quote_spanned!(inner_ty.span()=> #inner_ty: ::core::hash::Hash));
     let (hash_impl, hash_ty, hash_where) = hash_generics.split_for_impl();
 
     let clone = match named_field {
@@ -1065,7 +1065,7 @@ fn standard_impls_multi(
         debug_generics
             .make_where_clause()
             .predicates
-            .push(parse_quote!(#ty: ::core::fmt::Debug));
+            .push(parse_quote_spanned!(ty.span()=> #ty: ::core::fmt::Debug));
     }
     let (debug_impl, debug_ty, debug_where) = debug_generics.split_for_impl();
 
@@ -1074,7 +1074,7 @@ fn standard_impls_multi(
         clone_generics
             .make_where_clause()
             .predicates
-            .push(parse_quote!(#ty: ::core::clone::Clone));
+            .push(parse_quote_spanned!(ty.span()=> #ty: ::core::clone::Clone));
     }
     let (clone_impl, clone_ty, clone_where) = clone_generics.split_for_impl();
 
@@ -1083,7 +1083,7 @@ fn standard_impls_multi(
         partial_eq_generics
             .make_where_clause()
             .predicates
-            .push(parse_quote!(#ty: ::core::cmp::PartialEq));
+            .push(parse_quote_spanned!(ty.span()=> #ty: ::core::cmp::PartialEq));
     }
     let (partial_eq_impl, partial_eq_ty, partial_eq_where) = partial_eq_generics.split_for_impl();
 
@@ -1092,7 +1092,7 @@ fn standard_impls_multi(
         eq_generics
             .make_where_clause()
             .predicates
-            .push(parse_quote!(#ty: ::core::cmp::Eq));
+            .push(parse_quote_spanned!(ty.span()=> #ty: ::core::cmp::Eq));
     }
     let (eq_impl, eq_ty, eq_where) = eq_generics.split_for_impl();
 
@@ -1101,7 +1101,7 @@ fn standard_impls_multi(
         hash_generics
             .make_where_clause()
             .predicates
-            .push(parse_quote!(#ty: ::core::hash::Hash));
+            .push(parse_quote_spanned!(ty.span()=> #ty: ::core::hash::Hash));
     }
     let (hash_impl, hash_ty, hash_where) = hash_generics.split_for_impl();
 
