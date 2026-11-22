@@ -2,6 +2,7 @@
 name = "ddd-toolkit-macro"
 version = "0.5.5"
 edition = "2024"
+rust-version.workspace = true
 license = "MIT OR Apache-2.0"
 description = "Derive macros for ddd-toolkit-core's ValueObject, Entity, DomainEvent, and AggregateRoot traits."
 repository = "https://github.com/ryoshrimp/ddd-toolkit"

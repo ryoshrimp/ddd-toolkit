@@ -36,6 +36,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: ./scripts/check-ui-tests.sh
 
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.88
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace --all-features --all-targets --locked
+      # UI (trybuild) suites are #[ignore]d: their stderr differs by toolchain.
+      - run: cargo test --workspace --all-features --locked
+
   # Preserve the existing required status check, even for failed/skipped jobs.
   test:
     if: ${{ always() }}

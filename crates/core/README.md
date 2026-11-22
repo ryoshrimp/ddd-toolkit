@@ -25,8 +25,8 @@ For development and releases, see the root repository's contribution guide.
 cargo add ddd-toolkit-core
 ```
 
-Tested with the latest stable Rust (edition 2024). No minimum supported Rust
-version (MSRV) is specified.
+The minimum supported Rust version (MSRV) is 1.88, verified in CI. Also tested
+with the latest stable Rust (edition 2024).
 
 There are no default features.
 The optional `serde` feature exposes serde internally for generated implementations

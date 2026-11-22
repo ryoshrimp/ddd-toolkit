@@ -70,6 +70,7 @@
 //! assert_eq!(format!("{key:?}"), "[REDACTED]");
 //! assert_eq!(key.expose_secret(|value| value.len()), 6);
 //! ```
+#![forbid(unsafe_code)]
 
 extern crate self as ddd_toolkit;
 

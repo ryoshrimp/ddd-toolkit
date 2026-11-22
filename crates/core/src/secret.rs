@@ -128,6 +128,7 @@ impl<T: Zeroize> Secret<T> {
     /// assert_eq!(value, [1, 2, 3]);
     /// value.zeroize();
     /// ```
+    #[allow(unsafe_code)]
     pub fn into_exposed_secret(self) -> T {
         let mut this = ManuallyDrop::new(self);
         // SAFETY: The value is still initialized and taken exactly once. The outer
@@ -221,6 +222,7 @@ impl<'de, T: Zeroize + serde::Deserialize<'de>> serde::Deserialize<'de> for Secr
     }
 }
 
+#[allow(unsafe_code)]
 impl<T: Zeroize> Drop for Secret<T> {
     fn drop(&mut self) {
         self.value.zeroize();

@@ -2,6 +2,7 @@
 name = "ddd-toolkit-core"
 version = "0.4.6"
 edition = "2024"
+rust-version.workspace = true
 license = "MIT OR Apache-2.0"
 description = "Core traits and helpers for Domain-Driven Design: entities, value objects, aggregates, persistence, CQRS, and event-driven workflows."
 repository = "https://github.com/ryoshrimp/ddd-toolkit"
