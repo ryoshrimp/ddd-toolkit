@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a staged [getting-started guide](docs/guide.md) and an API map in the crate
+  documentation (#76).
 - Added the [versioning policy](docs/versioning.md): 0.x breaking changes, deprecation,
   MSRV, supported lines and the facade/core/macro version correspondence (#77).
 - Declared the minimum supported Rust version as 1.88 (`rust-version`), verified
