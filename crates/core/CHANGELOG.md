@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Document the `Secret` caveats explicitly in rustdoc and the README: `ExposeSecret` is a
   plaintext (unencrypted) output, and zeroization does not cover memory left by reallocations,
   copies made by moves, or temporary stack/register copies (#71).
+- Document in the crate-level rustdoc that async ports require `Send` futures, so `!Send`
+  implementations (WASM, single-threaded executors) do not fit, and that native `async fn` in
+  traits is deferred until return type notation is stable (#75).
 
 ### Added
 

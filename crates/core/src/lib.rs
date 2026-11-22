@@ -40,6 +40,12 @@
 //! These independent ports do not coordinate transactions; dropping a future does not guarantee
 //! rollback or absence of side effects. Implementations define cancellation and retry semantics.
 //!
+//! Every async port returns `Pin<Box<dyn Future + Send + 'a>>`. Implementations whose futures are
+//! `!Send` (for example on WASM or single-threaded executors that hold `Rc` or `RefCell` across
+//! `.await`) do not fit these signatures; there are no non-`Send` variants. Moving to native
+//! `async fn` in traits is deferred until return type notation is stable, so that callers, not the
+//! trait, can choose whether to require `Send`.
+//!
 //! [`Specification`] composes fallible predicates with short-circuiting [`And`],
 //! [`Or`], and [`Not`]. [`DomainService`], [`Policy`], and [`DomainFactory`] define typed operation,
 //! rule-checking, and construction boundaries without prescribing persistence or thread safety.
@@ -99,6 +105,11 @@
 //! [`AsyncIdempotentProjection`] は新規適用と重複を非同期に区別します。これらの独立したポートは
 //! トランザクションを調整せず、Future の破棄はロールバックや副作用の不在を保証しません。
 //! キャンセルと再試行の意味は実装が定めます。
+//!
+//! 非同期ポートはすべて `Pin<Box<dyn Future + Send + 'a>>` を返します。Future が `!Send` になる実装
+//! （たとえば WASM や、`.await` をまたいで `Rc` や `RefCell` を保持する単一スレッド executor 向けの実装）は
+//! これらのシグネチャに適合せず、`Send` を要求しない版もありません。`Send` を要求するかどうかを trait ではなく
+//! 呼び出し側が選べるように、ネイティブの `async fn` in trait への移行は return type notation の安定化まで見送ります。
 //!
 //! [`Specification`] は失敗し得る述語を、短絡評価する [`And`]、[`Or`]、[`Not`] で
 //! 結合します。[`DomainService`]、[`Policy`]、[`DomainFactory`] は永続化やスレッド安全性を
