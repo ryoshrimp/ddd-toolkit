@@ -41,6 +41,6 @@ impl<T: Zeroize + serde::Serialize> serde_with::SerializeAs<Secret<T>> for Expos
         source: &Secret<T>,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
-        source.as_inner().serialize(serializer)
+        source.expose_secret_ref().serialize(serializer)
     }
 }

@@ -258,7 +258,7 @@ struct UserId(String);
 `serde` feature は `Deserialize` を、`serde_with` feature は明示的な平文出力アダプター
 `ExposeSecret` を追加します。合成例、エラー秘匿と入出力のゼロ化の限界は
 [Secret の serde 連携](docs/secret-serde.md)を参照してください。
-`Secret::into_inner` を呼び出した後のゼロ化は呼び出し側の責任です。
+`Secret::into_exposed_secret` を呼び出した後のゼロ化は呼び出し側の責任です。
 
 ## core/macro 0.3 からの移行
 

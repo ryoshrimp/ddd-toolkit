@@ -18,8 +18,8 @@ struct Credentials {
 fn derives_deserialize_with_nested_containers() {
     let credentials: Credentials =
         serde_json::from_str(r#"{"token":"one","tokens":["two","three"]}"#).unwrap();
-    assert_eq!(credentials.token.as_inner(), "one");
-    assert_eq!(credentials.tokens.unwrap()[1].as_inner(), "three");
+    assert_eq!(credentials.token.expose_secret_ref(), "one");
+    assert_eq!(credentials.tokens.unwrap()[1].expose_secret_ref(), "three");
     let credentials: Credentials = serde_json::from_str(r#"{"token":"one"}"#).unwrap();
     assert!(credentials.tokens.is_none());
 }
@@ -77,7 +77,7 @@ fn deserialized_value_is_zeroized_before_drop() {
         }
     }
     let secret: Secret<Tracked> = serde_json::from_str(r#""private-token""#).unwrap();
-    let zeroized = secret.as_inner().zeroized.clone();
+    let zeroized = secret.expose_secret_ref().zeroized.clone();
     assert!(!zeroized.load(Ordering::SeqCst));
     drop(secret);
     assert!(zeroized.load(Ordering::SeqCst));

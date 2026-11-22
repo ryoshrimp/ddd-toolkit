@@ -26,14 +26,14 @@ fn secret_redacts_formatting_and_exposes_explicitly() {
     assert_eq!(format!("{secret:?}"), "[REDACTED]");
     assert_eq!(format!("{secret}"), "[REDACTED]");
     assert_eq!(secret.expose_secret(|value| value.len()), 6);
-    assert_eq!(secret.as_inner(), "sekret");
-    assert_eq!(secret.into_inner(), "sekret");
+    assert_eq!(secret.expose_secret_ref(), "sekret");
+    assert_eq!(secret.into_exposed_secret(), "sekret");
 }
 
 #[test]
 fn extracting_secret_transfers_cleanup_responsibility() {
     let wiped = Rc::new(Cell::new(false));
-    let mut value = Secret::new(TrackedSecret(wiped.clone())).into_inner();
+    let mut value = Secret::new(TrackedSecret(wiped.clone())).into_exposed_secret();
     assert!(!wiped.get());
     value.zeroize();
     assert!(wiped.get());

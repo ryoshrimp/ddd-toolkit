@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** `Secret::as_inner` is replaced by `Secret::expose_secret_ref`, and
+  `Secret::into_inner` by `Secret::into_exposed_secret`. The old names are removed
+  without deprecated aliases so secret access stands out in code review instead of
+  looking like `ValueObject` accessors (#68).
+
 ## [0.4.6] - 2026-11-02
 
 ### Added

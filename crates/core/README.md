@@ -230,7 +230,7 @@ assert_eq!(format!("{token}"), "[REDACTED]");
 assert!(token.expose_secret(|value| value.starts_with("example-")));
 ```
 
-`as_inner` also exposes plaintext. Calling `into_inner` transfers responsibility
+`expose_secret_ref` also exposes plaintext. Calling `into_exposed_secret` transfers responsibility
 for zeroization to the caller. `SecretMetadata` is only a zero-sized marker; it
 does not protect a value. `Secret` never implements `Serialize` or implicit dereferencing.
 With `serde`, it implements `Deserialize`; `serde_with` adds the explicit

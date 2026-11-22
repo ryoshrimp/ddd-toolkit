@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking (macro):** `#[derive(ValueObject)]` enum method names now use
   snake_case (`new_pending_payment` instead of `new_pendingpayment`). See the
   macro changelog for the mapping (#64).
+- **Breaking (core):** `Secret::as_inner` is replaced by `Secret::expose_secret_ref`
+  and `Secret::into_inner` by `Secret::into_exposed_secret`, with no deprecated
+  aliases. See the core changelog (#68).
 
 ## [0.4.7] - 2026-11-08
 
