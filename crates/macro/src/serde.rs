@@ -1,10 +1,10 @@
 //! Serde owns wire-format interpretation; domain construction stays here.
 
 use proc_macro2::{Span, TokenStream};
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, quote_spanned};
 use syn::{
     Attribute, Data, DeriveInput, Fields, GenericParam, Generics, Lifetime, LitStr, Member, Meta,
-    Result, Token, Type, ext::IdentExt, parse_quote, punctuated::Punctuated,
+    Result, Token, Type, ext::IdentExt, parse_quote, punctuated::Punctuated, spanned::Spanned,
 };
 
 // This is an allowlist, not a second implementation of Serde attributes.
@@ -337,15 +337,11 @@ pub(crate) fn expand(
     } else {
         "value object validation failed"
     };
-    let validation_target = match &input.data {
-        Data::Struct(data) if !entity && data.fields.len() == 1 => {
-            let member = &members(&data.fields)[0];
-            quote!(&candidate.#member)
+    let validation = validator.map(|validator| {
+        let target = quote_spanned!(validator.span()=> &candidate);
+        quote! {
+            #validator(#target).map_err(|_| <#deserializer::Error as #serde::de::Error>::custom(#error))?;
         }
-        _ => quote!(&candidate),
-    };
-    let validation = validator.map(|validator| quote! {
-        #validator(#validation_target).map_err(|_| <#deserializer::Error as #serde::de::Error>::custom(#error))?;
     });
     Ok(quote! {
         #[doc(hidden)]

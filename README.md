@@ -83,8 +83,8 @@ After adding the dependency with `derive` enabled as shown above, save this as
 #[value_object(validate = validate_email, error = &'static str)]
 struct Email(String);
 
-fn validate_email(value: &str) -> Result<(), &'static str> {
-    if value.contains('@') { Ok(()) } else { Err("missing @") }
+fn validate_email(value: &Email) -> Result<(), &'static str> {
+    if value.0.contains('@') { Ok(()) } else { Err("missing @") }
 }
 
 fn main() {

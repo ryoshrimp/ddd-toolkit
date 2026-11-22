@@ -1,5 +1,5 @@
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{quote, quote_spanned};
 use syn::{
     Data, DeriveInput, Fields, Result, ext::IdentExt, parse_quote_spanned, spanned::Spanned,
 };
@@ -207,20 +207,23 @@ pub fn expand(input: DeriveInput) -> Result<TokenStream> {
         .collect();
     let types: Vec<_> = fields.iter().map(|field| &field.ty).collect();
     let constructor = match (&validator, &error) {
-        (Some(validator), Some(error)) => Some(quote! {
-            /// **English:**<br>
-            /// Builds the supplied state in declaration order and validates it.
-            /// Propagates validator errors and panics; does not generate an ID or events.
-            ///
-            /// **日本語:**<br>
-            /// 宣言順に指定された状態を構築して検証します。検証のエラーとパニックを
-            /// 伝播し、ID の生成やイベントの発生は行いません。
-            pub fn try_new(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
-                let candidate = Self { #(#arguments),* };
-                #validator(&candidate)?;
-                Ok(candidate)
-            }
-        }),
+        (Some(validator), Some(error)) => {
+            let target = quote_spanned!(validator.span()=> &candidate);
+            Some(quote! {
+                /// **English:**<br>
+                /// Builds the supplied state in declaration order and validates it.
+                /// Propagates validator errors and panics; does not generate an ID or events.
+                ///
+                /// **日本語:**<br>
+                /// 宣言順に指定された状態を構築して検証します。検証のエラーとパニックを
+                /// 伝播し、ID の生成やイベントの発生は行いません。
+                pub fn try_new(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
+                    let candidate = Self { #(#arguments),* };
+                    #validator(#target)?;
+                    Ok(candidate)
+                }
+            })
+        }
         _ => None,
     };
     let accessors = getter_fields.iter().map(|field| {

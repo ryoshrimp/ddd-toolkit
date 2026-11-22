@@ -1,6 +1,6 @@
 use ddd_toolkit_macro::ValueObject;
 
-fn validate(_: &String) -> Result<(), &'static str> {
+fn validate(_: &MissingError) -> Result<(), &'static str> {
     Ok(())
 }
 

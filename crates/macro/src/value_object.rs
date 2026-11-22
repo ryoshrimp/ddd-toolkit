@@ -1,5 +1,5 @@
 use proc_macro2::{Span, TokenStream};
-use quote::{format_ident, quote};
+use quote::{format_ident, quote, quote_spanned};
 use syn::{
     Data, DeriveInput, Field, Fields, Generics, LitStr, Member, Result, Type, ext::IdentExt,
     parse_quote_spanned, spanned::Spanned,
@@ -555,21 +555,26 @@ fn expand_single(
     };
 
     let constructor = match (&attrs.validator, &attrs.error) {
-        (Some(validator), Some(error)) => quote! {
-            impl #impl_generics #name #ty_generics #where_clause {
-                /// **English:**<br>
-                /// Validates the inner value before wrapping it, returning
-                /// the validator's error on rejection; validator panics propagate.
-                ///
-                /// **日本語:**<br>
-                /// 内包値を検証してから包み、拒否された場合は検証エラーを
-                /// 返します。検証関数のパニックは伝播します。
-                pub fn try_new(inner: #inner_ty) -> ::core::result::Result<Self, #error> {
-                    #validator(&inner)?;
-                    Ok(#construct)
+        (Some(validator), Some(error)) => {
+            let target = quote_spanned!(validator.span()=> &candidate);
+            quote! {
+                impl #impl_generics #name #ty_generics #where_clause {
+                    /// **English:**<br>
+                    /// Wraps the inner value and validates the resulting value
+                    /// object, returning the validator's error on rejection;
+                    /// validator panics propagate.
+                    ///
+                    /// **日本語:**<br>
+                    /// 内包値を包んだ値オブジェクトを検証し、拒否された場合は
+                    /// 検証エラーを返します。検証関数のパニックは伝播します。
+                    pub fn try_new(inner: #inner_ty) -> ::core::result::Result<Self, #error> {
+                        let candidate = #construct;
+                        #validator(#target)?;
+                        Ok(candidate)
+                    }
                 }
             }
-        },
+        }
         (None, None) => quote! {
             impl #impl_generics #name #ty_generics #where_clause {
                 /// **English:**<br>
@@ -724,20 +729,23 @@ fn expand_multi(
 
     let construct = construct_self(named, &arguments);
     let constructor = match (&attrs.validator, &attrs.error) {
-        (Some(validator), Some(error)) => quote! {
-            /// **English:**<br>
-            /// Builds fields in declaration order and validates the resulting
-            /// struct, propagating the validator's error or panic.
-            ///
-            /// **日本語:**<br>
-            /// 宣言順のフィールドから構造体を作って検証し、検証関数の
-            /// エラーやパニックを伝播します。
-            pub fn try_new(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
-                let candidate = #construct;
-                #validator(&candidate)?;
-                Ok(candidate)
+        (Some(validator), Some(error)) => {
+            let target = quote_spanned!(validator.span()=> &candidate);
+            quote! {
+                /// **English:**<br>
+                /// Builds fields in declaration order and validates the resulting
+                /// struct, propagating the validator's error or panic.
+                ///
+                /// **日本語:**<br>
+                /// 宣言順のフィールドから構造体を作って検証し、検証関数の
+                /// エラーやパニックを伝播します。
+                pub fn try_new(#(#arguments: #types),*) -> ::core::result::Result<Self, #error> {
+                    let candidate = #construct;
+                    #validator(#target)?;
+                    Ok(candidate)
+                }
             }
-        },
+        }
         (None, None) => quote! {
             /// **English:**<br>
             /// Builds this struct from fields in declaration order without validation.

@@ -7,8 +7,8 @@ extern crate alloc;
 #[value_object(validate = validate_email, error = &'static str)]
 struct Email(String);
 
-fn validate_email(value: &str) -> Result<(), &'static str> {
-    if value.contains('@') {
+fn validate_email(value: &Email) -> Result<(), &'static str> {
+    if value.0.contains('@') {
         Ok(())
     } else {
         Err("missing @")
@@ -72,13 +72,17 @@ struct ValidatedSingle {
 }
 
 #[derive(ddd_toolkit::ValueObject)]
-#[value_object(validate = positive, error = &'static str)]
+#[value_object(validate = positive_inner, error = &'static str)]
 struct NamedInner {
     inner: u32,
 }
 
-fn positive(value: &u32) -> Result<(), &'static str> {
-    if *value > 0 { Ok(()) } else { Err("zero") }
+fn positive(value: &ValidatedSingle) -> Result<(), &'static str> {
+    if value.value > 0 { Ok(()) } else { Err("zero") }
+}
+
+fn positive_inner(value: &NamedInner) -> Result<(), &'static str> {
+    if value.inner > 0 { Ok(()) } else { Err("zero") }
 }
 
 #[derive(ddd_toolkit::ValueObject)]
@@ -112,8 +116,8 @@ enum VariantInner {
 #[value_object(validate = valid_variant, error = &'static str)]
 struct ValidatedVariant(VariantInner);
 
-fn valid_variant(value: &VariantInner) -> Result<(), &'static str> {
-    match value {
+fn valid_variant(value: &ValidatedVariant) -> Result<(), &'static str> {
+    match &value.0 {
         VariantInner::One { count } if *count > 0 => Ok(()),
         VariantInner::Two { start, end } if start <= end => Ok(()),
         _ => Err("invalid"),
@@ -256,8 +260,8 @@ mod without_eq_or_hash {
     #[value_object(no_eq, validate = finite, error = &'static str)]
     struct Price(f64);
 
-    fn finite(value: &f64) -> Result<(), &'static str> {
-        if value.is_finite() {
+    fn finite(value: &Price) -> Result<(), &'static str> {
+        if value.0.is_finite() {
             Ok(())
         } else {
             Err("not finite")
@@ -334,8 +338,8 @@ mod single_field_debug {
     #[value_object(validate = non_empty, error = &'static str)]
     struct Validated(String);
 
-    fn non_empty(value: &str) -> Result<(), &'static str> {
-        if value.is_empty() {
+    fn non_empty(value: &Validated) -> Result<(), &'static str> {
+        if value.0.is_empty() {
             Err("empty")
         } else {
             Ok(())

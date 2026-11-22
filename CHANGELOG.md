@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Secret` in a plain struct instead. See the core changelog (#70).
 - **Breaking (core):** `Secret<T>` no longer implements `PartialEq`/`Eq`; use
   `Secret::ct_eq` for a constant-time comparison. See the core changelog (#69).
+- **Breaking (macro):** the `#[value_object(validate = ..)]` validator of a single-field
+  struct now receives `&Self` instead of `&Inner`, matching multi-field structs and
+  `Entity`. See the macro changelog for the migration (#65).
 
 ### Added
 

@@ -159,8 +159,8 @@ must not collide with other methods or field accessors.
 ### Validation
 
 Specify `validate` and `error` together. The validator is a Rust path, not a
-quoted string. It receives `&Inner` for a single-field struct or `&Self` for a
-multi-field struct, and returns `Result<(), ErrorType>`.
+quoted string. It receives `&Self` for every shape (the constructed value
+object, as `Entity` validators do) and returns `Result<(), ErrorType>`.
 
 ```rust
 use ddd_toolkit_macro::ValueObject;
@@ -169,8 +169,8 @@ use ddd_toolkit_macro::ValueObject;
 #[value_object(validate = validate_email, error = &'static str)]
 struct Email(String);
 
-fn validate_email(value: &String) -> Result<(), &'static str> {
-    if value.contains('@') {
+fn validate_email(value: &Email) -> Result<(), &'static str> {
+    if value.0.contains('@') {
         Ok(())
     } else {
         Err("missing @")
@@ -184,8 +184,31 @@ fn main() {
 }
 ```
 
-Validation replaces `new` with `try_new`. Constructor errors are propagated
-unchanged; validator panics are not caught.
+Validation replaces `new` with `try_new`, which builds the value and passes it
+to the validator. Constructor errors are propagated unchanged; validator panics
+are not caught.
+
+A multi-field struct works the same way:
+
+```rust
+use ddd_toolkit_macro::ValueObject;
+
+#[derive(ValueObject)]
+#[value_object(validate = validate_range, error = &'static str)]
+struct Range {
+    start: u32,
+    end: u32,
+}
+
+fn validate_range(value: &Range) -> Result<(), &'static str> {
+    if value.start <= value.end { Ok(()) } else { Err("reversed") }
+}
+
+fn main() {
+    assert!(Range::try_new(1, 2).is_ok());
+    assert_eq!(Range::try_new(2, 1), Err("reversed"));
+}
+```
 
 Validated struct fields cannot be unrestricted `pub`. This does not prevent all
 bypasses: direct construction within the defining module and restricted field
@@ -210,8 +233,8 @@ enum PctInner {
 #[value_object(validate = validate_pct, error = &'static str)]
 struct Pct(PctInner);
 
-fn validate_pct(value: &PctInner) -> Result<(), &'static str> {
-    match value {
+fn validate_pct(value: &Pct) -> Result<(), &'static str> {
+    match &value.0 {
         PctInner::Value(percent) if *percent <= 100 => Ok(()),
         PctInner::Value(_) => Err("out of range"),
     }
