@@ -49,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `is_http_error`. Single-word variants (`Active` gives `is_active`) are
   unchanged. Variants that collide after conversion (`FooBar` and `Foo_Bar`) are
   reported as a duplicate-name error.
+- **Breaking:** `#[derive(ValueObject)]` on a single-field struct now generates a
+  `Debug` that follows the definition shape and includes the type name
+  (`Email("a")` for a tuple struct, `Email { value: "a" }` for a named one) instead
+  of printing only the inner value (#66). To keep the old output, format the inner
+  value, for example `{:?}` of `value.as_inner()`, or use `trait_only` and write your
+  own `Debug`.
 - **Breaking:** `Secret<T>` no longer implements `Clone`, so `#[derive(ValueObject)]` types
   that contain a `Secret<T>` no longer compile. This follows the core change (#70).
 
