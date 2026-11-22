@@ -225,7 +225,7 @@ assert_eq!(format!("{token}"), "[REDACTED]");
 assert!(token.expose_secret(|value| value.starts_with("example-")));
 ```
 
-`as_inner` でも平文にアクセスできます。`into_inner` を呼ぶと、以後のゼロ化の責任は呼び出し側に移ります。
+`expose_secret_ref` でも平文にアクセスできます。`into_exposed_secret` を呼ぶと、以後のゼロ化の責任は呼び出し側に移ります。
 `SecretMetadata` はサイズがゼロのマーカーにすぎず、値を保護しません。
 `Secret` は `Serialize` や暗黙の参照外しを実装しません。`serde` feature では
 `Deserialize` を、`serde_with` feature では明示的な平文出力アダプター `ExposeSecret` を

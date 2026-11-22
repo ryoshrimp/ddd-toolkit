@@ -97,7 +97,7 @@ cargo +nightly miri test -p ddd-toolkit-core --no-default-features --test secret
 The explicit package and integration-test target limit interpretation to
 `crates/core/tests/secret.rs`, without optional features. This includes normal
 drop (zeroize followed by exactly one inner drop), ownership transfer through
-`into_inner` (no premature zeroize/drop and exactly one caller-owned drop),
+`into_exposed_secret` (no premature zeroize/drop and exactly one caller-owned drop),
 redaction/access, cloning/equality, and metadata tests. It does **not** run the
 workspace, doctests, trybuild/UI suites, or serde-specific tests. Keep this target
 selection explicit; do not replace it with an unrestricted `cargo miri test`.

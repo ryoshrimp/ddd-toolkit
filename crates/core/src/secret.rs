@@ -6,7 +6,7 @@ use zeroize::Zeroize;
 /// Owns a value whose [`Zeroize::zeroize`] method is called before it is dropped.
 ///
 /// `Debug` and `Display` write the literal `[REDACTED]` rather than formatting `T`. Access is explicit through
-/// [`Self::as_inner`], [`Self::expose_secret`], or [`Self::into_inner`]; this type implements
+/// [`Self::expose_secret_ref`], [`Self::expose_secret`], or [`Self::into_exposed_secret`]; this type implements
 /// neither `Deref` nor serde `Serialize`. With `serde`, it implements `Deserialize` for
 /// `T: serde::Deserialize<'de> + Zeroize`, taking ownership through [`Self::new`]. With
 /// `serde_with`, `ExposeSecret` explicitly opts a field into plaintext output.
@@ -21,7 +21,7 @@ use zeroize::Zeroize;
 /// to the inner type and does not promise constant-time comparison.
 ///
 /// Zeroization follows `T`'s implementation and requires this wrapper's destructor to run;
-/// it does not erase copies made elsewhere. [`Self::into_inner`] bypasses that destructor.
+/// it does not erase copies made elsewhere. [`Self::into_exposed_secret`] bypasses that destructor.
 /// If `T::zeroize` panics, the inner value's destructor is not called by this wrapper.
 /// `Send` and `Sync` depend on `T`; no synchronization is added.
 ///
@@ -31,7 +31,7 @@ use zeroize::Zeroize;
 /// 所有する値を破棄する前に、その値の [`Zeroize::zeroize`] を呼び出すラッパーです。
 ///
 /// `Debug` と `Display` は `T` を書式出力せず、リテラル `[REDACTED]` を出力します。値へのアクセスには
-/// [`Self::as_inner`]、[`Self::expose_secret`]、[`Self::into_inner`] を明示的に使います。
+/// [`Self::expose_secret_ref`]、[`Self::expose_secret`]、[`Self::into_exposed_secret`] を明示的に使います。
 /// `Deref` と serde の `Serialize` は実装しません。`serde` feature では
 /// `T: serde::Deserialize<'de> + Zeroize` に対する `Deserialize` を実装し、[`Self::new`] で
 /// 所有権を受け取ります。`serde_with` feature の `ExposeSecret` で、フィールドの
@@ -45,7 +45,7 @@ use zeroize::Zeroize;
 /// 委譲し、定数時間での比較を保証しません。
 ///
 /// ゼロ化の範囲は `T` の実装に従い、このラッパーのデストラクターが実行される必要があります。
-/// 別の場所に作られたコピーは消去しません。[`Self::into_inner`] はデストラクターを迂回します。
+/// 別の場所に作られたコピーは消去しません。[`Self::into_exposed_secret`] はデストラクターを迂回します。
 /// `T::zeroize` がパニックした場合、このラッパーは内包値のデストラクターを呼び出しません。
 /// `Send` と `Sync` は `T` に依存し、同期機構は追加しません。
 ///
@@ -86,7 +86,7 @@ impl<T: Zeroize> Secret<T> {
     /// `self` の借用期間を超えない参照として、秘匿化していない値を借用します。
     ///
     /// 呼び出し側は値を読み取ったりコピーしたりできますが、そのコピーはこのラッパーではゼロ化しません。
-    pub fn as_inner(&self) -> &T {
+    pub fn expose_secret_ref(&self) -> &T {
         &self.value
     }
 
@@ -108,11 +108,11 @@ impl<T: Zeroize> Secret<T> {
     /// use ddd_toolkit_core::Secret;
     /// use zeroize::Zeroize;
     ///
-    /// let mut value = Secret::new(vec![1_u8, 2, 3]).into_inner();
+    /// let mut value = Secret::new(vec![1_u8, 2, 3]).into_exposed_secret();
     /// assert_eq!(value, [1, 2, 3]);
     /// value.zeroize();
     /// ```
-    pub fn into_inner(self) -> T {
+    pub fn into_exposed_secret(self) -> T {
         let mut this = ManuallyDrop::new(self);
         // SAFETY: The value is still initialized and taken exactly once. The outer
         // ManuallyDrop prevents Secret::drop from accessing or dropping it afterward.
@@ -131,7 +131,7 @@ impl<T: Zeroize> Secret<T> {
     /// 値の消費やゼロ化は行いません。クロージャーは値をコピーしたり借用した参照を返したりでき、
     /// 情報の隔離境界にはなりません。`f` がパニックした場合はそのまま伝播します。
     pub fn expose_secret<R>(&self, f: impl FnOnce(&T) -> R) -> R {
-        f(self.as_inner())
+        f(self.expose_secret_ref())
     }
 }
 
@@ -155,13 +155,13 @@ impl<T: Zeroize> Drop for Secret<T> {
 
 impl<T: Zeroize + Clone> Clone for Secret<T> {
     fn clone(&self) -> Self {
-        Self::new(self.as_inner().clone())
+        Self::new(self.expose_secret_ref().clone())
     }
 }
 
 impl<T: Zeroize + PartialEq> PartialEq for Secret<T> {
     fn eq(&self, other: &Self) -> bool {
-        self.as_inner() == other.as_inner()
+        self.expose_secret_ref() == other.expose_secret_ref()
     }
 }
 

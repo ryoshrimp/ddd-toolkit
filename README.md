@@ -263,7 +263,7 @@ versions and serde feature requirements.
 The `serde` feature adds `Deserialize`; the `serde_with` feature adds the explicit
 `ExposeSecret` plaintext output adapter. See [Secret serde integration](docs/secret-serde.md)
 for composition examples, error redaction and input/output zeroization limits.
-Calling `Secret::into_inner` transfers zeroization responsibility to the caller.
+Calling `Secret::into_exposed_secret` transfers zeroization responsibility to the caller.
 
 ## Migrating from core/macro 0.3
 
