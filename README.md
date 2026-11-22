@@ -33,8 +33,8 @@ plus the four derives from
 [`ddd-toolkit-macro`](crates/macro) 0.5.5.
 All public items are available at `ddd_toolkit::`.
 
-Tested with the latest stable Rust (edition 2024). No minimum supported Rust
-version (MSRV) is specified.
+The minimum supported Rust version (MSRV) is 1.88, verified in CI. Also tested
+with the latest stable Rust (edition 2024).
 
 This repository is a Cargo workspace containing the facade, core, and macro
 crates. They remain separate crates.io packages, developed and tested together.

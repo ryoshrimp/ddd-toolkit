@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Declared the minimum supported Rust version as 1.88 (`rust-version`), verified
+  by a new CI job (#72).
+- Added `#![forbid(unsafe_code)]` to the facade crate. Core denies `unsafe_code`
+  (only the two `Secret` items opt in) and macro forbids it (#72).
 - `Secret<T>` implements `zeroize::ZeroizeOnDrop` (#70).
 - `Secret::ct_eq` compares secrets in constant time for equal lengths (#69).
 

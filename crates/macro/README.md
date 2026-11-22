@@ -16,8 +16,8 @@ For development and releases, see the root repository's contribution guide.
 
 ## Installation
 
-Tested with the latest stable Rust (edition 2024). No minimum supported Rust
-version (MSRV) is specified.
+The minimum supported Rust version (MSRV) is 1.88, verified in CI. Also tested
+with the latest stable Rust (edition 2024).
 
 ```sh
 cargo add ddd-toolkit-core ddd-toolkit-macro

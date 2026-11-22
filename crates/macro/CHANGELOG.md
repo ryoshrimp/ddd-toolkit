@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Declared the minimum supported Rust version as 1.88 (`rust-version`), verified
+  by a new CI job (#72).
+- Added `#![forbid(unsafe_code)]` (#72).
 - `#[derive(ValueObject)]` and `#[derive(Entity)]` now detect field and variant
   names that collide with generated methods (such as a `new` field, or an `Inner`
   enum variant) and report an error pointing at the field or variant instead of

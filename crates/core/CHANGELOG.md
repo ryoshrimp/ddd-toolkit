@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Declared the minimum supported Rust version as 1.88 (`rust-version`), verified
+  by a new CI job (#72).
+- Added `#![deny(unsafe_code)]`; only `Secret::into_exposed_secret` and `Secret`'s
+  `Drop` impl opt in with `#[allow(unsafe_code)]` (#72).
 - Implement `zeroize::ZeroizeOnDrop` for `Secret<T>` (#70).
 - Add `Secret::ct_eq`, a constant-time comparison for `T: AsRef<[u8]>` (#69).
 

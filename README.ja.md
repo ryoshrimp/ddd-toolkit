@@ -30,8 +30,8 @@ API・ドキュメント・ユースケースへのフィードバックを
 [`ddd-toolkit-macro`](crates/macro) 0.5.5 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
-最新の Rust stable（edition 2024）で検証しています。
-最低サポート Rust バージョン（MSRV）は定めていません。
+最低サポート Rust バージョン（MSRV）は 1.88 で、CI で検証しています。
+最新の Rust stable（edition 2024）でも検証しています。
 
 このリポジトリは、ファサード・core・macro を含む Cargo ワークスペースです。
 crates.io では別々のパッケージとして公開し、開発とテストを一緒に行います。

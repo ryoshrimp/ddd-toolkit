@@ -98,6 +98,7 @@
 //! 明示的な登録、コミット、ロールバックのポートであり、トランザクションの保証は実装が定めます。
 //! [`EventIdentity`] と [`VersionedEvent`] はイベントのスキーマを表し、[`UpcasterChain`] は
 //! バージョンを自動選択せず、[`EventUpcaster`] の段階を追加順に適用します。
+#![deny(unsafe_code)]
 
 // Generated derives use the library name in both library and consumer targets.
 extern crate self as ddd_toolkit_core;

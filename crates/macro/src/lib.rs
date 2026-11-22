@@ -36,6 +36,7 @@
 //! assert_eq!(quantity.as_inner(), &3);
 //! assert_eq!(quantity.into_inner(), 3);
 //! ```
+#![forbid(unsafe_code)]
 
 use proc_macro::TokenStream;
 use syn::parse_macro_input;

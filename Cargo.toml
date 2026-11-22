@@ -2,6 +2,7 @@
 name = "ddd-toolkit"
 version = "0.4.7"
 edition = "2024"
+rust-version.workspace = true
 license = "MIT OR Apache-2.0"
 description = "Domain-Driven Design building blocks for Rust: a facade over ddd-toolkit-core and its derive macros."
 repository = "https://github.com/ryoshrimp/ddd-toolkit"
@@ -37,6 +38,9 @@ all-features = true
 [workspace]
 members = ["crates/core", "crates/macro", "facade-tests"]
 resolver = "3"
+
+[workspace.package]
+rust-version = "1.88"
 
 [workspace.dependencies]
 ddd-toolkit-core = { version = "0.4.6", path = "crates/core" }

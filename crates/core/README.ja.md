@@ -24,8 +24,8 @@ Rust でドメイン駆動設計を実践するためのコアトレイトとヘ
 cargo add ddd-toolkit-core
 ```
 
-最新の Rust stable（edition 2024）で検証しています。
-最低サポート Rust バージョン（MSRV）は定めていません。
+最低サポート Rust バージョン（MSRV）は 1.88 で、CI で検証しています。
+最新の Rust stable（edition 2024）でも検証しています。
 
 デフォルト feature はありません。
 オプションの `serde` feature は、生成された実装向けの serde 内部公開と
