@@ -49,6 +49,15 @@
 //! describe event schemas, while [`UpcasterChain`] applies [`EventUpcaster`] stages in insertion
 //! order without automatically selecting versions.
 //!
+//! The thin traits ([`DomainEvent`], [`DomainService`], [`Policy`], [`DomainFactory`], and
+//! [`Specification`]) add no behavior of their own, apart from the combinators ([`And`], [`Or`],
+//! [`Not`]) that [`Specification`] provides. They help when code is generic over a role
+//! (for example `P: Policy<Order>`) instead of a concrete type, when tests swap in a stub
+//! implementation, and when signatures and docs should name the domain role. They are optional:
+//! if a rule or operation is used in one place and never swapped, a plain function or inherent
+//! method is enough. They provide no transaction, retry, persistence, or thread-safety behavior.
+//! The example at the end of this page shows a [`Policy`] used as a bound and replaced by a stub.
+//!
 //! **日本語:**<br>
 //! ドメイン駆動設計のエンティティと値オブジェクトを表現するためのコアトレイトを提供します。
 //!
@@ -98,6 +107,64 @@
 //! 明示的な登録、コミット、ロールバックのポートであり、トランザクションの保証は実装が定めます。
 //! [`EventIdentity`] と [`VersionedEvent`] はイベントのスキーマを表し、[`UpcasterChain`] は
 //! バージョンを自動選択せず、[`EventUpcaster`] の段階を追加順に適用します。
+//!
+//! 薄いトレイト（[`DomainEvent`]、[`DomainService`]、[`Policy`]、[`DomainFactory`]、
+//! [`Specification`]）は、[`Specification`] の結合操作（[`And`]、[`Or`]、[`Not`]）を除き、
+//! 固有の動作を追加しません。具体型ではなく役割（例: `P: Policy<Order>`）に
+//! 対してジェネリックに書くとき、テストでスタブ実装に差し替えるとき、シグネチャやドキュメントで
+//! ドメイン上の役割を型名で明示したいときに役立ちます。利用は任意で、1 か所でしか使わず
+//! 差し替えない規則や操作なら、通常の関数や固有メソッドで十分です。トランザクション、再試行、
+//! 永続化、スレッド安全性の動作は提供しません。
+//! 下の使用例は、[`Policy`] をジェネリックな境界として使い、スタブに差し替える様子を示します。
+//!
+//! # Example / 使用例
+//!
+//! ```rust
+//! use ddd_toolkit_core::Policy;
+//!
+//! struct Order {
+//!     total: u32,
+//! }
+//!
+//! // The application service depends on the role, not on a concrete policy.
+//! // アプリケーションサービスは具体的なポリシーではなく役割に依存します。
+//! struct PlaceOrder<P> {
+//!     policy: P,
+//! }
+//!
+//! impl<P: Policy<Order>> PlaceOrder<P> {
+//!     fn place(&self, order: &Order) -> Result<u32, P::Error> {
+//!         self.policy.check(order)?;
+//!         Ok(order.total)
+//!     }
+//! }
+//!
+//! struct MaxTotal(u32);
+//! impl Policy<Order> for MaxTotal {
+//!     type Error = String;
+//!     fn check(&self, order: &Order) -> Result<(), String> {
+//!         if order.total <= self.0 {
+//!             Ok(())
+//!         } else {
+//!             Err(format!("total {} exceeds {}", order.total, self.0))
+//!         }
+//!     }
+//! }
+//!
+//! // A test stub swapped in for the real policy.
+//! // 実際のポリシーの代わりに差し替えるテスト用スタブです。
+//! struct AlwaysReject;
+//! impl Policy<Order> for AlwaysReject {
+//!     type Error = &'static str;
+//!     fn check(&self, _: &Order) -> Result<(), &'static str> {
+//!         Err("rejected")
+//!     }
+//! }
+//!
+//! let order = Order { total: 100 };
+//! assert_eq!(PlaceOrder { policy: MaxTotal(500) }.place(&order), Ok(100));
+//! assert_eq!(PlaceOrder { policy: AlwaysReject }.place(&order), Err("rejected"));
+//! ```
 #![deny(unsafe_code)]
 
 // Generated derives use the library name in both library and consumer targets.

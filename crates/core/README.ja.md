@@ -68,6 +68,24 @@ cargo add ddd-toolkit-core
 選んでください。将来 Future の表現を変更する場合は、`dyn` 互換性、`Send`、
 破壊的変更の影響を別途検討する必要があります。
 
+## 薄いトレイトが役立つ場面
+
+`DomainEvent`、`DomainService`、`Policy`、`DomainFactory`、`Specification` は
+固有の動作を追加しません（`Specification` の `And`/`Or`/`Not` による結合操作を除く）。
+次のような場合に役立ちます。
+
+- 具体型ではなく役割に対してジェネリックに書く場合（例: `P: Policy<Order>` に対して
+  ジェネリックなコマンドハンドラー）。
+- テストでスタブやフェイクの実装に差し替える場合。
+- シグネチャやドキュメントでドメイン上の役割を型名で明示したい場合。特に
+  `DomainEvent` は、例えば `AggregateRoot::Event` やイベント発行・消費トレイトの境界として使われ、
+  `DomainEventMetadata`、`DomainEventConversion`、`DomainEventDeliveryMetadata` の
+  スーパートレイトでもあります。
+
+利用は任意です。1 か所でしか使わず差し替えない規則や操作なら、通常の関数や固有メソッドで
+十分です。トランザクション、再試行、永続化、スレッド安全性の動作は提供しません。
+例はクレートレベルのドキュメントを参照してください。
+
 ## 例：集約、リポジトリ、イベント発行
 
 識別子はアプリケーションで定義します。`Entity::Id` に必須のマーカートレイトはありません。
