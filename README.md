@@ -263,9 +263,17 @@ versions and serde feature requirements.
 The `serde` feature adds `Deserialize`; the `serde_with` feature adds the explicit
 `ExposeSecret` plaintext output adapter. See [Secret serde integration](docs/secret-serde.md)
 for composition examples, error redaction and input/output zeroization limits.
-Calling `Secret::into_exposed_secret` transfers zeroization responsibility to the caller.
-`Secret<T>` does not implement `Clone`; copy a secret explicitly with `Secret::clone_secret`.
-`Secret<T>` does not implement `PartialEq`/`Eq`; compare with `Secret::ct_eq` (constant-time for equal lengths, but the length is leaked).
+
+`Secret` caveats (see the rustdoc for details):
+
+- `ExposeSecret` serializes the secret as plaintext. It is not encryption.
+- Zeroization covers only the value currently owned. It does not erase memory left by
+  reallocations (for example a growing `String`/`Vec`), copies made by moves, temporary
+  stack/register copies, or copies made elsewhere.
+- Calling `Secret::into_exposed_secret` transfers zeroization responsibility to the caller.
+- `Secret<T>` does not implement `Clone`; copy a secret explicitly with `Secret::clone_secret`.
+- `Secret<T>` does not implement `PartialEq`/`Eq`; compare with `Secret::ct_eq`
+  (constant-time for equal lengths, but the length is leaked).
 
 ## Migrating from core/macro 0.3
 

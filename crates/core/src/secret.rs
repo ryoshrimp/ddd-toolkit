@@ -23,7 +23,14 @@ use zeroize::Zeroize;
 /// constant-time for equal lengths but leaks the length.
 ///
 /// Zeroization follows `T`'s implementation and requires this wrapper's destructor to run;
-/// it does not erase copies made elsewhere. [`Self::into_exposed_secret`] bypasses that destructor.
+/// it does not erase copies made elsewhere. Only the value `T` currently owned is zeroized.
+/// Growing a `String` or `Vec` before passing it to [`Self::new`] frees the old buffers without
+/// zeroizing them; where possible, reserve the final capacity up front (such as
+/// `String::with_capacity`) before building the value. A move (passing by value, returning)
+/// copies `T`'s inline part and does not erase the old location; for types that store the value
+/// inline, such as `[u8; N]`, that leaves the secret itself behind. Temporary copies on the
+/// stack or in registers are not erased either.
+/// [`Self::into_exposed_secret`] bypasses this wrapper's destructor.
 /// If `T::zeroize` panics, the inner value's destructor is not called by this wrapper.
 /// `Send` and `Sync` depend on `T`; no synchronization is added.
 ///
@@ -48,7 +55,13 @@ use zeroize::Zeroize;
 /// [`Self::ct_eq`] を使います（同じ長さなら定数時間で、長さは漏れます）。
 ///
 /// ゼロ化の範囲は `T` の実装に従い、このラッパーのデストラクターが実行される必要があります。
-/// 別の場所に作られたコピーは消去しません。[`Self::into_exposed_secret`] はデストラクターを迂回します。
+/// 別の場所に作られたコピーは消去しません。ゼロ化されるのは現在所有している値 `T` だけです。
+/// `String` や `Vec` を [`Self::new`] に渡す前に伸ばすと、古いバッファはゼロ化されずに
+/// 解放されます。可能なら `String::with_capacity` などで最終的な容量を確保してから値を作って
+/// ください。ムーブ（値渡しや戻り値）は `T` のインライン部分をコピーし、元の場所は消去されません。
+/// `[u8; N]` のように値をインラインで保持する型では、秘密値そのものが残ります。スタックや
+/// レジスタ上の一時的なコピーも消去されません。
+/// [`Self::into_exposed_secret`] はこのラッパーのデストラクターを迂回します。
 /// `T::zeroize` がパニックした場合、このラッパーは内包値のデストラクターを呼び出しません。
 /// `Send` と `Sync` は `T` に依存し、同期機構は追加しません。
 ///
