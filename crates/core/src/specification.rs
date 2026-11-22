@@ -4,6 +4,12 @@
 /// short-circuit on a decisive boolean, and propagate the first error without evaluating later rules.
 /// Implementations may use interior state; purity and thread safety are not required.
 ///
+/// Benefits: code can be generic over `S: Specification<T>` and depend on the rule instead of a
+/// concrete type, tests can pass a stub specification, and the trait names the predicate in
+/// signatures and docs. Rules can also be composed with [`And`], [`Or`], and [`Not`]. Using it is
+/// optional: if a predicate is used in one place and never swapped or combined, a plain function
+/// or inherent method is enough.
+///
 /// Combine rules over an unsized string candidate and invert the result.
 ///
 /// **日本語:**<br>
@@ -11,6 +17,11 @@
 /// `T` はサイズ不定でもよいですが、仕様の値自体はサイズ確定が必要です。結合は左から評価し、
 /// 真偽が確定すると短絡し、エラーでは後続の規則を評価せず最初のエラーを伝播します。
 /// 実装は内部状態を利用でき、純粋性やスレッド安全性は要求しません。
+///
+/// 利点: `S: Specification<T>` のようにジェネリックな境界として使えば、具体型ではなく規則に
+/// 依存でき、テストではスタブの仕様を渡せます。また、シグネチャやドキュメントで述語の役割を
+/// 型名で明示でき、[`And`]、[`Or`]、[`Not`] で規則を組み合わせることもできます。利用は任意で、
+/// 1 か所でしか使わず差し替えも結合もしない述語なら、通常の関数や固有メソッドで十分です。
 ///
 /// サイズ不定の文字列候補に対する規則を結合し、結果を反転します。
 ///

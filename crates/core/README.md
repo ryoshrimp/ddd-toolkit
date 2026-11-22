@@ -71,6 +71,25 @@ even when the caller uses a single-threaded executor. Choose adapters whose
 futures satisfy the declared bounds; a different future representation would
 require a separate review of `dyn` compatibility, `Send`, and breaking changes.
 
+## When the thin traits help
+
+`DomainEvent`, `DomainService`, `Policy`, `DomainFactory`, and `Specification`
+add no behavior of their own, apart from the `And`/`Or`/`Not` combinators that
+`Specification` provides. They are useful when:
+
+- code is generic over a role (for example a command handler generic over
+  `P: Policy<Order>`) instead of a concrete type;
+- tests swap in a stub or fake implementation;
+- signatures and docs should name the domain role. `DomainEvent` in particular
+  is used, for example, as a bound on `AggregateRoot::Event` and in the event
+  publisher and consumer traits, and as a supertrait of `DomainEventMetadata`,
+  `DomainEventConversion`, and `DomainEventDeliveryMetadata`.
+
+They are optional: if a rule or operation is used in only one place and never
+swapped, a plain function or inherent method is sufficient. They provide no
+transaction, retry, persistence, or thread-safety behavior. See the crate-level
+documentation for an example.
+
 ## Example: aggregate, repository, and event publishing
 
 Identifiers are application-defined: `Entity::Id` has no required marker trait.

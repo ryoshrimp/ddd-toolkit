@@ -3,10 +3,20 @@
 /// It supplies no transaction or retry logic. The shared receiver permits interior state;
 /// neither purity nor concurrent use is required by the trait.
 ///
+/// Benefits: code can be generic over `S: DomainService<Input>` and depend on the role instead of
+/// a concrete type, tests can pass a stub implementation, and the trait names the operation in
+/// signatures and docs. Using it is optional: if an operation is used in one place and never
+/// swapped, a plain function or inherent method is enough.
+///
 /// **日本語:**<br>
 /// 所有する入力と、実装が選ぶ出力型・エラー型を持つドメイン操作です。
 /// トランザクションや再試行処理は提供しません。共有参照でも内部状態を持てるため、
 /// このトレイトは純粋性や並行利用を要求しません。
+///
+/// 利点: `S: DomainService<Input>` のようにジェネリックな境界として使えば、具体型ではなく
+/// 役割に依存でき、テストではスタブ実装を渡せます。また、シグネチャやドキュメントで
+/// 操作の役割を型名で明示できます。利用は任意で、1 か所でしか使わず差し替えない操作なら、
+/// 通常の関数や固有メソッドで十分です。
 pub trait DomainService<Input> {
     /// **English:**<br>
     /// Result value produced when the domain operation succeeds.
@@ -37,10 +47,21 @@ pub trait DomainService<Input> {
 /// Rejection and inability to evaluate are both represented by the implementation's error type.
 /// This trait does not enforce the rule automatically at other domain boundaries.
 ///
+/// Benefits: an application service can be generic over `P: Policy<Order>` and depend on the rule
+/// rather than a concrete type, tests can swap in a stub policy, and the trait names the rule in
+/// signatures and docs. Using it is optional: if a rule is used in one place and never swapped, a
+/// plain function or inherent method is enough. See the crate-level documentation for an example.
+///
 /// **日本語:**<br>
 /// サイズ不定でもよいコンテキストを借用して確認する、失敗し得るドメイン規則です。
 /// 拒否と評価不能は、どちらも実装のエラー型で表現します。
 /// 他のドメイン境界で規則を自動的に強制するものではありません。
+///
+/// 利点: アプリケーションサービスを `P: Policy<Order>` のようにジェネリックにすれば、
+/// 具体型ではなく規則に依存でき、テストではスタブのポリシーに差し替えられます。また、
+/// シグネチャやドキュメントで規則の役割を型名で明示できます。利用は任意で、1 か所でしか
+/// 使わず差し替えない規則なら、通常の関数や固有メソッドで十分です。
+/// 例はクレートレベルのドキュメントを参照してください。
 pub trait Policy<Context: ?Sized> {
     /// **English:**<br>
     /// Policy-specific rejection or evaluation failure.
