@@ -354,30 +354,35 @@ fn standard_impls_enum(
             .map(|index| format_ident!("__ddd_debug_{index}"))
             .collect();
         let pattern = enum_pattern(variant, &bindings);
-        let variant_name = &variant.variant.ident;
+        let debug_name = LitStr::new(
+            &format!("{}::{}", name.unraw(), variant.variant.ident.unraw()),
+            variant.variant.ident.span(),
+        );
         if variant.unit {
-            quote! { #pattern => formatter.write_str(concat!(stringify!(#name), "::", stringify!(#variant_name))), }
+            quote! { #pattern => formatter.write_str(#debug_name), }
         } else if variant.named {
             let fields = variant.members.iter().enumerate().map(|(index, member)| {
                 let binding = &bindings[index];
                 let label = match member {
-                    Member::Named(ident) => LitStr::new(&ident.to_string(), ident.span()),
+                    Member::Named(ident) => LitStr::new(&ident.unraw().to_string(), ident.span()),
                     Member::Unnamed(_) => unreachable!("named enum field"),
                 };
                 quote! { debug.field(#label, #binding); }
             });
             quote! {
                 #pattern => {
-                    let mut debug = formatter.debug_struct(concat!(stringify!(#name), "::", stringify!(#variant_name)));
+                    let mut debug = formatter.debug_struct(#debug_name);
                     #(#fields)*
                     debug.finish()
                 },
             }
         } else {
-            let fields = bindings.iter().map(|binding| quote! { debug.field(#binding); });
+            let fields = bindings
+                .iter()
+                .map(|binding| quote! { debug.field(#binding); });
             quote! {
                 #pattern => {
-                    let mut debug = formatter.debug_tuple(concat!(stringify!(#name), "::", stringify!(#variant_name)));
+                    let mut debug = formatter.debug_tuple(#debug_name);
                     #(#fields)*
                     debug.finish()
                 },
@@ -1130,19 +1135,20 @@ fn standard_impls_multi(
         .iter()
         .enumerate()
         .map(|(index, member)| match member {
-            Member::Named(ident) => LitStr::new(&ident.to_string(), ident.span()),
+            Member::Named(ident) => LitStr::new(&ident.unraw().to_string(), ident.span()),
             Member::Unnamed(_) => LitStr::new(&format!("field_{index}"), Span::call_site()),
         })
         .collect();
+    let debug_name = LitStr::new(&name.unraw().to_string(), name.span());
     let debug = if named {
         quote! {
-            let mut debug = formatter.debug_struct(stringify!(#name));
+            let mut debug = formatter.debug_struct(#debug_name);
             #(debug.field(#debug_names, &self.#members);)*
             debug.finish()
         }
     } else {
         quote! {
-            let mut debug = formatter.debug_tuple(stringify!(#name));
+            let mut debug = formatter.debug_tuple(#debug_name);
             #(debug.field(&self.#members);)*
             debug.finish()
         }

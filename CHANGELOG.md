@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Secret<T>` implements `zeroize::ZeroizeOnDrop` (#70).
 - `Secret::ct_eq` compares secrets in constant time for equal lengths (#69).
 
+### Fixed
+
+- `#[derive(ValueObject)]` now omits the `r#` prefix of raw identifiers (type, variant,
+  and field names) in the generated `Debug` for multi-field structs and enums, matching
+  `#[derive(Debug)]` (#93).
+
 ## [0.4.7] - 2026-11-08
 
 ### Changed

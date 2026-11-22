@@ -370,3 +370,108 @@ mod single_field_debug {
         assert_eq!(format!("{:?}", r#match::new(1)), "match(1)");
     }
 }
+
+// Multi-field and enum Debug drops the `r#` prefix like `#[derive(Debug)]`.
+mod raw_ident_debug {
+    #![allow(non_camel_case_types)]
+
+    mod vo {
+        #[derive(ddd_toolkit::ValueObject)]
+        pub struct Fields {
+            pub r#type: u32,
+            pub r#match: u32,
+        }
+
+        #[derive(ddd_toolkit::ValueObject)]
+        pub struct r#struct(pub u32, pub u32);
+
+        #[derive(ddd_toolkit::ValueObject)]
+        pub struct r#enum {
+            pub r#type: u32,
+            pub other: u32,
+        }
+
+        #[derive(ddd_toolkit::ValueObject)]
+        pub enum Choice {
+            r#Loop,
+            Named { r#type: u32, other: u32 },
+            Tuple(u32, u32),
+        }
+
+        #[derive(ddd_toolkit::ValueObject)]
+        pub enum r#union {
+            r#Static,
+            Unit,
+        }
+    }
+
+    #[allow(dead_code)]
+    mod std_side {
+        #[derive(Debug)]
+        pub struct Fields {
+            pub r#type: u32,
+            pub r#match: u32,
+        }
+
+        #[derive(Debug)]
+        pub struct r#struct(pub u32, pub u32);
+
+        #[derive(Debug)]
+        pub struct r#enum {
+            pub r#type: u32,
+            pub other: u32,
+        }
+    }
+
+    #[test]
+    fn matches_std_derive() {
+        let expected = std_side::Fields {
+            r#type: 1,
+            r#match: 2,
+        };
+        assert_eq!(
+            format!("{:?}", vo::Fields::new(1, 2)),
+            format!("{expected:?}")
+        );
+        assert_eq!(
+            format!("{:?}", vo::Fields::new(1, 2)),
+            "Fields { type: 1, match: 2 }"
+        );
+
+        let expected = std_side::r#struct(1, 2);
+        assert_eq!(
+            format!("{:?}", vo::r#struct::new(1, 2)),
+            format!("{expected:?}")
+        );
+
+        let expected = std_side::r#enum {
+            r#type: 1,
+            other: 2,
+        };
+        assert_eq!(
+            format!("{:?}", vo::r#enum::new(1, 2)),
+            format!("{expected:?}")
+        );
+        assert_eq!(
+            format!("{:?}", vo::r#enum::new(1, 2)),
+            "enum { type: 1, other: 2 }"
+        );
+    }
+
+    // Enum Debug is `Type::Variant`, which a std derive cannot produce, so the
+    // expected text is spelled out from what std prints for each raw name.
+    #[test]
+    fn enum_names_drop_the_prefix() {
+        assert_eq!(format!("{:?}", vo::Choice::new_loop()), "Choice::Loop");
+        assert_eq!(
+            format!("{:?}", vo::Choice::new_named(1, 2)),
+            "Choice::Named { type: 1, other: 2 }"
+        );
+        assert_eq!(
+            format!("{:?}", vo::Choice::new_tuple(1, 2)),
+            "Choice::Tuple(1, 2)"
+        );
+        assert_eq!(format!("{:?}", vo::r#union::new_static()), "union::Static");
+        assert_eq!(format!("{:?}", vo::r#union::new_unit()), "union::Unit");
+    }
+}

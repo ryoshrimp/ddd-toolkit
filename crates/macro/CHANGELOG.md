@@ -60,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `#[derive(ValueObject)]` now omits the `r#` prefix of raw identifiers (type, variant,
+  and field names) in the generated `Debug` for multi-field structs and enums, matching
+  `#[derive(Debug)]` (#93).
 - `Entity` getter conflict check now catches a raw-identifier `r#id` field.
 - `ValueObject` enum duplicate-name check after snake_case conversion now also
   catches raw identifiers (for example `r#Foo` and `FOO`), which previously
