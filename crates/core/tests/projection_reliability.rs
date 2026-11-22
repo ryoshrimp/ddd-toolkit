@@ -1,7 +1,9 @@
-use ddd_toolkit_core::{
-    AsyncIdempotentProjection, AsyncProjectionCheckpointStore, DomainEvent, EventConsumer,
-    IdempotentProjection, Projection, ProjectionApplication, ProjectionCheckpoint,
-    ProjectionCheckpointStore,
+#![cfg(feature = "delivery")]
+
+use ddd_toolkit_core::DomainEvent;
+use ddd_toolkit_core::delivery::{
+    AsyncIdempotentProjection, AsyncProjectionCheckpointStore, EventConsumer, IdempotentProjection,
+    Projection, ProjectionApplication, ProjectionCheckpoint, ProjectionCheckpointStore,
 };
 use std::future::Future;
 use std::pin::Pin;

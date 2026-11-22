@@ -1,8 +1,8 @@
 #![allow(clippy::type_complexity)]
 
-use crate::{
-    AggregateRoot, AppendError, AppendResult, ExpectedRevision, OutboxClaim, OutboxMessageId,
-};
+use crate::AggregateRoot;
+use crate::delivery::{OutboxClaim, OutboxMessageId};
+use crate::event_sourcing::{AppendError, AppendResult, ExpectedRevision};
 use std::future::Future;
 use std::pin::Pin;
 

@@ -1,4 +1,5 @@
-use ddd_toolkit_core::{AggregateRoot, CommandHandler, DomainEvent, DomainEventPublisher, Entity, Repository};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, DomainEventPublisher, Entity, Repository};
+use ddd_toolkit_core::cqrs::CommandHandler;
 
 struct Event;
 impl DomainEvent for Event {}

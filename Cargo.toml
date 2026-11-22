@@ -22,15 +22,15 @@ required-features = ["derive"]
 
 [[example]]
 name = "cqrs"
-required-features = ["derive"]
+required-features = ["derive", "cqrs"]
 
 [[example]]
 name = "event_sourcing"
-required-features = ["derive"]
+required-features = ["derive", "event_sourcing"]
 
 [[example]]
 name = "reliable_delivery"
-required-features = ["derive"]
+required-features = ["derive", "delivery"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -43,7 +43,7 @@ resolver = "3"
 rust-version = "1.88"
 
 [workspace.dependencies]
-ddd-toolkit-core = { version = "0.4.6", path = "crates/core" }
+ddd-toolkit-core = { version = "0.4.6", path = "crates/core", default-features = false }
 ddd-toolkit-macro = { version = "0.5.5", path = "crates/macro" }
 
 
@@ -54,7 +54,12 @@ serde = { version = "1", features = ["derive"], optional = true }
 
 
 [features]
-default = ["derive"]
+default = ["derive", "cqrs", "event_sourcing", "delivery", "process", "secret"]
 derive = ["dep:ddd-toolkit-macro"]
+cqrs = ["ddd-toolkit-core/cqrs"]
+event_sourcing = ["ddd-toolkit-core/event_sourcing"]
+delivery = ["event_sourcing", "ddd-toolkit-core/delivery"]
+process = ["ddd-toolkit-core/process"]
+secret = ["ddd-toolkit-core/secret"]
 serde = ["ddd-toolkit-core/serde", "dep:serde"]
-serde_with = ["serde", "ddd-toolkit-core/serde_with"]
+serde_with = ["serde", "secret", "ddd-toolkit-core/serde_with"]

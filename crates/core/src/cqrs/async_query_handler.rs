@@ -1,9 +1,8 @@
 #![allow(clippy::type_complexity)]
 
-use crate::cqrs::OperationState;
+use crate::cqrs_impl::{LifecycleCompletionError, LifecycleOperationError, OperationState};
 use crate::{
-    AggregateRoot, AsyncDomainEventPublisher, AsyncRepository, Entity, LifecycleCompletionError,
-    LifecycleOperationError, dispatch_events_async,
+    AggregateRoot, AsyncDomainEventPublisher, AsyncRepository, Entity, dispatch_events_async,
 };
 use std::future::Future;
 use std::pin::Pin;

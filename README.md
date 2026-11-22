@@ -128,12 +128,12 @@ Use these contracts as needed; they are not prerequisites for the four derives:
 
 - `Repository` / `AsyncRepository`, `DomainEventPublisher` /
   `AsyncDomainEventPublisher`, and `dispatch_events` / `dispatch_events_async`.
-- CQRS command/query handlers and lifecycle contexts.
-- Event stores, revision types, aggregate replay, and snapshots.
-- Event consumption, projections, checkpoints, and transactional outbox contracts.
-- Specifications, domain services/policies/factories, process managers,
-  units of work, and event upcasters.
-- `Secret<T>` for redacted formatting and zeroization on drop.
+- Specifications, domain services/policies/factories, and units of work.
+- Experimental feature-gated modules (all on by default): `cqrs` command/query
+  handlers and lifecycle contexts; `event_sourcing` event stores, revision types,
+  aggregate replay, snapshots, and event upcasters; `delivery` event consumption,
+  projections, checkpoints, and transactional outbox contracts; `process` process
+  managers; `secret` `Secret<T>` for redacted formatting and zeroization on drop.
 
 Core defines contracts, not storage adapters, clock or ID generators, an async
 runtime, or automatic transaction/delivery guarantees. Implement adapters in your
@@ -165,7 +165,7 @@ production adapters. The async demo polls only immediately-ready futures, not I/
 
 ```rust
 fn main() {
-    let key = ddd_toolkit::Secret::new("sekret".to_owned());
+    let key = ddd_toolkit::secret::Secret::new("sekret".to_owned());
     assert_eq!(format!("{key:?}"), "[REDACTED]");
     assert_eq!(key.expose_secret(|value| value.len()), 6);
 }
@@ -217,8 +217,13 @@ may deliver duplicates. Application adapters define transaction guarantees.
 | Feature | Default | Enables |
 |---------|---------|---------|
 | `derive` | yes | `ValueObject`, `Entity`, `DomainEvent`, `AggregateRoot` derives; no direct core dependency required |
-| `serde` | no | Core's serde re-export, `Secret<T>` deserialization and serde derive support for `#[value_object(serde)]`; independent of `derive` |
-| `serde_with` | no | Includes `serde`; adds `ExposeSecret` for explicit composable plaintext output |
+| `cqrs` | yes | Experimental `cqrs` module: command/query handlers and lifecycle contexts |
+| `event_sourcing` | yes | Experimental `event_sourcing` module: event stores, replay, snapshots, upcasters |
+| `delivery` | yes | Experimental `delivery` module: outbox, consumers, projections; includes `event_sourcing` |
+| `process` | yes | Experimental `process` module: `ProcessManager`, `Transition` |
+| `secret` | yes | Experimental `secret` module: `Secret<T>`, `SecretMetadata` |
+| `serde` | no | Core's serde re-export, `Secret<T>` deserialization (with `secret`) and serde derive support for `#[value_object(serde)]`; independent of `derive` |
+| `serde_with` | no | Includes `serde` and `secret`; adds `ExposeSecret` for explicit composable plaintext output |
 
 To serialize a value object, enable the facade's `serde` feature and opt in on
 the type:
@@ -261,7 +266,7 @@ including validated constructors and named enum variants. No
 [core/macro compatibility contract](docs/macro-compatibility.md) for supported
 versions and serde feature requirements.
 
-`Secret<T>` is available without a feature flag and never implements `Serialize`.
+`Secret<T>` (`ddd_toolkit::secret::Secret`, feature `secret`, on by default) never implements `Serialize`.
 The `serde` feature adds `Deserialize`; the `serde_with` feature adds the explicit
 `ExposeSecret` plaintext output adapter. See [Secret serde integration](docs/secret-serde.md)
 for composition examples, error redaction and input/output zeroization limits.

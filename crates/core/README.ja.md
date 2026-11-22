@@ -27,9 +27,12 @@ cargo add ddd-toolkit-core
 最低サポート Rust バージョン（MSRV）は 1.88 で、CI で検証しています。
 最新の Rust stable（edition 2024）でも検証しています。
 
-デフォルト feature はありません。
+デフォルト feature は実験的な `cqrs`、`event_sourcing`、`delivery`、`process`、`secret` の
+各モジュールを有効にします。`default-features = false` で無効にし、必要なものだけを選べます
+（`delivery` は `event_sourcing` を含みます）。無効時、クレートのルートには中核のドメインモデルと
+発行の項目だけが残ります。`subtle` と `zeroize` は `secret` のときだけ依存に加わります。
 オプションの `serde` feature は、生成された実装向けの serde 内部公開と
-`Secret<T>` の復元を有効にします。`serde_with` は `serde` を含み、出力アダプター
+`Secret<T>` の復元（`secret` と併用）を有効にします。`serde_with` は `serde` を含み、出力アダプター
 `ExposeSecret` を追加します。ドメイン型や `Secret` を自動的にシリアライズするものではありません。
 秘密値の消去に `zeroize` を使用します。非同期ランタイムへの依存はありません。
 
@@ -40,17 +43,17 @@ cargo add ddd-toolkit-core
 | ドメインモデル | `Entity`, `ValueObject`, `AggregateRoot`, `DomainEvent` |
 | 永続化 | `Repository`, `AsyncRepository` |
 | イベント発行 | `DomainEventPublisher`, `AsyncDomainEventPublisher`, `dispatch_events`, `dispatch_events_async` |
-| イベントの記述 | `DomainEventMetadata`, `DomainEventConversion`, `DeliveryMetadata`, `DomainEventDeliveryMetadata` |
-| CQRS | `CommandHandler`, `AggregateCreator`, `QueryHandler`、ライフサイクルのコンテキスト／コールバック、およびそれぞれの `Async` 版 |
-| イベントソーシング | `EventStore`, `AsyncEventStore`、リビジョン／履歴の型、`AggregateReplay`, `replay_aggregate` |
-| スナップショット | `AggregateSnapshot`, `SnapshotStore`, `AsyncSnapshotStore`, `replay_with_optional_snapshot` |
-| イベント消費 | `EventConsumer`, `Projection`、およびそれぞれの `Async` 版 |
-| 信頼性を考慮したプロジェクション | `ProjectionCheckpoint`, `ProjectionCheckpointStore`, `IdempotentProjection`, `ProjectionApplication`、および非同期ポート |
-| トランザクショナル Outbox | `TransactionalOutbox`, `AsyncTransactionalOutbox`, `OutboxClaim`, `OutboxMessageId`、およびライフサイクルコンテキスト |
+| イベントの記述 | `DomainEventMetadata`, `DomainEventConversion`; `delivery::{DeliveryMetadata, DomainEventDeliveryMetadata}` |
+| CQRS（`cqrs`） | `CommandHandler`, `AggregateCreator`, `QueryHandler`、ライフサイクルのコンテキスト／コールバック、およびそれぞれの `Async` 版 |
+| イベントソーシング（`event_sourcing`） | `EventStore`, `AsyncEventStore`、リビジョン／履歴の型、`AggregateReplay`, `replay_aggregate` |
+| スナップショット（`event_sourcing`） | `AggregateSnapshot`, `SnapshotStore`, `AsyncSnapshotStore`, `replay_with_optional_snapshot` |
+| イベント消費（`delivery`） | `EventConsumer`, `Projection`、およびそれぞれの `Async` 版 |
+| 信頼性を考慮したプロジェクション（`delivery`） | `ProjectionCheckpoint`, `ProjectionCheckpointStore`, `IdempotentProjection`, `ProjectionApplication`、および非同期ポート |
+| トランザクショナル Outbox（`delivery`） | `TransactionalOutbox`, `AsyncTransactionalOutbox`, `OutboxClaim`, `OutboxMessageId`、およびライフサイクルコンテキスト |
 | ドメインルール | `Specification`, `And`, `Or`, `Not`, `DomainService`, `Policy`, `DomainFactory` |
-| ワークフローとトランザクション | `ProcessManager`, `Transition`, `UnitOfWork` |
-| スキーマの進化 | `EventIdentity`, `VersionedEvent`, `EventUpcaster`, `UpcasterChain` |
-| 秘密値 | `Secret`, `SecretMetadata` |
+| ワークフロー（`process`）とトランザクション | `ProcessManager`, `Transition`; ルートの `UnitOfWork` |
+| スキーマの進化（`event_sourcing`） | `EventIdentity`, `VersionedEvent`, `EventUpcaster`, `UpcasterChain` |
+| 秘密値（`secret`） | `Secret`, `SecretMetadata` |
 
 非同期ポートはボックス化された `Send` な Future を返します。実装と呼び出し側は、
 各 API のライフタイムとスレッド安全性の制約を満たす必要があります。
@@ -236,7 +239,7 @@ assert_eq!(name.into_inner(), "Alice");
 破棄時に内包値をゼロ化します。平文へのアクセスは明示的に行います。
 
 ```rust
-use ddd_toolkit_core::Secret;
+use ddd_toolkit_core::secret::Secret;
 
 let token = Secret::new(String::from("example-token"));
 assert_eq!(format!("{token}"), "[REDACTED]");

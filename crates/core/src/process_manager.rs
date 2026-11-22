@@ -15,7 +15,7 @@
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::Transition;
+/// use ddd_toolkit_core::process::Transition;
 ///
 /// let transition = Transition::new("paid", vec!["send receipt"]);
 /// assert_eq!(transition.state(), &"paid");

@@ -10,10 +10,11 @@
 //! 命令とクエリはRepositoryを共有する。Orderの定義はsupport/mod.rsを参照。
 mod support;
 
-use ddd_toolkit::{
-    AggregateRoot as _, CommandHandler, LifecycleCallback, LifecycleCompletionError,
-    LifecycleContext, LifecycleOperationError, Policy, QueryHandler, Repository, Specification,
+use ddd_toolkit::cqrs::{
+    CommandHandler, LifecycleCallback, LifecycleCompletionError, LifecycleContext,
+    LifecycleOperationError, QueryHandler,
 };
+use ddd_toolkit::{AggregateRoot as _, Policy, Repository, Specification};
 use std::convert::Infallible;
 use support::{Order, Placed, Publisher, Store};
 

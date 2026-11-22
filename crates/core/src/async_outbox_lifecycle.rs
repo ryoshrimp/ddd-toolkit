@@ -1,6 +1,8 @@
 #![allow(clippy::type_complexity)]
 
-use crate::{AggregateRoot, AppendError, AppendResult, AsyncTransactionalOutbox, ExpectedRevision};
+use crate::AggregateRoot;
+use crate::delivery::AsyncTransactionalOutbox;
+use crate::event_sourcing::{AppendError, AppendResult, ExpectedRevision};
 use std::future::Future;
 use std::pin::Pin;
 
@@ -94,11 +96,12 @@ enum OperationState {
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::{
-///     AggregateRoot, AppendResult, AsyncTransactionalOutbox,
-///     AsyncTransactionalOutboxLifecycleContext, AsyncTransactionalOutboxOperationError,
-///     ExpectedRevision,
+/// use ddd_toolkit_core::AggregateRoot;
+/// use ddd_toolkit_core::delivery::{
+///     AsyncTransactionalOutbox, AsyncTransactionalOutboxLifecycleContext,
+///     AsyncTransactionalOutboxOperationError,
 /// };
+/// use ddd_toolkit_core::event_sourcing::{AppendResult, ExpectedRevision};
 ///
 /// async fn enqueue<A, O>(
 ///     aggregate: &mut A,

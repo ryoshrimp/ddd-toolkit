@@ -1,3 +1,5 @@
+#![cfg(feature = "event_sourcing")]
+
 #[test]
 #[ignore = "UI suite: run scripts/check-ui-tests.sh"]
 fn event_sourcing_contracts_reject_invalid_type_relationships() {

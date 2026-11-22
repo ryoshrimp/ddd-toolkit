@@ -1,6 +1,7 @@
 #![allow(clippy::type_complexity)]
 
-use crate::{AggregateRoot, AppendError, AppendResult, ExpectedRevision};
+use crate::AggregateRoot;
+use crate::event_sourcing::{AppendError, AppendResult, ExpectedRevision};
 
 /// **English:**<br>
 /// Owned adapter-assigned identifier for an outbox message.
@@ -64,7 +65,7 @@ impl OutboxMessageId {
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::{OutboxClaim, OutboxMessageId};
+/// use ddd_toolkit_core::delivery::{OutboxClaim, OutboxMessageId};
 ///
 /// let claim = OutboxClaim::new(OutboxMessageId::new("message-1"), 42_u32);
 /// assert_eq!(claim.message_id().as_str(), "message-1");

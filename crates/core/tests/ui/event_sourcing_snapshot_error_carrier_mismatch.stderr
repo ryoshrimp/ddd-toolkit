@@ -1,7 +1,7 @@
 error[E0308]: mismatched types
-  --> tests/ui/event_sourcing_snapshot_error_carrier_mismatch.rs:36:56
+  --> tests/ui/event_sourcing_snapshot_error_carrier_mismatch.rs:34:56
    |
-36 |         let snapshot: Option<AggregateSnapshot<u32>> = result;
+34 |         let snapshot: Option<AggregateSnapshot<u32>> = result;
    |                       ------------------------------   ^^^^^^ expected `Option<AggregateSnapshot<u32>>`, found `Result<(), ()>`
    |                       |
    |                       expected due to this

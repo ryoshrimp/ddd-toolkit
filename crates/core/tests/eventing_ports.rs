@@ -1,10 +1,15 @@
-use ddd_toolkit_core::{
-    AggregateRoot, AggregateSnapshot, AppendError, AppendResult, AsyncEventConsumer,
-    AsyncEventStore, AsyncProjection, AsyncSnapshotStore, CurrentRevision, DeliveryMetadata,
-    DomainEvent, DomainEventDeliveryMetadata, Entity, EventConsumer, EventStore, ExpectedRevision,
-    LoadResult, NoStream, OutboxClaim, OutboxMessageId, Projection, SnapshotLoadError,
-    SnapshotSaveError, StreamHistory, StreamRevision, TransactionalOutbox,
+#![cfg(feature = "delivery")]
+
+use ddd_toolkit_core::delivery::{
+    AsyncEventConsumer, AsyncProjection, DeliveryMetadata, DomainEventDeliveryMetadata,
+    EventConsumer, OutboxClaim, OutboxMessageId, Projection, TransactionalOutbox,
 };
+use ddd_toolkit_core::event_sourcing::{
+    AggregateSnapshot, AppendError, AppendResult, AsyncEventStore, AsyncSnapshotStore,
+    CurrentRevision, EventStore, ExpectedRevision, LoadResult, NoStream, SnapshotLoadError,
+    SnapshotSaveError, StreamHistory, StreamRevision,
+};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll, RawWaker, RawWakerVTable, Waker};
@@ -84,10 +89,12 @@ impl AsyncEventStore for AsyncStore {
                 return Err(AppendError::EmptyBatch);
             }
             if !matches!(expected, ExpectedRevision::NoStream(NoStream)) {
-                return Err(AppendError::Conflict(ddd_toolkit_core::RevisionConflict {
-                    expected,
-                    current: CurrentRevision::NoStream(NoStream),
-                }));
+                return Err(AppendError::Conflict(
+                    ddd_toolkit_core::event_sourcing::RevisionConflict {
+                        expected,
+                        current: CurrentRevision::NoStream(NoStream),
+                    },
+                ));
             }
             let revision = StreamRevision::new(events.len() as u64 - 1);
             self.history = Some(StreamHistory::try_new(events, revision).unwrap());

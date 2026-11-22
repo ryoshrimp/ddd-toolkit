@@ -96,11 +96,11 @@ pub trait AggregateReplay: AggregateRoot {
 
 /// **English:**<br>
 /// Reconstructed aggregate paired with the history's final revision.
-/// This revision can be used as [`crate::ExpectedRevision::Revision`] for a subsequent append.
+/// This revision can be used as [`crate::event_sourcing::ExpectedRevision::Revision`] for a subsequent append.
 ///
 /// **日本語:**<br>
 /// 復元した集約と履歴の最終リビジョンです。
-/// このリビジョンは次の追加の [`crate::ExpectedRevision::Revision`] として利用できます。
+/// このリビジョンは次の追加の [`crate::event_sourcing::ExpectedRevision::Revision`] として利用できます。
 #[derive(Debug, Eq, PartialEq)]
 pub struct RehydratedAggregate<A> {
     /// **English:**<br>
@@ -212,9 +212,10 @@ pub enum SnapshotReplayError<I, P, V, S> {
 ///
 /// ```rust
 /// use std::convert::Infallible;
-/// use ddd_toolkit_core::{
-///     AggregateReplay, AggregateRoot, AggregateSnapshot, DomainEvent, Entity,
-///     SnapshotUse, StreamHistory, StreamRevision, replay_aggregate,
+/// use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
+/// use ddd_toolkit_core::event_sourcing::{
+///     AggregateReplay, AggregateSnapshot, SnapshotUse, StreamHistory, StreamRevision,
+///     replay_aggregate,
 /// };
 /// struct Increment(u64);
 /// impl DomainEvent for Increment {}

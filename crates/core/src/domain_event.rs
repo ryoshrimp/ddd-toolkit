@@ -8,10 +8,10 @@
 /// [`AggregateRoot::Event`](crate::AggregateRoot::Event),
 /// [`DomainEventPublisher::Event`](crate::DomainEventPublisher::Event),
 /// [`AsyncDomainEventPublisher::Event`](crate::AsyncDomainEventPublisher::Event), and
-/// [`EventConsumer::Event`](crate::EventConsumer::Event), and it is a supertrait of
+/// `delivery::EventConsumer::Event`, and it is a supertrait of
 /// [`DomainEventMetadata`](crate::DomainEventMetadata),
 /// [`DomainEventConversion`](crate::DomainEventConversion), and
-/// [`DomainEventDeliveryMetadata`](crate::DomainEventDeliveryMetadata). This list is not
+/// `delivery::DomainEventDeliveryMetadata`. This list is not
 /// exhaustive. Types must opt in explicitly before they can be used where these bounds apply.
 /// Using these integrations is optional; the trait adds no behavior of its own.
 ///
@@ -25,10 +25,10 @@
 /// [`AggregateRoot::Event`](crate::AggregateRoot::Event)、
 /// [`DomainEventPublisher::Event`](crate::DomainEventPublisher::Event)、
 /// [`AsyncDomainEventPublisher::Event`](crate::AsyncDomainEventPublisher::Event)、
-/// [`EventConsumer::Event`](crate::EventConsumer::Event) の型を制約し、
+/// `delivery::EventConsumer::Event` の型を制約し、
 /// [`DomainEventMetadata`](crate::DomainEventMetadata)、
 /// [`DomainEventConversion`](crate::DomainEventConversion)、
-/// [`DomainEventDeliveryMetadata`](crate::DomainEventDeliveryMetadata) のスーパートレイトでもあります。
+/// `delivery::DomainEventDeliveryMetadata` のスーパートレイトでもあります。
 /// この一覧がすべてではありません。これらの境界では、明示的に実装した型だけを受け付けます。
 /// これらの連携の利用は任意で、このトレイト自体は固有の動作を追加しません。
 pub trait DomainEvent {}

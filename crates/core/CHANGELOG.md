@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** with `default-features = false`, enable the `cqrs`, `event_sourcing`,
+  `delivery`, `process`, or `secret` feature for each area you use (#73).
+- **Breaking:** the CQRS, event-sourcing, delivery, process-manager, and secret
+  APIs moved from the crate root into experimental modules behind features of the
+  same name, all enabled by default (`delivery` includes `event_sourcing`;
+  `serde_with` now includes `secret`). `subtle` and `zeroize` are optional
+  dependencies pulled in by `secret`. No root re-exports or shims remain; update
+  imports (#73):
+  - `ddd_toolkit_core::cqrs`: `CommandHandler`, `AsyncCommandHandler`, `QueryHandler`,
+    `AsyncQueryHandler`, `AggregateCreator`, `AsyncAggregateCreator`, `LifecycleContext`,
+    `AsyncLifecycleContext`, `LifecycleCallback`, `AsyncLifecycleCallback`,
+    `LifecycleCompletionError`, `LifecycleOperationError`.
+  - `ddd_toolkit_core::event_sourcing`: `EventStore`, `AsyncEventStore`, the revision,
+    append, and history types, replay and snapshot items, `EventIdentity`,
+    `VersionedEvent`, `EventUpcaster`, `UpcasterChain`.
+  - `ddd_toolkit_core::delivery`: outbox, outbox lifecycle contexts and errors,
+    `EventConsumer`, `Projection`, projection reliability items, `DeliveryMetadata`,
+    `DomainEventDeliveryMetadata`.
+  - `ddd_toolkit_core::process`: `ProcessManager`, `Transition`.
+  - `ddd_toolkit_core::secret`: `Secret`, `SecretMetadata`, `ExposeSecret`.
+  Everything else (for example `Specification`, `Policy`, `UnitOfWork`) stays at the root.
 - **Breaking:** `Secret::as_inner` is replaced by `Secret::expose_secret_ref`, and
   `Secret::into_inner` by `Secret::into_exposed_secret`. The old names are removed
   without deprecated aliases so secret access stands out in code review instead of

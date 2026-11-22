@@ -1,8 +1,10 @@
-use ddd_toolkit_core::{
-    AggregateCreator, AggregateRoot, CommandHandler, DomainEvent, DomainEventPublisher, Entity,
-    LifecycleCallback, LifecycleCompletionError, LifecycleContext, LifecycleOperationError,
-    QueryHandler, Repository,
+#![cfg(feature = "cqrs")]
+
+use ddd_toolkit_core::cqrs::{
+    AggregateCreator, CommandHandler, LifecycleCallback, LifecycleCompletionError,
+    LifecycleContext, LifecycleOperationError, QueryHandler,
 };
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, DomainEventPublisher, Entity, Repository};
 use std::collections::HashMap;
 
 thread_local! {

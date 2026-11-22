@@ -1,4 +1,4 @@
-use ddd_toolkit_core::Secret;
+use ddd_toolkit_core::secret::Secret;
 
 fn requires_serialize<T: serde::Serialize>() {}
 

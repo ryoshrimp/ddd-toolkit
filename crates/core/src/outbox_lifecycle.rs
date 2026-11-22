@@ -1,6 +1,8 @@
 #![allow(clippy::type_complexity)]
 
-use crate::{AggregateRoot, AppendError, AppendResult, ExpectedRevision, TransactionalOutbox};
+use crate::AggregateRoot;
+use crate::delivery::TransactionalOutbox;
+use crate::event_sourcing::{AppendError, AppendResult, ExpectedRevision};
 
 /// **English:**<br>
 /// Failure from an enqueue attempt or rejection of a repeated attempt.
@@ -90,10 +92,12 @@ enum OperationState {
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::{
-///     AggregateRoot, AppendResult, ExpectedRevision, TransactionalOutbox,
-///     TransactionalOutboxLifecycleContext, TransactionalOutboxOperationError,
+/// use ddd_toolkit_core::AggregateRoot;
+/// use ddd_toolkit_core::delivery::{
+///     TransactionalOutbox, TransactionalOutboxLifecycleContext,
+///     TransactionalOutboxOperationError,
 /// };
+/// use ddd_toolkit_core::event_sourcing::{AppendResult, ExpectedRevision};
 ///
 /// fn enqueue<A, O>(
 ///     aggregate: &mut A,

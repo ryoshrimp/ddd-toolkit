@@ -1,6 +1,7 @@
 #![allow(clippy::type_complexity)]
 
-use crate::{AggregateRoot, AggregateSnapshot, Entity, SnapshotLoadError, SnapshotSaveError};
+use crate::event_sourcing::{AggregateSnapshot, SnapshotLoadError, SnapshotSaveError};
+use crate::{AggregateRoot, Entity};
 use std::future::Future;
 use std::pin::Pin;
 

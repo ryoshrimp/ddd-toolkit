@@ -177,5 +177,5 @@ production durability guarantees. In production:
   commits through durable application/adapter recovery rather than this helper.
 
 CI explicitly builds and runs all five examples, in addition to the normal
-workspace tests and feature matrix. `required-features = ["derive"]` skips these
-derive-based targets during no-default-features builds.
+workspace tests and feature matrix. `required-features` (`derive` plus the module feature `cqrs`,
+`event_sourcing`, or `delivery` where used) skips these targets when those features are off.

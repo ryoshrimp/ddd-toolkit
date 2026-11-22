@@ -12,7 +12,7 @@ use crate::{AggregateRoot, Entity};
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::{AggregateSnapshot, StreamRevision};
+/// use ddd_toolkit_core::event_sourcing::{AggregateSnapshot, StreamRevision};
 /// let snapshot = AggregateSnapshot::new(42_u64, StreamRevision::new(3));
 /// assert_eq!(*snapshot.state(), 42);
 /// assert_eq!(snapshot.into_parts(), (42, StreamRevision::new(3)));
@@ -62,11 +62,11 @@ impl<S> AggregateSnapshot<S> {
 }
 
 /// **English:**<br>
-/// Aggregate-defined snapshot classification used by [`crate::replay_with_optional_snapshot`].
+/// Aggregate-defined snapshot classification used by [`crate::event_sourcing::replay_with_optional_snapshot`].
 /// Both `Stale` and `Inapplicable` trigger full replay; an older but usable snapshot may be `Applicable`.
 ///
 /// **日本語:**<br>
-/// [`crate::replay_with_optional_snapshot`] で使う集約定義のスナップショット分類です。
+/// [`crate::event_sourcing::replay_with_optional_snapshot`] で使う集約定義のスナップショット分類です。
 /// `Stale` と `Inapplicable` は全件再生を選択します。古くても利用可能なら `Applicable` にできます。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SnapshotUse {

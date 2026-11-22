@@ -53,7 +53,7 @@ save-then-dispatch order explicit.
 lifecycle context, and reject invalid input with `Specification` (tests a
 condition) and `Policy` (enforces a constraint with a reason).
 
-**APIs:** `CommandHandler`, `QueryHandler`, `AggregateCreator`,
+**APIs:** (module `cqrs`, feature `cqrs`) `CommandHandler`, `QueryHandler`, `AggregateCreator`,
 `LifecycleContext` and related types, `Specification`, `Policy` (async
 counterparts exist for each handler and context; `AggregateCreator` is not used in
 the example, see [public-contracts.md](public-contracts.md)).
@@ -72,7 +72,8 @@ cargo run -p ddd-toolkit --example cqrs --features derive --locked
 revisions, rebuild aggregates by replay, shorten replay with snapshots, and
 evolve old event versions with upcasters.
 
-**APIs:** `EventStore` (`AsyncEventStore`), `ExpectedRevision`, `StreamRevision`
+**APIs:** (module `event_sourcing`, feature `event_sourcing`) `EventStore`
+(`AsyncEventStore`), `ExpectedRevision`, `StreamRevision`
 and the other revision types, `AggregateReplay`, `replay_aggregate`,
 `SnapshotStore`, `AggregateSnapshot`, `EventUpcaster`, `UpcasterChain` (`UpcasterChain` is not used
 in the example, see [public-contracts.md](public-contracts.md)).
@@ -87,12 +88,15 @@ cargo run -p ddd-toolkit --example event_sourcing --features derive --locked
 
 ## Beyond
 
-- **Reliable delivery:** transactional outbox, event consumers, projections,
+- **Reliable delivery** (module `delivery`, feature `delivery`): transactional outbox,
+  event consumers, projections,
   checkpoints and idempotent projections. See
   [reliable_delivery.rs](../examples/reliable_delivery.rs)
   (`cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked`).
-- **Other building blocks:** `DomainService`, `DomainFactory`, `ProcessManager`,
-  `UnitOfWork`. See [public-contracts.md](public-contracts.md) for their
+- **Other building blocks:** `DomainService`, `DomainFactory`, `UnitOfWork`,
+  and `process::ProcessManager` (feature `process`). See
+  [public-contracts.md](public-contracts.md) for their
   examples and contract tests.
-- **Secrets:** `Secret` redacts formatting and zeroizes on drop; it needs no
-  feature flag. See [secret-serde.md](secret-serde.md) for serialization.
+- **Secrets:** `secret::Secret` (feature `secret`, on by default) redacts formatting and
+  zeroizes on drop.
+  See [secret-serde.md](secret-serde.md) for serialization.

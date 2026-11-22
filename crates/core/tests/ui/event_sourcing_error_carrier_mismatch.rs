@@ -1,4 +1,5 @@
-use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity, EventStore, ExpectedRevision};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
+use ddd_toolkit_core::event_sourcing::{EventStore, ExpectedRevision};
 struct Event; impl DomainEvent for Event {}
 struct Aggregate { id: u64 }
 impl Entity for Aggregate { type Id=u64; fn id(&self)->&u64{&self.id} }
@@ -6,10 +7,10 @@ impl AggregateRoot for Aggregate { type Event=Event; fn record_event(&mut self, 
 struct Store;
 impl EventStore for Store {
  type Aggregate=Aggregate; type Error=();
- fn load(&self, _: &u64)->Result<ddd_toolkit_core::LoadResult<Event>,()>{
+ fn load(&self, _: &u64)->Result<ddd_toolkit_core::event_sourcing::LoadResult<Event>,()>{
      let result: Result<Result<(), ()>, ()> = Ok(Err(()));
      result
  }
- fn append(&mut self, _: &u64, _: ExpectedRevision, _: Vec<Event>)->Result<ddd_toolkit_core::AppendResult, ddd_toolkit_core::AppendError<()>>{unreachable!()}
+ fn append(&mut self, _: &u64, _: ExpectedRevision, _: Vec<Event>)->Result<ddd_toolkit_core::event_sourcing::AppendResult, ddd_toolkit_core::event_sourcing::AppendError<()>>{unreachable!()}
 }
 fn main() {}

@@ -1,7 +1,11 @@
+#![cfg(feature = "cqrs")]
+
+use ddd_toolkit_core::cqrs::{
+    AsyncAggregateCreator, AsyncCommandHandler, AsyncLifecycleCallback, AsyncLifecycleContext,
+    AsyncQueryHandler, LifecycleCompletionError, LifecycleOperationError,
+};
 use ddd_toolkit_core::{
-    AggregateRoot, AsyncAggregateCreator, AsyncCommandHandler, AsyncDomainEventPublisher,
-    AsyncLifecycleCallback, AsyncLifecycleContext, AsyncQueryHandler, AsyncRepository, DomainEvent,
-    Entity, LifecycleCompletionError, LifecycleOperationError,
+    AggregateRoot, AsyncDomainEventPublisher, AsyncRepository, DomainEvent, Entity,
 };
 use std::cell::RefCell;
 use std::future::Future;

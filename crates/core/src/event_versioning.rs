@@ -90,7 +90,7 @@ pub trait EventUpcaster<Event> {
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::{EventUpcaster, UpcasterChain};
+/// use ddd_toolkit_core::event_sourcing::{EventUpcaster, UpcasterChain};
 ///
 /// struct Append(&'static str);
 /// impl EventUpcaster<String> for Append {

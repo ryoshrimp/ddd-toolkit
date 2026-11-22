@@ -1,6 +1,5 @@
-use ddd_toolkit_core::{
-    AggregateRoot, AsyncDomainEventPublisher, AsyncLifecycleContext, AsyncRepository, DomainEvent,
-};
+use ddd_toolkit_core::{AggregateRoot, AsyncDomainEventPublisher, AsyncRepository, DomainEvent};
+use ddd_toolkit_core::cqrs::AsyncLifecycleContext;
 use std::future::Future;
 use std::pin::Pin;
 

@@ -22,7 +22,7 @@ use std::pin::Pin;
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::ProjectionCheckpoint;
+/// use ddd_toolkit_core::delivery::ProjectionCheckpoint;
 ///
 /// let checkpoint = ProjectionCheckpoint::new(String::from("partition-2:17"));
 /// assert_eq!(checkpoint.cursor(), "partition-2:17");
@@ -136,7 +136,7 @@ pub trait ProjectionCheckpointStore {
 /// **English:**<br>
 /// Opt-in projection contract distinguishing new application from duplicate input.
 ///
-/// This trait is independent of [`crate::Projection`] and [`ProjectionCheckpointStore`].
+/// This trait is independent of [`crate::delivery::Projection`] and [`ProjectionCheckpointStore`].
 /// Implementations supply duplicate detection, input identity, read-model changes, and any
 /// atomic checkpoint updates or locking. No deduplication algorithm is implemented here;
 /// adapters must define failure, retry, and panic behavior for their persistence boundary.
@@ -144,7 +144,7 @@ pub trait ProjectionCheckpointStore {
 /// **日本語:**<br>
 /// 新規適用と重複入力を区別する、任意のプロジェクション契約です。
 ///
-/// このトレイトは [`crate::Projection`] と [`ProjectionCheckpointStore`] から独立しています。
+/// このトレイトは [`crate::delivery::Projection`] と [`ProjectionCheckpointStore`] から独立しています。
 /// 重複検出、入力の識別、読み取りモデルの変更、原子的なチェックポイント更新やロックは
 /// 実装が提供します。ここでは重複排除アルゴリズムを実装しません。永続化境界における
 /// 失敗、再試行、パニック時の挙動はアダプターが定める必要があります。
@@ -217,7 +217,7 @@ pub trait IdempotentProjection {
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::{AsyncProjectionCheckpointStore, ProjectionCheckpoint};
+/// use ddd_toolkit_core::delivery::{AsyncProjectionCheckpointStore, ProjectionCheckpoint};
 ///
 /// async fn save_then_load<S: AsyncProjectionCheckpointStore>(
 ///     store: &mut S,
@@ -278,7 +278,7 @@ pub trait AsyncProjectionCheckpointStore: Send + Sync {
 }
 
 /// **English:**<br>
-/// Asynchronous duplicate-aware projection independent of [`crate::AsyncProjection`]
+/// Asynchronous duplicate-aware projection independent of [`crate::delivery::AsyncProjection`]
 /// and [`AsyncProjectionCheckpointStore`].
 ///
 /// Implementations provide input identity, duplicate detection, read-model updates, and any atomic
@@ -291,7 +291,7 @@ pub trait AsyncProjectionCheckpointStore: Send + Sync {
 /// cancellation, retry, partial-update, and panic behavior at their persistence boundary.
 ///
 /// **日本語:**<br>
-/// [`crate::AsyncProjection`] と [`AsyncProjectionCheckpointStore`] から独立した、
+/// [`crate::delivery::AsyncProjection`] と [`AsyncProjectionCheckpointStore`] から独立した、
 /// 重複を区別する非同期プロジェクションです。
 ///
 /// 入力の識別、重複検出、読み取りモデル更新、原子的なチェックポイント永続化は実装が提供します。

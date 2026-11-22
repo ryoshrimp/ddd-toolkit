@@ -1,3 +1,5 @@
+#![cfg(feature = "cqrs")]
+
 #[test]
 #[ignore = "UI suite: run scripts/check-ui-tests.sh"]
 fn cqrs_contracts_reject_invalid_bounds_and_private_state_access() {

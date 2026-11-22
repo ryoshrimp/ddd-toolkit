@@ -10,11 +10,12 @@
 //! スナップショットは途中状態のキャッシュ、upcasterは旧イベント形式の変換。
 //! The event store retains the full history alongside the snapshot.
 //! スナップショット保存後も、イベントストアは全履歴を保持する。
-use ddd_toolkit::{
-    AggregateReplay, AggregateRoot as _, AggregateSnapshot, AppendError, AppendResult,
-    CurrentRevision, EventStore, EventUpcaster, ExpectedRevision, LoadResult, NoStream,
-    RevisionConflict, SnapshotLoadError, SnapshotSaveError, SnapshotStore, SnapshotUse,
-    StreamHistory, StreamRevision, replay_aggregate, replay_with_optional_snapshot,
+use ddd_toolkit::AggregateRoot as _;
+use ddd_toolkit::event_sourcing::{
+    AggregateReplay, AggregateSnapshot, AppendError, AppendResult, CurrentRevision, EventStore,
+    EventUpcaster, ExpectedRevision, LoadResult, NoStream, RevisionConflict, SnapshotLoadError,
+    SnapshotSaveError, SnapshotStore, SnapshotUse, StreamHistory, StreamRevision, replay_aggregate,
+    replay_with_optional_snapshot,
 };
 use std::{collections::HashMap, convert::Infallible};
 

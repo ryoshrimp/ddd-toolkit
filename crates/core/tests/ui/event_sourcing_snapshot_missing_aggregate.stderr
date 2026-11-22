@@ -9,7 +9,7 @@ help: the trait `AggregateRoot` is not implemented for `NotAggregate`
   |
 2 | struct NotAggregate;
   | ^^^^^^^^^^^^^^^^^^^
-note: required by a bound in `ddd_toolkit_core::SnapshotStore::Aggregate`
+note: required by a bound in `ddd_toolkit_core::event_sourcing::SnapshotStore::Aggregate`
  --> src/snapshot.rs
   |
   | pub trait SnapshotStore {

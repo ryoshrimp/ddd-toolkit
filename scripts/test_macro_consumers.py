@@ -385,8 +385,14 @@ fn serde_uses_absolute_reexport() {
                 'members = ["crates/core", "crates/macro", "facade-tests"]', 'members = []',
             )
             manifest = re.sub(
-                r'ddd-toolkit-core = \{ version = "[^"]+", path = "crates/core" \}',
-                f'ddd-toolkit-core = {{ version = "={MINIMUM_CORE}" }}', manifest,
+                r'ddd-toolkit-core = \{ version = "[^"]+", path = "crates/core", default-features = false \}',
+                f'ddd-toolkit-core = {{ version = "={MINIMUM_CORE}", default-features = false }}', manifest,
+            )
+            # MINIMUM_CORE predates the module features (#73); the consumers use only
+            # root items, so the facade's forwarding entries are emptied.
+            manifest = re.sub(
+                r'"ddd-toolkit-core/(?:cqrs|event_sourcing|delivery|process|secret)"(?:, )?',
+                '', manifest,
             )
             manifest = manifest.replace('path = "crates/macro"',
                                         f'path = "{(ROOT / "crates/macro").as_posix()}"')

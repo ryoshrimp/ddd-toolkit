@@ -1,4 +1,7 @@
-use ddd_toolkit_core::{DeliveryMetadata, OutboxMessageId, StreamHistory, StreamRevision};
+#![cfg(feature = "delivery")]
+
+use ddd_toolkit_core::delivery::{DeliveryMetadata, OutboxMessageId};
+use ddd_toolkit_core::event_sourcing::{StreamHistory, StreamRevision};
 
 #[test]
 fn delivery_metadata_replaces_labels_without_changing_event_identity() {

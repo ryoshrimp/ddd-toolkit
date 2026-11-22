@@ -1,9 +1,14 @@
-use ddd_toolkit_core::{
-    AggregateRoot, AppendError, AppendResult, CurrentRevision, DomainEvent, Entity,
-    ExpectedRevision, LifecycleCompletionError, OutboxLifecycleCompletionError,
-    OutboxLifecycleContext, OutboxLifecycleOperationError, RevisionConflict, StreamRevision,
+#![cfg(all(feature = "cqrs", feature = "delivery"))]
+
+use ddd_toolkit_core::cqrs::LifecycleCompletionError;
+use ddd_toolkit_core::delivery::{
+    OutboxLifecycleCompletionError, OutboxLifecycleContext, OutboxLifecycleOperationError,
     TransactionalOutbox, TransactionalOutboxCompletionError, TransactionalOutboxLifecycleContext,
 };
+use ddd_toolkit_core::event_sourcing::{
+    AppendError, AppendResult, CurrentRevision, ExpectedRevision, RevisionConflict, StreamRevision,
+};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct Event(u64);
@@ -63,11 +68,16 @@ impl TransactionalOutbox for Outbox {
         }
     }
 
-    fn claim(&mut self) -> Result<Option<ddd_toolkit_core::OutboxClaim<Event>>, Self::Error> {
+    fn claim(
+        &mut self,
+    ) -> Result<Option<ddd_toolkit_core::delivery::OutboxClaim<Event>>, Self::Error> {
         Ok(None)
     }
 
-    fn acknowledge(&mut self, _: &ddd_toolkit_core::OutboxMessageId) -> Result<(), Self::Error> {
+    fn acknowledge(
+        &mut self,
+        _: &ddd_toolkit_core::delivery::OutboxMessageId,
+    ) -> Result<(), Self::Error> {
         Ok(())
     }
 }
@@ -88,7 +98,7 @@ fn successful_atomic_enqueue_consumes_events_and_completes() {
     let mut context = TransactionalOutboxLifecycleContext::new(
         &mut aggregate,
         &mut outbox,
-        ExpectedRevision::NoStream(ddd_toolkit_core::NoStream),
+        ExpectedRevision::NoStream(ddd_toolkit_core::event_sourcing::NoStream),
     );
     assert_eq!(
         context.save_and_enqueue(),
@@ -112,14 +122,14 @@ fn adapter_error_is_preserved_and_operation_cannot_retry() {
         calls: 0,
         events: Vec::new(),
         result: Err(AppendError::Conflict(RevisionConflict {
-            expected: ExpectedRevision::NoStream(ddd_toolkit_core::NoStream),
-            current: CurrentRevision::NoStream(ddd_toolkit_core::NoStream),
+            expected: ExpectedRevision::NoStream(ddd_toolkit_core::event_sourcing::NoStream),
+            current: CurrentRevision::NoStream(ddd_toolkit_core::event_sourcing::NoStream),
         })),
     };
     let mut context = OutboxLifecycleContext::new(
         &mut aggregate,
         &mut outbox,
-        ExpectedRevision::NoStream(ddd_toolkit_core::NoStream),
+        ExpectedRevision::NoStream(ddd_toolkit_core::event_sourcing::NoStream),
     );
     assert!(matches!(
         context.save_and_enqueue(),
@@ -153,7 +163,7 @@ fn completion_rejects_missing_enqueue() {
     let context = TransactionalOutboxLifecycleContext::new(
         &mut aggregate,
         &mut outbox,
-        ExpectedRevision::NoStream(ddd_toolkit_core::NoStream),
+        ExpectedRevision::NoStream(ddd_toolkit_core::event_sourcing::NoStream),
     );
     assert_eq!(
         context.complete(),

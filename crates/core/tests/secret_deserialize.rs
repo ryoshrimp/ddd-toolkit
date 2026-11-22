@@ -1,6 +1,6 @@
-#![cfg(feature = "serde")]
+#![cfg(all(feature = "secret", feature = "serde"))]
 
-use ddd_toolkit_core::Secret;
+use ddd_toolkit_core::secret::Secret;
 use serde::{Deserialize, Deserializer};
 use std::sync::{
     Arc,

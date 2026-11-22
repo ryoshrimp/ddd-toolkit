@@ -1,4 +1,4 @@
-use ddd_toolkit_core::AsyncQueryHandler;
+use ddd_toolkit_core::cqrs::AsyncQueryHandler;
 use std::future::Future;
 use std::pin::Pin;
 
