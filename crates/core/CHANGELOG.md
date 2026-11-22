@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Secret::into_inner` by `Secret::into_exposed_secret`. The old names are removed
   without deprecated aliases so secret access stands out in code review instead of
   looking like `ValueObject` accessors (#68).
+- **Breaking:** `Secret<T>` no longer implements `Clone`; use `Secret::clone_secret`
+  to copy a secret explicitly, so duplication of secret values stands out in code
+  review. No deprecated alias is provided. `#[derive(ValueObject)]` types that contain a
+  `Secret<T>` no longer compile because the macro generates `Clone`; hold the `Secret` in
+  a plain struct (not a `ValueObject`) instead (#70).
+
+### Added
+
+- Implement `zeroize::ZeroizeOnDrop` for `Secret<T>` (#70).
 
 ## [0.4.6] - 2026-11-02
 

@@ -231,8 +231,6 @@ mod imported_types {
 
 // no_eq / no_hash allow field types without Eq or Hash, alongside validate and serde.
 mod without_eq_or_hash {
-    use ddd_toolkit::Secret;
-
     #[derive(ddd_toolkit::ValueObject)]
     #[value_object(no_eq, validate = finite, error = &'static str)]
     struct Price(f64);
@@ -256,9 +254,12 @@ mod without_eq_or_hash {
     #[value_object(no_eq, serde)]
     struct Ratio(f64);
 
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    struct NoHash(u8);
+
     #[derive(ddd_toolkit::ValueObject)]
     #[value_object(no_hash)]
-    struct Token(Secret<String>);
+    struct Tag(NoHash);
 
     #[derive(ddd_toolkit::ValueObject)]
     #[value_object(no_eq)]
@@ -284,8 +285,8 @@ mod without_eq_or_hash {
         let point = Point::new(1.0, 2.0);
         assert!(point.clone() == point);
 
-        let token = Token::new(Secret::new("a".to_owned()));
-        assert!(token.clone() == token);
+        let tag = Tag::new(NoHash(1));
+        assert!(tag.clone() == tag);
 
         let measure = Measure::new_value(1.0);
         assert!(measure.clone() == measure);

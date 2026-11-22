@@ -38,7 +38,7 @@ cargo add ddd-toolkit-core ddd-toolkit-macro
 
 既定モードでは、マクロが生成するトレイトを重複して実装・derive しないでください。
 フィールドの型は、生成するトレイトに必要な境界を満たす必要があります。
-生成する各トレイトにはフィールド型の境界が付くため、`f64` や `Secret<String>` の
+生成する各トレイトにはフィールド型の境界が付くため、`f64` の
 ように `Eq` や `Hash` を持たない型には `#[value_object(no_eq)]`（`Eq` と `Hash` の
 両方を生成しない）または `#[value_object(no_hash)]`（`Hash` だけを生成しない）を
 使えます。どちらのフラグも `ValueObject` のすべての形で、`validate`、`error`、

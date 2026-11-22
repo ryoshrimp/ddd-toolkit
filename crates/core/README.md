@@ -232,7 +232,8 @@ assert!(token.expose_secret(|value| value.starts_with("example-")));
 
 `expose_secret_ref` also exposes plaintext. Calling `into_exposed_secret` transfers responsibility
 for zeroization to the caller. `SecretMetadata` is only a zero-sized marker; it
-does not protect a value. `Secret` never implements `Serialize` or implicit dereferencing.
+does not protect a value. `Secret` never implements `Serialize`, `Clone`, or implicit dereferencing;
+copy explicitly with `clone_secret`.
 With `serde`, it implements `Deserialize`; `serde_with` adds the explicit
 `ExposeSecret` plaintext output adapter. See [Secret serde integration](../../docs/secret-serde.md)
 for container composition, error redaction and input/output zeroization limits.

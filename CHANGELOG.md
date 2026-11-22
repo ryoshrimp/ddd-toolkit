@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking (core):** `Secret::as_inner` is replaced by `Secret::expose_secret_ref`
   and `Secret::into_inner` by `Secret::into_exposed_secret`, with no deprecated
   aliases. See the core changelog (#68).
+- **Breaking (core):** `Secret<T>` no longer implements `Clone`; use
+  `Secret::clone_secret` to copy a secret explicitly. `#[derive(ValueObject)]` types that
+  contain a `Secret<T>` no longer compile because the macro generates `Clone`; hold the
+  `Secret` in a plain struct instead. See the core changelog (#70).
+
+### Added
+
+- `Secret<T>` implements `zeroize::ZeroizeOnDrop` (#70).
 
 ## [0.4.7] - 2026-11-08
 

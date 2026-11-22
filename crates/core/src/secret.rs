@@ -17,8 +17,9 @@ use zeroize::Zeroize;
 /// covered. Cleanup during failed deserialization depends on the inner type and parser; serde's
 /// contract cannot recover a partial `T` from an error. A caller-owned `zeroize::Zeroizing`
 /// input buffer can reduce exposure, but cannot erase parser copies.
-/// Cloning copies the inner value into another independently owned `Secret`. Equality delegates
-/// to the inner type and does not promise constant-time comparison.
+/// This type does not implement `Clone`; copy deliberately with [`Self::clone_secret`], which
+/// creates another independently owned `Secret`. It implements [`zeroize::ZeroizeOnDrop`].
+/// Equality delegates to the inner type and does not promise constant-time comparison.
 ///
 /// Zeroization follows `T`'s implementation and requires this wrapper's destructor to run;
 /// it does not erase copies made elsewhere. [`Self::into_exposed_secret`] bypasses that destructor.
@@ -41,8 +42,9 @@ use zeroize::Zeroize;
 /// 一時値、構築途中・失敗時の値や別のコピーは対象外です。失敗時の後始末は内部型とパーサーに
 /// 依存し、serde の契約ではエラーから構築途中の `T` を回収できません。入力バッファを
 /// `zeroize::Zeroizing` で管理すると軽減できますが、パーサーのコピーは消去できません。
-/// クローンは内包値を複製して別の `Secret` に所有させます。等値比較は内包型に
-/// 委譲し、定数時間での比較を保証しません。
+/// `Clone` は実装せず、複製は [`Self::clone_secret`] で明示的に行い、別の `Secret` に所有させます。
+/// [`zeroize::ZeroizeOnDrop`] を実装します。等値比較は内包型に委譲し、定数時間での比較を
+/// 保証しません。
 ///
 /// ゼロ化の範囲は `T` の実装に従い、このラッパーのデストラクターが実行される必要があります。
 /// 別の場所に作られたコピーは消去しません。[`Self::into_exposed_secret`] はデストラクターを迂回します。
@@ -133,6 +135,34 @@ impl<T: Zeroize> Secret<T> {
     pub fn expose_secret<R>(&self, f: impl FnOnce(&T) -> R) -> R {
         f(self.expose_secret_ref())
     }
+
+    /// **English:**<br>
+    /// Deliberately creates another independently owned `Secret` holding a clone of the value.
+    ///
+    /// This increases the number of secret copies in memory. Each copy is zeroized when its own
+    /// `Secret` is dropped; copies made elsewhere are not covered.
+    ///
+    /// **日本語:**<br>
+    /// 値のクローンを持つ、独立して所有される別の `Secret` を意図的に作成します。
+    ///
+    /// メモリ上の秘密値のコピーが増えます。各コピーはそれぞれの `Secret` の破棄時にゼロ化されますが、
+    /// 別の場所に作られたコピーは対象外です。
+    ///
+    /// # Example / 使用例
+    ///
+    /// ```rust
+    /// use ddd_toolkit_core::Secret;
+    ///
+    /// let original = Secret::new(String::from("token"));
+    /// let copy = original.clone_secret();
+    /// assert_eq!(original, copy);
+    /// ```
+    pub fn clone_secret(&self) -> Self
+    where
+        T: Clone,
+    {
+        Self::new(self.expose_secret_ref().clone())
+    }
 }
 
 #[cfg(feature = "serde")]
@@ -153,11 +183,7 @@ impl<T: Zeroize> Drop for Secret<T> {
     }
 }
 
-impl<T: Zeroize + Clone> Clone for Secret<T> {
-    fn clone(&self) -> Self {
-        Self::new(self.expose_secret_ref().clone())
-    }
-}
+impl<T: Zeroize> zeroize::ZeroizeOnDrop for Secret<T> {}
 
 impl<T: Zeroize + PartialEq> PartialEq for Secret<T> {
     fn eq(&self, other: &Self) -> bool {
