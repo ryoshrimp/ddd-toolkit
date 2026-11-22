@@ -12,8 +12,8 @@ Rust ツールキットです。同一性、値の検証、集約のイベント
 対応するトレイト実装の手書きを減らして表現できます。既存のストレージやランタイムの選択を
 補完するものであり、永続化・トランザクション・配送保証を自動実装するフレームワークではありません。
 
-**0.x・実験的:** API は変更される可能性があります。既存の
-[互換性・破壊的変更の方針](docs/macro-compatibility.md#日本語)を参照してください。
+**0.x・実験的:** API は変更される可能性があります。
+[互換性・破壊的変更の方針](docs/versioning.md#日本語)を参照してください。
 API・ドキュメント・ユースケースへのフィードバックを
 [GitHub Issues](https://github.com/ryoshrimp/ddd-toolkit/issues)で歓迎します。
 
@@ -30,7 +30,7 @@ API・ドキュメント・ユースケースへのフィードバックを
 [`ddd-toolkit-macro`](crates/macro) 0.5.5 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
-最低サポート Rust バージョン（MSRV）は 1.88 で、CI で検証しています。
+最低サポート Rust バージョン（MSRV）は 1.88 で、CI で検証しています（[方針](docs/versioning.md#msrv-方針)）。
 最新の Rust stable（edition 2024）でも検証しています。
 
 このリポジトリは、ファサード・core・macro を含む Cargo ワークスペースです。

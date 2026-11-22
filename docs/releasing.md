@@ -8,7 +8,8 @@ publishes them in order: `ddd-toolkit-core`, `ddd-toolkit-macro`, `ddd-toolkit`.
 
 1. Update the versions of changed crates in their `Cargo.toml` files.
    Versions remain independent (currently facade 0.4.7, core 0.4.6, macro 0.5.5);
-   publishing is always an explicit operation.
+   publishing is always an explicit operation. See the
+   [versioning policy](versioning.md) for when to bump minor vs. patch.
 2. When core or macro changes, update `[workspace.dependencies]` in the root
    manifest. Bump dependent crates as needed so users can receive the update.
    Dependency requirements should not admit an older version missing APIs used

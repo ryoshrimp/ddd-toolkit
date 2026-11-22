@@ -14,8 +14,8 @@ implementations by hand. It complements your existing storage and runtime choice
 it is not a framework that automatically implements persistence, transactions, or
 delivery guarantees.
 
-**Experimental, 0.x:** APIs may change. See the existing
-[compatibility and breaking-change policy](docs/macro-compatibility.md#api-stability-for-generated-code).
+**Experimental, 0.x:** APIs may change. See the
+[compatibility and breaking-change policy](docs/versioning.md).
 Feedback on APIs, documentation, and use cases is welcome via
 [GitHub Issues](https://github.com/ryoshrimp/ddd-toolkit/issues).
 
@@ -33,8 +33,9 @@ plus the four derives from
 [`ddd-toolkit-macro`](crates/macro) 0.5.5.
 All public items are available at `ddd_toolkit::`.
 
-The minimum supported Rust version (MSRV) is 1.88, verified in CI. Also tested
-with the latest stable Rust (edition 2024).
+The minimum supported Rust version (MSRV) is 1.88, verified in CI
+([policy](docs/versioning.md#msrv-policy)). Also tested with the latest stable
+Rust (edition 2024).
 
 This repository is a Cargo workspace containing the facade, core, and macro
 crates. They remain separate crates.io packages, developed and tested together.
