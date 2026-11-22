@@ -51,6 +51,8 @@ mod value_object;
 /// **English:**<br>
 /// Implements `ddd_toolkit_core::ValueObject` and value-based
 /// `Debug`, `Clone`, `PartialEq`, `Eq`, and `Hash`, with corresponding field bounds.
+/// The generated `Debug` includes the type name and follows the definition shape,
+/// like `#[derive(Debug)]` (`Email("a")` or `Email { value: "a" }`).
 ///
 /// Accepts nonempty named or tuple structs and nonempty enums, not unions or unit
 /// structs. A single-field struct exposes that field as `Inner`, `as_inner`, and
@@ -117,6 +119,8 @@ mod value_object;
 /// **日本語:**<br>
 /// `ddd_toolkit_core::ValueObject` と値に基づく `Debug`、`Clone`、
 /// `PartialEq`、`Eq`、`Hash` を、各フィールドに必要な境界付きで実装します。
+/// 生成される `Debug` は `#[derive(Debug)]` と同様に型名を含み、定義の形
+/// （`Email("a")` または `Email { value: "a" }`）に従います。
 ///
 /// 空でない名前付き・タプル構造体と列挙型に対応し、共用体やユニット構造体は拒否します。
 /// 単一フィールド構造体の `Inner`、`as_inner`、`into_inner` はそのフィールドを扱い、

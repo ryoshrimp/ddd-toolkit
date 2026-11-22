@@ -1013,6 +1013,15 @@ fn standard_impls_single(
         None => quote! { Self(self.#member.clone()) },
     };
 
+    let debug_name = LitStr::new(&name.unraw().to_string(), name.span());
+    let debug = match named_field {
+        Some(field) => {
+            let field_name = LitStr::new(&field.unraw().to_string(), field.span());
+            quote! { formatter.debug_struct(#debug_name).field(#field_name, &self.#member).finish() }
+        }
+        None => quote! { formatter.debug_tuple(#debug_name).field(&self.#member).finish() },
+    };
+
     let eq_impl_tokens = if emit_eq {
         quote! { impl #eq_impl ::core::cmp::Eq for #name #eq_ty #eq_where {} }
     } else {
@@ -1033,7 +1042,7 @@ fn standard_impls_single(
     quote! {
         impl #debug_impl ::core::fmt::Debug for #name #debug_ty #debug_where {
             fn fmt(&self, formatter: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                ::core::fmt::Debug::fmt(&self.#member, formatter)
+                #debug
             }
         }
         impl #clone_impl ::core::clone::Clone for #name #clone_ty #clone_where {

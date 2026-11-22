@@ -300,7 +300,7 @@ mod without_eq_or_hash {
     fn partial_eq_clone_and_debug_remain() {
         let price = Price::try_new(1.5).unwrap();
         assert_eq!(price.clone(), price);
-        assert_eq!(format!("{price:?}"), "1.5");
+        assert_eq!(format!("{price:?}"), "Price(1.5)");
         assert_eq!(Price::try_new(f64::NAN), Err("not finite"));
 
         let point = Point::new(1.0, 2.0);
@@ -312,5 +312,61 @@ mod without_eq_or_hash {
         let measure = Measure::new_value(1.0);
         assert!(measure.clone() == measure);
         assert!(measure != Measure::new_unset());
+    }
+}
+
+// Single-field Debug follows the definition shape and includes the type name.
+mod single_field_debug {
+    #[derive(ddd_toolkit::ValueObject)]
+    struct Named {
+        value: String,
+    }
+
+    #[derive(ddd_toolkit::ValueObject)]
+    struct Tuple(String);
+
+    #[derive(ddd_toolkit::ValueObject)]
+    struct Generic<T> {
+        value: T,
+    }
+
+    #[derive(ddd_toolkit::ValueObject)]
+    #[value_object(validate = non_empty, error = &'static str)]
+    struct Validated(String);
+
+    fn non_empty(value: &str) -> Result<(), &'static str> {
+        if value.is_empty() {
+            Err("empty")
+        } else {
+            Ok(())
+        }
+    }
+
+    #[derive(ddd_toolkit::ValueObject)]
+    struct Raw {
+        r#type: u32,
+    }
+
+    #[derive(ddd_toolkit::ValueObject)]
+    #[allow(non_camel_case_types)]
+    struct r#match(u32);
+
+    #[test]
+    fn includes_type_name_and_follows_shape() {
+        let named = Named::new("a".to_owned());
+        assert_eq!(format!("{named:?}"), r#"Named { value: "a" }"#);
+        assert_eq!(format!("{named:#?}"), "Named {\n    value: \"a\",\n}");
+
+        let tuple = Tuple::new("a".to_owned());
+        assert_eq!(format!("{tuple:?}"), r#"Tuple("a")"#);
+        assert_eq!(format!("{tuple:#?}"), "Tuple(\n    \"a\",\n)");
+
+        assert_eq!(format!("{:?}", Generic::new(1u8)), "Generic { value: 1 }");
+        assert_eq!(
+            format!("{:?}", Validated::try_new("a".to_owned()).unwrap()),
+            r#"Validated("a")"#
+        );
+        assert_eq!(format!("{:?}", Raw::new(1)), "Raw { type: 1 }");
+        assert_eq!(format!("{:?}", r#match::new(1)), "match(1)");
     }
 }

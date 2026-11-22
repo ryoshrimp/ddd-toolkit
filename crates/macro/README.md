@@ -36,6 +36,8 @@ only the facade with its default `derive` feature is also supported.
 | `DomainEvent` | Struct or enum | Core `DomainEvent` marker |
 | `AggregateRoot` | Named struct implementing core `Entity`, with exactly one `#[aggregate(events)]` field | Core `AggregateRoot` with `record_event` and `pull_events` |
 
+The generated `ValueObject` `Debug` includes the type name and follows the definition shape.
+
 In the default mode, do not separately implement or derive traits already generated
 by a macro. Field types must satisfy the corresponding generated trait bounds.
 Each generated trait is bounded on the field types, so a type without `Eq` or
