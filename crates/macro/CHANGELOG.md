@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `#[derive(ValueObject)]` now reports unsatisfied `Debug`/`Clone`/`PartialEq`/`Eq`/`Hash`
+  bounds, and `#[derive(Entity)]` unsatisfied `PartialEq`/`Eq`/`Hash` bounds on the id
+  type, at the offending field type instead of the derive attribute (#81).
 - **Breaking:** `#[derive(ValueObject)]` on an enum now rejects `validate` and
   `error` with a compile error, because enum variants are always public and
   `Pct::Value(200)` bypassed `try_new_<variant>` validation (#60). Enums without

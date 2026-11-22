@@ -1,0 +1,60 @@
+error[E0277]: `Bad` doesn't implement `Debug`
+ --> tests/ui/value_object_trait_bound_tuple.rs:9:19
+  |
+9 | struct Pair(Good, Bad);
+  |                   ^^^ the trait `Debug` is not implemented for `Bad`
+  |
+help: consider annotating `Bad` with `#[derive(Debug)]`
+  |
+6 + #[derive(Debug)]
+7 | struct Bad;
+  |
+
+error[E0277]: the trait bound `Bad: Clone` is not satisfied
+ --> tests/ui/value_object_trait_bound_tuple.rs:9:19
+  |
+9 | struct Pair(Good, Bad);
+  |                   ^^^ the trait `Clone` is not implemented for `Bad`
+  |
+help: consider annotating `Bad` with `#[derive(Clone)]`
+  |
+6 + #[derive(Clone)]
+7 | struct Bad;
+  |
+
+error[E0277]: can't compare `Bad` with `Bad`
+ --> tests/ui/value_object_trait_bound_tuple.rs:9:19
+  |
+9 | struct Pair(Good, Bad);
+  |                   ^^^ no implementation for `Bad == Bad`
+  |
+  = help: the trait `PartialEq` is not implemented for `Bad`
+help: consider annotating `Bad` with `#[derive(PartialEq)]`
+  |
+6 + #[derive(PartialEq)]
+7 | struct Bad;
+  |
+
+error[E0277]: the trait bound `Bad: Eq` is not satisfied
+ --> tests/ui/value_object_trait_bound_tuple.rs:9:19
+  |
+9 | struct Pair(Good, Bad);
+  |                   ^^^ the trait `Eq` is not implemented for `Bad`
+  |
+help: consider annotating `Bad` with `#[derive(Eq)]`
+  |
+6 + #[derive(Eq)]
+7 | struct Bad;
+  |
+
+error[E0277]: the trait bound `Bad: Hash` is not satisfied
+ --> tests/ui/value_object_trait_bound_tuple.rs:9:19
+  |
+9 | struct Pair(Good, Bad);
+  |                   ^^^ the trait `Hash` is not implemented for `Bad`
+  |
+help: consider annotating `Bad` with `#[derive(Hash)]`
+  |
+6 + #[derive(Hash)]
+7 | struct Bad;
+  |

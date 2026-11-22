@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `#[derive(ValueObject)]` now reports unsatisfied `Debug`/`Clone`/`PartialEq`/`Eq`/`Hash`
+  bounds, and `#[derive(Entity)]` unsatisfied `PartialEq`/`Eq`/`Hash` bounds on the id
+  type, at the offending field type instead of the derive attribute (#81).
 - **Breaking (macro):** `#[derive(ValueObject)]` on an enum now rejects
   `validate`/`error`; wrap a private enum in a single-field struct instead. See
   the macro changelog for the migration recipe (#60).
