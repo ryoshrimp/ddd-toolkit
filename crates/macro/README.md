@@ -390,9 +390,9 @@ fn main() {
 }
 ```
 
-The event queue must be spelled `Vec<Event>` or `std::vec::Vec<Event>`; aliases
-and other vector paths are not accepted. Its event type must implement core
-`DomainEvent`.
+The event queue must be spelled `Vec<Event>`, `std::vec::Vec<Event>`, or
+`alloc::vec::Vec<Event>`; aliases and other vector paths are not accepted. Its
+event type must implement core `DomainEvent`.
 
 Import the core `AggregateRoot` trait to call `record_event` and `pull_events`:
 they are trait methods, not inherent methods. Recording appends to the queue in

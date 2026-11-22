@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `#[derive(AggregateRoot)]` now accepts `alloc::vec::Vec<Event>` (and the
+  `::alloc` form) as the event queue type, and the rejection error lists the
+  accepted spellings and notes that type aliases are not supported (#67).
 - Declared the minimum supported Rust version as 1.88 (`rust-version`), verified
   by a new CI job (#72).
 - Added `#![forbid(unsafe_code)]` (#72).

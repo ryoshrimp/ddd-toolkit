@@ -431,7 +431,12 @@ fn entity_options_expand_independently_and_in_any_order() {
 
 #[test]
 fn aggregate_expansion_preserves_event_type_and_drains_queue() {
-    for queue in [quote!(Vec<Event>), quote!(::std::vec::Vec<Event>)] {
+    for queue in [
+        quote!(Vec<Event>),
+        quote!(::std::vec::Vec<Event>),
+        quote!(alloc::vec::Vec<Event>),
+        quote!(::alloc::vec::Vec<Event>),
+    ] {
         let input = syn::parse2(quote! {
             struct Root<Event> { #[allow(dead_code)] id: u64, #[aggregate(events)] pending: #queue }
         })
@@ -483,6 +488,9 @@ fn aggregate_reports_attribute_and_queue_errors() {
         "fake::Vec<E>",
         "Vec",
         "std::vec::Vec",
+        "alloc::vec::Vec",
+        "alloc::Vec<E>",
+        "alloc::vec<E>::Vec<E>",
         "other::vec::Vec<E>",
         "Vec<E, E>",
         "Vec<'a>",
@@ -494,7 +502,7 @@ fn aggregate_reports_attribute_and_queue_errors() {
         } else if queue == "Vec<'a>" {
             "type event argument"
         } else {
-            "must have type Vec<Event>"
+            "alloc::vec::Vec<Event>; type aliases are not supported"
         };
         rejects(aggregate_root::expand, &[(source.as_str(), expected)]);
     }

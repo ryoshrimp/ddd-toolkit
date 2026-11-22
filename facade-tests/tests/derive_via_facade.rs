@@ -1,6 +1,8 @@
 // Derives are invoked through the facade without a direct core dependency.
 use ddd_toolkit::AggregateRoot as _;
 
+extern crate alloc;
+
 #[derive(ddd_toolkit::ValueObject)]
 #[value_object(validate = validate_email, error = &'static str)]
 struct Email(String);
@@ -198,6 +200,25 @@ fn entity_identity_and_aggregate_event_queue() {
     order.record_event(Event::Placed);
     order.record_event(Event::Cancelled);
     assert_eq!(order.pull_events(), vec![Event::Placed, Event::Cancelled]);
+    assert!(order.pull_events().is_empty());
+}
+
+#[derive(Debug, ddd_toolkit::Entity, ddd_toolkit::AggregateRoot)]
+struct AllocOrder {
+    #[entity(id)]
+    id: u64,
+    #[aggregate(events)]
+    events: alloc::vec::Vec<Event>,
+}
+
+#[test]
+fn aggregate_event_queue_accepts_alloc_vec_path() {
+    let mut order = AllocOrder {
+        id: 1,
+        events: vec![],
+    };
+    order.record_event(Event::Placed);
+    assert_eq!(order.pull_events(), vec![Event::Placed]);
     assert!(order.pull_events().is_empty());
 }
 

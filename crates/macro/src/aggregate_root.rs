@@ -115,12 +115,14 @@ fn parse_queue_attribute(attr: &syn::Attribute) -> Result<()> {
     Ok(())
 }
 
+const QUEUE_TYPE_ERROR: &str = concat!(
+    "aggregate event queue must be spelled Vec<Event>, std::vec::Vec<Event>, ",
+    "or alloc::vec::Vec<Event>; type aliases are not supported",
+);
+
 fn vec_element_type(ty: &Type) -> Result<&Type> {
     let Type::Path(type_path) = ty else {
-        return Err(syn::Error::new_spanned(
-            ty,
-            "aggregate event queue must have type Vec<Event>",
-        ));
+        return Err(syn::Error::new_spanned(ty, QUEUE_TYPE_ERROR));
     };
     let segments = &type_path.path.segments;
     let is_standard_vec = type_path.qself.is_none()
@@ -130,7 +132,7 @@ fn vec_element_type(ty: &Type) -> Result<&Type> {
                     && matches!(&segments[0].arguments, PathArguments::AngleBracketed(_))
             }
             3 => {
-                segments[0].ident == "std"
+                (segments[0].ident == "std" || segments[0].ident == "alloc")
                     && segments[1].ident == "vec"
                     && matches!(&segments[0].arguments, PathArguments::None)
                     && matches!(&segments[1].arguments, PathArguments::None)
@@ -140,17 +142,11 @@ fn vec_element_type(ty: &Type) -> Result<&Type> {
             _ => false,
         };
     if !is_standard_vec {
-        return Err(syn::Error::new_spanned(
-            ty,
-            "aggregate event queue must have type Vec<Event>",
-        ));
+        return Err(syn::Error::new_spanned(ty, QUEUE_TYPE_ERROR));
     }
     let segment = &segments[segments.len() - 1];
     let PathArguments::AngleBracketed(arguments) = &segment.arguments else {
-        return Err(syn::Error::new_spanned(
-            ty,
-            "aggregate event queue must have type Vec<Event>",
-        ));
+        return Err(syn::Error::new_spanned(ty, QUEUE_TYPE_ERROR));
     };
     if arguments.args.len() != 1 {
         return Err(syn::Error::new_spanned(
