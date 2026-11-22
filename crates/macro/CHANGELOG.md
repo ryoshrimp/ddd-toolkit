@@ -57,6 +57,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   own `Debug`.
 - **Breaking:** `Secret<T>` no longer implements `Clone`, so `#[derive(ValueObject)]` types
   that contain a `Secret<T>` no longer compile. This follows the core change (#70).
+- **Breaking:** the `#[value_object(validate = ..)]` validator of a single-field struct
+  now receives `&Self` instead of `&Inner`, so every shape (single-field, multi-field)
+  passes the constructed value object, as `Entity` validators already do (#65). `try_new`
+  and the serde-generated deserialization build the value first and then validate it.
+  To migrate, change the parameter type from the field type to the struct and read the
+  field through it: `fn check(value: &String)` becomes `fn check(value: &Email)` using
+  `value.0` (`value.<field>` for a named field). A validator written in the old form fails
+  to compile with a type mismatch pointing at the `validate = ..` path. Multi-field
+  structs and `Entity` are unchanged.
 
 ### Fixed
 

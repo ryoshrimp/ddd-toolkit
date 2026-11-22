@@ -1,7 +1,7 @@
 use ddd_toolkit_macro::ValueObject;
 
-fn validate(value: &String) -> Result<(), &'static str> {
-    if value.is_empty() { Err("empty") } else { Ok(()) }
+fn validate(value: &PublicValue) -> Result<(), &'static str> {
+    if value.0.is_empty() { Err("empty") } else { Ok(()) }
 }
 
 /// **English:** Exposes a validated field to check that unrestricted public access is rejected.

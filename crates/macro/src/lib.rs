@@ -92,11 +92,11 @@ mod value_object;
 /// ```
 ///
 /// `#[value_object(validate = path, error = ErrorType)]` replaces `new` with
-/// `try_new`. Both options are required together. The
-/// validator receives `&Inner` for a single-field struct and `&Self` otherwise,
-/// returns `Result<(), ErrorType>`, and runs before the constructor returns the
-/// value. Its error is propagated; its panics are not caught. Validated struct
-/// fields cannot be unrestricted `pub`. Restricted visibility and direct
+/// `try_new`. Both options are required together. The validator receives
+/// `&Self` for every struct shape (the constructed value object), returns
+/// `Result<(), ErrorType>`, and runs before the constructor returns the value.
+/// Its error is propagated; its panics are not caught. Validated struct fields
+/// cannot be unrestricted `pub`. Restricted visibility and direct
 /// construction inside the defining module can still bypass validation. Enums
 /// reject `validate` and `error` with a compile error because variants are always
 /// public; wrap a private enum in a single-field struct and put `validate` and
@@ -149,7 +149,7 @@ mod value_object;
 ///
 /// `#[value_object(validate = path, error = ErrorType)]` は `new` を `try_new`
 /// に置き換えます。両オプションの同時指定が必要です。
-/// 検証関数は単一フィールドなら `&Inner`、それ以外なら `&Self` を受け取り、
+/// 検証関数は構造体の形によらず `&Self`（構築した値オブジェクト）を受け取り、
 /// `Result<(), ErrorType>` を返します。値を返す前に検証し、エラーを伝播します。
 /// 検証関数のパニックは捕捉しません。検証付き構造体のフィールドは無制限の `pub` に
 /// できませんが、制限付き公開や定義モジュール内の直接構築では検証を迂回できます。
@@ -178,8 +178,8 @@ mod value_object;
 /// #[value_object(validate = positive, error = &'static str)]
 /// struct Quantity(u32);
 ///
-/// fn positive(value: &u32) -> Result<(), &'static str> {
-///     if *value > 0 { Ok(()) } else { Err("zero quantity") }
+/// fn positive(value: &Quantity) -> Result<(), &'static str> {
+///     if value.0 > 0 { Ok(()) } else { Err("zero quantity") }
 /// }
 ///
 /// assert_eq!(Quantity::try_new(0), Err("zero quantity"));

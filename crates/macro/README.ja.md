@@ -151,8 +151,8 @@ fn main() {
 ### 検証
 
 `validate` と `error` は同時に指定します。検証関数は引用符付きの文字列ではなく
-Rust のパスで指定します。単一フィールド構造体では `&Inner`、複数フィールド構造体と
-列挙型では `&Self` を受け取り、`Result<(), ErrorType>` を返します。
+Rust のパスで指定します。形によらず常に `&Self`（構築した値オブジェクト。`Entity` の
+検証関数と同じ）を受け取り、`Result<(), ErrorType>` を返します。
 
 ```rust
 use ddd_toolkit_macro::ValueObject;
@@ -161,8 +161,8 @@ use ddd_toolkit_macro::ValueObject;
 #[value_object(validate = validate_email, error = &'static str)]
 struct Email(String);
 
-fn validate_email(value: &String) -> Result<(), &'static str> {
-    if value.contains('@') {
+fn validate_email(value: &Email) -> Result<(), &'static str> {
+    if value.0.contains('@') {
         Ok(())
     } else {
         Err("missing @")
@@ -176,8 +176,31 @@ fn main() {
 }
 ```
 
-検証を指定すると `new` は `try_new` に置き換わります。コンストラクターのエラーは
-そのまま伝播し、検証関数のパニックは捕捉しません。
+検証を指定すると `new` は `try_new` に置き換わります。`try_new` は値を構築してから
+検証関数に渡します。コンストラクターのエラーはそのまま伝播し、検証関数のパニックは
+捕捉しません。
+
+複数フィールドの構造体も同じです。
+
+```rust
+use ddd_toolkit_macro::ValueObject;
+
+#[derive(ValueObject)]
+#[value_object(validate = validate_range, error = &'static str)]
+struct Range {
+    start: u32,
+    end: u32,
+}
+
+fn validate_range(value: &Range) -> Result<(), &'static str> {
+    if value.start <= value.end { Ok(()) } else { Err("reversed") }
+}
+
+fn main() {
+    assert!(Range::try_new(1, 2).is_ok());
+    assert_eq!(Range::try_new(2, 1), Err("reversed"));
+}
+```
 
 検証付き構造体のフィールドを無制限の `pub` にすることはできません。ただし、すべての
 迂回を防ぐものではありません。定義モジュール内の直接構築と、制限付きのフィールド公開では
@@ -201,8 +224,8 @@ enum PctInner {
 #[value_object(validate = validate_pct, error = &'static str)]
 struct Pct(PctInner);
 
-fn validate_pct(value: &PctInner) -> Result<(), &'static str> {
-    match value {
+fn validate_pct(value: &Pct) -> Result<(), &'static str> {
+    match &value.0 {
         PctInner::Value(percent) if *percent <= 100 => Ok(()),
         PctInner::Value(_) => Err("out of range"),
     }

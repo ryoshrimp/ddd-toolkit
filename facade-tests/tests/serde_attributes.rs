@@ -120,8 +120,8 @@ enum MessageInner {
 #[value_object(validate = validate_message, error = &'static str, serde)]
 struct Message(MessageInner);
 
-fn validate_message(value: &MessageInner) -> Result<(), &'static str> {
-    if matches!(value, MessageInner::Number(0)) {
+fn validate_message(value: &Message) -> Result<(), &'static str> {
+    if matches!(value.0, MessageInner::Number(0)) {
         Err("zero")
     } else {
         Ok(())

@@ -58,8 +58,8 @@
 //! #[value_object(validate = validate_email, error = &'static str)]
 //! struct Email(String);
 //!
-//! fn validate_email(value: &str) -> Result<(), &'static str> {
-//!     if value.contains('@') { Ok(()) } else { Err("missing @") }
+//! fn validate_email(value: &Email) -> Result<(), &'static str> {
+//!     if value.0.contains('@') { Ok(()) } else { Err("missing @") }
 //! }
 //!
 //! let email = Email::try_new("a@b.com".to_owned()).unwrap();

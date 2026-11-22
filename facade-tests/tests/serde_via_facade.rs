@@ -4,8 +4,8 @@
 #[value_object(validate = validate_email, error = &'static str, serde)]
 struct Email(String);
 
-fn validate_email(value: &str) -> Result<(), &'static str> {
-    if value.contains('@') {
+fn validate_email(value: &Email) -> Result<(), &'static str> {
+    if value.0.contains('@') {
         Ok(())
     } else {
         Err("missing @")
@@ -96,8 +96,8 @@ enum StatusInner {
 #[value_object(validate = validate_code, error = &'static str, serde)]
 struct ValidatedStatus(StatusInner);
 
-fn validate_code(value: &StatusInner) -> Result<(), &'static str> {
-    match value {
+fn validate_code(value: &ValidatedStatus) -> Result<(), &'static str> {
+    match &value.0 {
         StatusInner::Code(0) => Err("code must be positive"),
         _ => Ok(()),
     }
@@ -118,4 +118,30 @@ fn newtype_enum_deserialization_still_validates() {
     );
     let error = serde_json::from_str::<ValidatedStatus>(r#"{"Code":0}"#).unwrap_err();
     assert!(error.to_string().contains("value object validation failed"));
+}
+
+// A generic single-field struct receives `&Self` in both constructor and Serde paths.
+#[derive(ddd_toolkit::ValueObject)]
+#[value_object(validate = validate_generic, error = &'static str, serde)]
+struct Generic<T: Default + PartialEq>(T);
+
+fn validate_generic<T: Default + PartialEq>(value: &Generic<T>) -> Result<(), &'static str> {
+    if value.0 == T::default() {
+        Err("default")
+    } else {
+        Ok(())
+    }
+}
+
+#[test]
+fn generic_single_field_validator_receives_self() {
+    assert_eq!(Generic::try_new(0_u32), Err("default"));
+    assert_eq!(Generic::try_new(3_u32).unwrap().into_inner(), 3);
+    assert_eq!(
+        serde_json::from_str::<Generic<u32>>("3")
+            .unwrap()
+            .into_inner(),
+        3
+    );
+    assert!(serde_json::from_str::<Generic<u32>>("0").is_err());
 }
