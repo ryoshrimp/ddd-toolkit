@@ -248,7 +248,7 @@ fn main() {
 
 ### Core compatibility
 
-Macro 0.5.x supports core >=0.4.1, <0.5.0. Prefer the current facade for a
+Macro 0.6.x supports core >=0.4.1, <0.6.0. Prefer the current facade for a
 coordinated combination. See the [compatibility contract](../../docs/macro-compatibility.md)
 for tested versions, dependency renames and generated-code API stability.
 

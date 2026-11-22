@@ -29,9 +29,9 @@ For a staged path through the APIs, see the [getting-started guide](docs/guide.m
 ## Package and toolchain
 
 Domain-Driven Design traits and helpers, re-exported from
-[`ddd-toolkit-core`](crates/core) 0.4.6,
+[`ddd-toolkit-core`](crates/core) 0.5.0,
 plus the four derives from
-[`ddd-toolkit-macro`](crates/macro) 0.5.5.
+[`ddd-toolkit-macro`](crates/macro) 0.6.0.
 All public items are available at `ddd_toolkit::`.
 
 The minimum supported Rust version (MSRV) is 1.88, verified in CI
@@ -48,14 +48,14 @@ For the quick start, use the default features (`derive` is enabled):
 
 ```toml
 [dependencies]
-ddd-toolkit = "0.4"
+ddd-toolkit = "0.5"
 ```
 
 For traits and helpers without derive macros:
 
 ```toml
 [dependencies]
-ddd-toolkit = { version = "0.4", default-features = false }
+ddd-toolkit = { version = "0.5", default-features = false }
 ```
 
 Derives work with the facade as the only toolkit dependency. Generated paths

@@ -19,7 +19,7 @@ output-only adapter; deserialization uses `Secret` directly.
 
 ```toml
 [dependencies]
-ddd-toolkit = { version = "0.4", features = ["serde_with"] }
+ddd-toolkit = { version = "0.5", features = ["serde_with"] }
 serde = { version = "1", features = ["derive"] }
 serde_with = { version = "3.24.0", features = ["macros"] }
 ```

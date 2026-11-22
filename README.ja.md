@@ -27,8 +27,8 @@ API を段階的に学ぶには[入門ガイド](docs/guide.ja.md)を参照し�
 ## パッケージとツールチェーン
 
 ドメイン駆動設計のトレイトとヘルパーを提供するファサードクレートです。
-[`ddd-toolkit-core`](crates/core) 0.4.6 の公開 API と、
-[`ddd-toolkit-macro`](crates/macro) 0.5.5 の四つの derive マクロを再エクスポートします。
+[`ddd-toolkit-core`](crates/core) 0.5.0 の公開 API と、
+[`ddd-toolkit-macro`](crates/macro) 0.6.0 の四つの derive マクロを再エクスポートします。
 公開 API はすべて `ddd_toolkit::` から利用できます。
 
 最低サポート Rust バージョン（MSRV）は 1.88 で、CI で検証しています（[方針](docs/versioning.md#msrv-方針)）。
@@ -45,14 +45,14 @@ crates.io では別々のパッケージとして公開し、開発とテスト�
 
 ```toml
 [dependencies]
-ddd-toolkit = "0.4"
+ddd-toolkit = "0.5"
 ```
 
 トレイトとヘルパーだけを使い、derive マクロを使わない場合:
 
 ```toml
 [dependencies]
-ddd-toolkit = { version = "0.4", default-features = false }
+ddd-toolkit = { version = "0.5", default-features = false }
 ```
 
 ファサードだけへの依存で derive を利用できます。生成パスは直接依存の

@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-22
+
 ### Changed
 
+- Upgrade to core 0.5.0 and macro 0.6.0. The facade now selects core `^0.5.0`
+  and macro `^0.6.0`; the breaking changes below come from those releases.
 - **Breaking (core):** with `default-features = false`, enable the `cqrs`, `event_sourcing`,
   `delivery`, `process`, or `secret` feature for each area you use. The facade gains
   features of the same name, and its `serde_with` now includes `secret` (#73).
