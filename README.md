@@ -265,6 +265,7 @@ The `serde` feature adds `Deserialize`; the `serde_with` feature adds the explic
 for composition examples, error redaction and input/output zeroization limits.
 Calling `Secret::into_exposed_secret` transfers zeroization responsibility to the caller.
 `Secret<T>` does not implement `Clone`; copy a secret explicitly with `Secret::clone_secret`.
+`Secret<T>` does not implement `PartialEq`/`Eq`; compare with `Secret::ct_eq` (constant-time for equal lengths, but the length is leaked).
 
 ## Migrating from core/macro 0.3
 

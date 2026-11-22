@@ -234,6 +234,7 @@ assert!(token.expose_secret(|value| value.starts_with("example-")));
 for zeroization to the caller. `SecretMetadata` is only a zero-sized marker; it
 does not protect a value. `Secret` never implements `Serialize`, `Clone`, or implicit dereferencing;
 copy explicitly with `clone_secret`.
+It does not implement `PartialEq`/`Eq`; compare with `ct_eq` (constant-time for equal lengths, but the length is leaked).
 With `serde`, it implements `Deserialize`; `serde_with` adds the explicit
 `ExposeSecret` plaintext output adapter. See [Secret serde integration](../../docs/secret-serde.md)
 for container composition, error redaction and input/output zeroization limits.

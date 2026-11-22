@@ -4,7 +4,7 @@ use serde_with::{SerializeAs, serde_as};
 use std::collections::BTreeMap;
 
 #[serde_as]
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct StoredCredentials {
     #[serde_as(serialize_as = "ExposeSecret")]
     token: Secret<String>,
@@ -27,10 +27,8 @@ fn explicit_plaintext_output_composes_and_round_trips() {
     let stored: StoredCredentials = serde_json::from_value(expected.clone()).unwrap();
     let output = serde_json::to_value(&stored).unwrap();
     assert_eq!(output, expected);
-    assert_eq!(
-        serde_json::from_value::<StoredCredentials>(output).unwrap(),
-        stored
-    );
+    let restored = serde_json::from_value::<StoredCredentials>(output).unwrap();
+    assert_eq!(serde_json::to_value(&restored).unwrap(), expected);
     assert_eq!(format!("{:?}", stored.token), "[REDACTED]");
 }
 
@@ -54,5 +52,5 @@ fn adapter_also_serializes_a_standalone_secret() {
     ExposeSecret::serialize_as(&token, &mut serde_json::Serializer::new(&mut output)).unwrap();
     assert_eq!(output, br#""plaintext""#);
     let restored: Secret<String> = serde_json::from_slice(&output).unwrap();
-    assert_eq!(restored, token);
+    assert!(restored.ct_eq(&token));
 }

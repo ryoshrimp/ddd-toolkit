@@ -22,10 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Secret::clone_secret` to copy a secret explicitly. `#[derive(ValueObject)]` types that
   contain a `Secret<T>` no longer compile because the macro generates `Clone`; hold the
   `Secret` in a plain struct instead. See the core changelog (#70).
+- **Breaking (core):** `Secret<T>` no longer implements `PartialEq`/`Eq`; use
+  `Secret::ct_eq` for a constant-time comparison. See the core changelog (#69).
 
 ### Added
 
 - `Secret<T>` implements `zeroize::ZeroizeOnDrop` (#70).
+- `Secret::ct_eq` compares secrets in constant time for equal lengths (#69).
 
 ## [0.4.7] - 2026-11-08
 

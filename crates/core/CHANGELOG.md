@@ -18,10 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   review. No deprecated alias is provided. `#[derive(ValueObject)]` types that contain a
   `Secret<T>` no longer compile because the macro generates `Clone`; hold the `Secret` in
   a plain struct (not a `ValueObject`) instead (#70).
+- **Breaking:** `Secret<T>` no longer implements `PartialEq`/`Eq`, so `==` and `assert_eq!`
+  on secrets no longer compile and cannot silently compare in variable time. Migrate
+  `a == b` to `a.ct_eq(&b)`; this requires `T: AsRef<[u8]>` and compares the byte
+  representation. Equal-length values are compared in constant time, but a length
+  mismatch returns `false` immediately, so the length is not hidden. For other types, compare
+  via `expose_secret_ref` explicitly (#69).
 
 ### Added
 
 - Implement `zeroize::ZeroizeOnDrop` for `Secret<T>` (#70).
+- Add `Secret::ct_eq`, a constant-time comparison for `T: AsRef<[u8]>` (#69).
 
 ## [0.4.6] - 2026-11-02
 

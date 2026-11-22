@@ -19,7 +19,8 @@ use zeroize::Zeroize;
 /// input buffer can reduce exposure, but cannot erase parser copies.
 /// This type does not implement `Clone`; copy deliberately with [`Self::clone_secret`], which
 /// creates another independently owned `Secret`. It implements [`zeroize::ZeroizeOnDrop`].
-/// Equality delegates to the inner type and does not promise constant-time comparison.
+/// It implements neither `PartialEq` nor `Eq`; compare with [`Self::ct_eq`], which is
+/// constant-time for equal lengths but leaks the length.
 ///
 /// Zeroization follows `T`'s implementation and requires this wrapper's destructor to run;
 /// it does not erase copies made elsewhere. [`Self::into_exposed_secret`] bypasses that destructor.
@@ -43,8 +44,8 @@ use zeroize::Zeroize;
 /// 依存し、serde の契約ではエラーから構築途中の `T` を回収できません。入力バッファを
 /// `zeroize::Zeroizing` で管理すると軽減できますが、パーサーのコピーは消去できません。
 /// `Clone` は実装せず、複製は [`Self::clone_secret`] で明示的に行い、別の `Secret` に所有させます。
-/// [`zeroize::ZeroizeOnDrop`] を実装します。等値比較は内包型に委譲し、定数時間での比較を
-/// 保証しません。
+/// [`zeroize::ZeroizeOnDrop`] を実装します。`PartialEq` と `Eq` は実装せず、比較には
+/// [`Self::ct_eq`] を使います（同じ長さなら定数時間で、長さは漏れます）。
 ///
 /// ゼロ化の範囲は `T` の実装に従い、このラッパーのデストラクターが実行される必要があります。
 /// 別の場所に作られたコピーは消去しません。[`Self::into_exposed_secret`] はデストラクターを迂回します。
@@ -155,13 +156,46 @@ impl<T: Zeroize> Secret<T> {
     ///
     /// let original = Secret::new(String::from("token"));
     /// let copy = original.clone_secret();
-    /// assert_eq!(original, copy);
+    /// assert!(original.ct_eq(&copy));
     /// ```
     pub fn clone_secret(&self) -> Self
     where
         T: Clone,
     {
         Self::new(self.expose_secret_ref().clone())
+    }
+
+    /// **English:**<br>
+    /// Compares two secrets by their `AsRef<[u8]>` byte representation.
+    ///
+    /// Byte strings of equal length are compared in constant time. If the lengths differ, this
+    /// returns `false` immediately, so the length is not hidden.
+    ///
+    /// **日本語:**<br>
+    /// 2つの秘密値を `AsRef<[u8]>` のバイト表現で比較します。
+    ///
+    /// 同じ長さのバイト列は定数時間で比較します。長さが異なる場合はすぐに `false` を返すため、
+    /// 長さは隠せません。
+    ///
+    /// # Example / 使用例
+    ///
+    /// ```rust
+    /// use ddd_toolkit_core::Secret;
+    ///
+    /// let token = Secret::new(String::from("token"));
+    /// assert!(token.ct_eq(&Secret::new(String::from("token"))));
+    /// assert!(!token.ct_eq(&Secret::new(String::from("tokex"))));
+    /// ```
+    pub fn ct_eq(&self, other: &Self) -> bool
+    where
+        T: AsRef<[u8]>,
+    {
+        use subtle::ConstantTimeEq;
+        bool::from(
+            self.expose_secret_ref()
+                .as_ref()
+                .ct_eq(other.expose_secret_ref().as_ref()),
+        )
     }
 }
 
@@ -184,14 +218,6 @@ impl<T: Zeroize> Drop for Secret<T> {
 }
 
 impl<T: Zeroize> zeroize::ZeroizeOnDrop for Secret<T> {}
-
-impl<T: Zeroize + PartialEq> PartialEq for Secret<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.expose_secret_ref() == other.expose_secret_ref()
-    }
-}
-
-impl<T: Zeroize + Eq> Eq for Secret<T> {}
 
 impl<T: Zeroize> fmt::Debug for Secret<T> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

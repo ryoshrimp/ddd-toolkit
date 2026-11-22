@@ -60,10 +60,10 @@ fn into_exposed_secret_neither_zeroizes_nor_drops_the_returned_value() {
 }
 
 #[test]
-fn secret_clone_secret_and_equality_delegate_to_inner() {
+fn secret_clone_secret_copies_inner() {
     let left = Secret::new(String::from("same"));
     let right = left.clone_secret();
-    assert_eq!(left, right);
+    assert!(left.ct_eq(&right));
     assert_eq!(right.expose_secret_ref(), "same");
 }
 
@@ -95,4 +95,13 @@ fn secret_implements_zeroize_on_drop() {
 fn secret_metadata_is_zero_sized() {
     assert_eq!(std::mem::size_of::<SecretMetadata>(), 0);
     assert_eq!(SecretMetadata, SecretMetadata);
+}
+
+#[test]
+fn secret_ct_eq_compares_bytes() {
+    assert!(Secret::new(String::from("same")).ct_eq(&Secret::new(String::from("same"))));
+    assert!(!Secret::new(String::from("same")).ct_eq(&Secret::new(String::from("sane"))));
+    assert!(!Secret::new(String::from("same")).ct_eq(&Secret::new(String::from("same!"))));
+    assert!(Secret::new(vec![1u8, 2]).ct_eq(&Secret::new(vec![1u8, 2])));
+    assert!(!Secret::new(vec![1u8, 2]).ct_eq(&Secret::new(vec![1u8])));
 }
