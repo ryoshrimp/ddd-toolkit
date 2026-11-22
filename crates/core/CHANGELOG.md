@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   representation. Equal-length values are compared in constant time, but a length
   mismatch returns `false` immediately, so the length is not hidden. For other types, compare
   via `expose_secret_ref` explicitly (#69).
+- Document the `Secret` caveats explicitly in rustdoc and the README: `ExposeSecret` is a
+  plaintext (unencrypted) output, and zeroization does not cover memory left by reallocations,
+  copies made by moves, or temporary stack/register copies (#71).
 
 ### Added
 
