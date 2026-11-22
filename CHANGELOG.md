@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added the [versioning policy](docs/versioning.md): 0.x breaking changes, deprecation,
+  MSRV, supported lines and the facade/core/macro version correspondence (#77).
 - Declared the minimum supported Rust version as 1.88 (`rust-version`), verified
   by a new CI job (#72).
 - Added `#![forbid(unsafe_code)]` to the facade crate. Core denies `unsafe_code`

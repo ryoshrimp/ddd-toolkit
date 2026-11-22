@@ -24,8 +24,9 @@ issue - they help make sure we get the context needed to act on it quickly.
 
 ## Development setup
 
-- Use the latest stable Rust (edition 2024), as in CI. The MSRV is 1.88, checked
-  by a separate CI job. Functional tests do not require `rust-src`.
+- Use the latest stable Rust (edition 2024), as in CI. The MSRV is 1.88
+  ([policy](docs/versioning.md#msrv-policy)), checked by a separate CI job.
+  Functional tests do not require `rust-src`.
   UI diagnostic snapshots additionally require matching `rust-src`
   (`rustup component add rust-src`).
 - A plain `git clone` includes core and macro; no sibling repos or submodules

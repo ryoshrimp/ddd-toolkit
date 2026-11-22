@@ -1,5 +1,8 @@
 # Generated-code compatibility
 
+For the general versioning, deprecation and MSRV policy, see
+[Versioning policy](versioning.md). This page covers generated-code specifics.
+
 ## Supported combinations
 
 - Macro **0.5.x** supports core **>=0.4.1, <0.5.0** for direct external consumers.
@@ -49,6 +52,9 @@ requirements and lockfile, and this matrix. Crate version numbers need not
 match; their supported combinations must. See [the release checklist](releasing.md).
 
 ## 日本語
+
+一般的なバージョニング・非推奨化・MSRV の方針は[バージョニング方針](versioning.md#日本語)を参照してください。
+このページは生成コード固有の内容を扱います。
 
 macro 0.5.x の直接利用は core >=0.4.1, <0.5.0 をサポートします。最低版は
 crates.io の正確な 0.4.1、現行版は workspace の 0.4.6 で検証します。
