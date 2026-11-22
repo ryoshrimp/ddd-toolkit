@@ -43,12 +43,12 @@ resolver = "3"
 rust-version = "1.88"
 
 [workspace.dependencies]
-ddd-toolkit-core = { version = "0.4.6", path = "crates/core" }
+ddd-toolkit-core = { version = "0.4.6", path = "crates/core", default-features = false }
 ddd-toolkit-macro = { version = "0.5.5", path = "crates/macro" }
 
 
 [dependencies]
-ddd-toolkit-core = { workspace = true, default-features = false }
+ddd-toolkit-core = { workspace = true }
 ddd-toolkit-macro = { workspace = true, optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 
