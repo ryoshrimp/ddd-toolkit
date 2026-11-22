@@ -354,9 +354,10 @@ pub fn derive_domain_event(input: TokenStream) -> TokenStream {
 /// `#[aggregate(events)]` vector as its pending event queue.
 ///
 /// Requires a named-field struct that already implements `ddd_toolkit_core::Entity`
-/// (for example via [`Entity`]) and exactly one marked field spelled `Vec<Event>`
-/// or `std::vec::Vec<Event>`. Type aliases and other vector paths are not accepted;
-/// `Event` must implement `ddd_toolkit_core::DomainEvent` (see [`DomainEvent`]).
+/// (for example via [`Entity`]) and exactly one marked field spelled `Vec<Event>`,
+/// `std::vec::Vec<Event>`, or `alloc::vec::Vec<Event>`. Type aliases and other
+/// vector paths are not accepted; `Event` must implement
+/// `ddd_toolkit_core::DomainEvent` (see [`DomainEvent`]).
 /// `record_event` appends with `Vec::push`, preserving insertion order, and may
 /// allocate. `pull_events` moves out the vector with `core::mem::take`, leaving an
 /// empty queue; repeated pulls return empty vectors until another event is recorded.
@@ -372,8 +373,9 @@ pub fn derive_domain_event(input: TokenStream) -> TokenStream {
 /// として `ddd_toolkit_core::AggregateRoot` を実装します。
 ///
 /// `ddd_toolkit_core::Entity` を実装済みの名前付き構造体（例: [`Entity`] による導出）
-/// と、`Vec<Event>` または `std::vec::Vec<Event>` と記述されたキューフィールドが
-/// ちょうど一つ必要です。型エイリアスや他のベクターパスは受け付けません。
+/// と、`Vec<Event>`、`std::vec::Vec<Event>`、`alloc::vec::Vec<Event>` のいずれかで
+/// 記述されたキューフィールドがちょうど一つ必要です。
+/// 型エイリアスや他のベクターパスは受け付けません。
 /// `Event` は `ddd_toolkit_core::DomainEvent` を実装する必要があります（[`DomainEvent`]）。
 /// `record_event` は `Vec::push` で挿入順に追加し、メモリを確保する場合があります。
 /// `pull_events` は `core::mem::take` でベクターを取り出し、キューを空にします。

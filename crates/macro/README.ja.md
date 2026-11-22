@@ -380,9 +380,9 @@ fn main() {
 }
 ```
 
-イベントキューは `Vec<Event>` または `std::vec::Vec<Event>` と記述してください。
-型エイリアスや他のベクターパスは受け付けません。イベント型にはコアの `DomainEvent`
-の実装が必要です。
+イベントキューは `Vec<Event>`、`std::vec::Vec<Event>`、`alloc::vec::Vec<Event>` のいずれかで
+記述してください。型エイリアスや他のベクターパスは受け付けません。イベント型には
+コアの `DomainEvent` の実装が必要です。
 
 `record_event` と `pull_events` を呼び出すには、コアの `AggregateRoot` トレイトを
 インポートしてください。固有メソッドではなくトレイトメソッドです。記録は挿入順に

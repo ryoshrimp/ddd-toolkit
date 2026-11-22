@@ -1,4 +1,4 @@
-error: aggregate event queue must have type Vec<Event>
+error: aggregate event queue must be spelled Vec<Event>, std::vec::Vec<Event>, or alloc::vec::Vec<Event>; type aliases are not supported
  --> tests/ui/aggregate_queue_not_vec.rs:6:13
   |
 6 |     events: Option<u64>,
