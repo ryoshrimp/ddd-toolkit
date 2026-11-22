@@ -1,5 +1,5 @@
 // Secret replaces the removed SecretVo derive; cleanup is unconditional.
-use ddd_toolkit::Secret;
+use ddd_toolkit::secret::Secret;
 use std::{cell::Cell, rc::Rc};
 use zeroize::Zeroize;
 

@@ -1,3 +1,5 @@
+#![cfg(feature = "cqrs")]
+
 #[test]
 #[ignore = "UI suite: run scripts/check-ui-tests.sh"]
 fn amended_sync_callback_lifetime_allows_completion() {

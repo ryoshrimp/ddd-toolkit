@@ -92,7 +92,7 @@ serde の `Deserialize` の契約では `Err` から構築途中の `T` を回�
 ## Example / 使用例
 
 ```rust
-use ddd_toolkit::{ExposeSecret, Secret};
+use ddd_toolkit::secret::{ExposeSecret, Secret};
 use serde_with::serde_as;
 
 #[serde_as]

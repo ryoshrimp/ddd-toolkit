@@ -19,7 +19,7 @@ use crate::DomainEvent;
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::DeliveryMetadata;
+/// use ddd_toolkit_core::delivery::DeliveryMetadata;
 ///
 /// let metadata = DeliveryMetadata::new("event-1")
 ///     .with_correlation_id("request-7")

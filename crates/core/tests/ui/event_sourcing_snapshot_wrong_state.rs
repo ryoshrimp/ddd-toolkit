@@ -1,4 +1,5 @@
-use ddd_toolkit_core::{replay_with_optional_snapshot, AggregateReplay, AggregateRoot, AggregateSnapshot, DomainEvent, Entity, SnapshotUse, StreamHistory, StreamRevision};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
+use ddd_toolkit_core::event_sourcing::{replay_with_optional_snapshot, AggregateReplay, AggregateSnapshot, SnapshotUse, StreamHistory, StreamRevision};
 struct Event; impl DomainEvent for Event {}
 struct Aggregate;
 impl Entity for Aggregate { type Id = u64; fn id(&self) -> &u64 { unreachable!() } }

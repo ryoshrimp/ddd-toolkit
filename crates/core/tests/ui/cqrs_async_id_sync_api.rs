@@ -1,8 +1,5 @@
-use ddd_toolkit_core::{
-    AggregateRoot, AsyncCommandHandler, AsyncDomainEventPublisher, AsyncLifecycleCallback,
-    AsyncLifecycleContext, AsyncRepository, DomainEvent, Entity, LifecycleCompletionError,
-    LifecycleOperationError,
-};
+use ddd_toolkit_core::{AggregateRoot, AsyncDomainEventPublisher, AsyncRepository, DomainEvent, Entity};
+use ddd_toolkit_core::cqrs::{AsyncCommandHandler, AsyncLifecycleCallback, AsyncLifecycleContext, LifecycleCompletionError, LifecycleOperationError};
 use std::cell::Cell;
 use std::future::Future;
 use std::pin::Pin;

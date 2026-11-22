@@ -14,7 +14,8 @@ For the general versioning, deprecation and MSRV policy, see
   Prefer this facade combination unless you need separate dependencies.
   The facade re-exports/derives are additionally tested against core 0.4.1
   using its actual sources and a staged manifest with only core selection
-  changed. That is a lower-bound compatibility test, not its published resolver
+  and the module-feature forwarding (`cqrs` etc., absent in 0.4.1) changed.
+  That is a lower-bound compatibility test, not its published resolver
   requirement. No global Cargo patch substitutes the current core for 0.4.1.
 - Both direct and facade access, original and renamed dependencies, and serde
   enabled/disabled are tested in independent Cargo workspaces by
@@ -59,7 +60,7 @@ match; their supported combinations must. See [the release checklist](releasing.
 macro 0.5.x の直接利用は core >=0.4.1, <0.5.0 をサポートします。最低版は
 crates.io の正確な 0.4.1、現行版は workspace の 0.4.6 で検証します。
 facade 0.4.7 の公開依存は core ^0.4.6 / macro ^0.5.5 です。最低版テストでは
-実際の facade ソースと依存選択のみ変更した manifest を使い、公開依存条件と区別します。
+実際の facade ソースと、依存選択および feature の中継（0.4.1 にない `cqrs` など）のみ変更した manifest を使い、公開依存条件と区別します。
 直接利用・facade・依存名変更・serde 有無を独立 workspace で検証し、feature 統合での
 見かけ上の成功を防ぎます。両方への依存がある場合は直接の core が優先されます。
 

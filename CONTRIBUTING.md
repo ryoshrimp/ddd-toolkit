@@ -92,7 +92,7 @@ paths or the existing required `test` gate. Reproduce locally with:
 ```sh
 rustup toolchain install nightly --profile minimal --component miri --component rust-src
 cargo +nightly miri setup
-cargo +nightly miri test -p ddd-toolkit-core --no-default-features --test secret --locked
+cargo +nightly miri test -p ddd-toolkit-core --no-default-features --features secret --test secret --locked
 ```
 
 The explicit package and integration-test target limit interpretation to

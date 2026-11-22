@@ -16,8 +16,11 @@ contract. See [API documentation](https://docs.rs/ddd-toolkit) for signatures.
 - **Mode:** `S` = synchronous operations, `A` = asynchronous operations,
   `—` = shared data, marker or composition contract (not an async port).
   Async ports use boxed `Send` futures; no async runtime is supplied.
-- **Features:** core traits/helpers other than `ExposeSecret` are available with
-  `default-features = false`, including async contracts and `Secret`.
+- **Features:** root items (domain model, repository/publisher ports, `Specification`,
+  `Policy`, ...) are available with `default-features = false`. The `cqrs`,
+  `event_sourcing`, `delivery`, `process`, and `secret` modules are experimental and need the
+  feature of the same name (on by default; `delivery` includes `event_sourcing`). This
+  covers their async contracts and `Secret` too.
   The four derive macros require `derive` (enabled by default).
   `serde` adds `Secret` deserialization; generated value-object serialization additionally
   needs `#[value_object(serde)]`. `ExposeSecret` requires `serde_with` (includes `serde`).
@@ -55,8 +58,11 @@ and keep its mode, feature requirements and test links accurate.
 - **方式（Mode）:** `S` は同期、`A` は非同期、`—` は共通のデータ・マーカー・
   合成契約（非同期ポートではない）です。非同期ポートはボックス化された `Send` Future を
   返し、ランタイムは提供しません。
-- **feature:** `ExposeSecret` 以外の core トレイト・ヘルパーは `default-features = false` で
-  利用でき、非同期契約や `Secret` も対象です。四つのマクロは `derive`（既定で有効）を
+- **feature:** ルートの項目（ドメインモデル、リポジトリ／パブリッシャーのポート、`Specification`、
+  `Policy` など）は `default-features = false` で利用できます。`cqrs`、`event_sourcing`、`delivery`、
+  `process`、`secret` の各モジュールは実験的で、同名の feature（既定で有効、`delivery` は
+  `event_sourcing` を含む）が必要です。
+  これらのモジュールの非同期契約と `Secret` も同じです。四つのマクロは `derive`（既定で有効）を
   必要とします。`serde` は `Secret` の復元に対応し、値オブジェクトの生成された直列化には型ごとの
   `#[value_object(serde)]` も必要です。`ExposeSecret` には `serde_with`（`serde` を含む）が必要です。
   どちらの serde feature もイベント契約の前提条件ではありません。

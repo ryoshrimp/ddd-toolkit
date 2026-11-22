@@ -1,4 +1,4 @@
-use ddd_toolkit_core::{EventStore, ExpectedRevision, LoadResult, AppendError, AppendResult};
+use ddd_toolkit_core::event_sourcing::{EventStore, ExpectedRevision, LoadResult, AppendError, AppendResult};
 struct NotAggregate;
 struct Store;
 impl EventStore for Store {

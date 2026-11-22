@@ -1,7 +1,7 @@
 error[E0308]: mismatched types
-  --> tests/ui/event_sourcing_store_wrong_key.rs:12:88
+  --> tests/ui/event_sourcing_store_wrong_key.rs:13:88
    |
-12 | fn main() { let mut store = Store; let key = String::from("wrong"); let _ = store.load(&key); }
+13 | fn main() { let mut store = Store; let key = String::from("wrong"); let _ = store.load(&key); }
    |                                                                                   ---- ^^^^ expected `&u64`, found `&String`
    |                                                                                   |
    |                                                                                   arguments to this method are incorrect

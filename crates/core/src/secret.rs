@@ -70,7 +70,7 @@ use zeroize::Zeroize;
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::Secret;
+/// use ddd_toolkit_core::secret::Secret;
 ///
 /// let secret = Secret::new(String::from("token"));
 /// assert_eq!(format!("{secret:?}"), "[REDACTED]");
@@ -121,7 +121,7 @@ impl<T: Zeroize> Secret<T> {
     /// # Example / 使用例
     ///
     /// ```rust
-    /// use ddd_toolkit_core::Secret;
+    /// use ddd_toolkit_core::secret::Secret;
     /// use zeroize::Zeroize;
     ///
     /// let mut value = Secret::new(vec![1_u8, 2, 3]).into_exposed_secret();
@@ -166,7 +166,7 @@ impl<T: Zeroize> Secret<T> {
     /// # Example / 使用例
     ///
     /// ```rust
-    /// use ddd_toolkit_core::Secret;
+    /// use ddd_toolkit_core::secret::Secret;
     ///
     /// let original = Secret::new(String::from("token"));
     /// let copy = original.clone_secret();
@@ -194,7 +194,7 @@ impl<T: Zeroize> Secret<T> {
     /// # Example / 使用例
     ///
     /// ```rust
-    /// use ddd_toolkit_core::Secret;
+    /// use ddd_toolkit_core::secret::Secret;
     ///
     /// let token = Secret::new(String::from("token"));
     /// assert!(token.ct_eq(&Secret::new(String::from("token"))));

@@ -1,7 +1,5 @@
-use ddd_toolkit_core::{
-    AggregateRoot, AggregateSnapshot, DomainEvent, Entity, SnapshotLoadError, SnapshotSaveError,
-    SnapshotStore,
-};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
+use ddd_toolkit_core::event_sourcing::{AggregateSnapshot, SnapshotLoadError, SnapshotSaveError, SnapshotStore};
 
 struct Event;
 impl DomainEvent for Event {}

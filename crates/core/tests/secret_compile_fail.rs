@@ -1,4 +1,5 @@
-#[cfg(feature = "serde")]
+#![cfg(all(feature = "secret", feature = "serde"))]
+
 #[test]
 #[ignore = "UI suite: run scripts/check-ui-tests.sh"]
 fn secret_does_not_implement_serde() {

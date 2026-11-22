@@ -49,7 +49,8 @@ cargo run -p ddd-toolkit --example dispatch_retry --features derive --locked
 実行し、`Specification`（条件の判定）と `Policy`（理由付きで制約を強制）で不正な入力を
 拒否します。
 
-**使う API:** `CommandHandler`、`QueryHandler`、`AggregateCreator`、
+**使う API:**（モジュール `cqrs`、feature `cqrs`）
+`CommandHandler`、`QueryHandler`、`AggregateCreator`、
 `LifecycleContext` と関連する型、`Specification`、`Policy`
 （各ハンドラーとコンテキストに非同期版があります。`AggregateCreator` は例では使いません。[public-contracts.md](public-contracts.md#日本語)を参照）。
 
@@ -67,7 +68,8 @@ cargo run -p ddd-toolkit --example cqrs --features derive --locked
 リプレイで集約を復元し、スナップショットでリプレイを短縮し、アップキャスターで
 古いイベントのバージョンを変換します。
 
-**使う API:** `EventStore`（`AsyncEventStore`）、`ExpectedRevision`、`StreamRevision` など
+**使う API:**（モジュール `event_sourcing`、feature `event_sourcing`）
+`EventStore`（`AsyncEventStore`）、`ExpectedRevision`、`StreamRevision` など
 のリビジョン型、`AggregateReplay`、`replay_aggregate`、`SnapshotStore`、
 `AggregateSnapshot`、`EventUpcaster`、`UpcasterChain`（`UpcasterChain` は例では使いません。
 [public-contracts.md](public-contracts.md#日本語)を参照）。
@@ -83,11 +85,13 @@ cargo run -p ddd-toolkit --example event_sourcing --features derive --locked
 ## その先
 
 - **確実な配送:** トランザクショナルアウトボックス、イベントコンシューマー、
-  プロジェクション、チェックポイント、冪等なプロジェクション。
+  プロジェクション、チェックポイント、冪等なプロジェクション
+  （モジュール `delivery`、feature `delivery`）。
   [reliable_delivery.rs](../examples/reliable_delivery.rs)を参照してください
   （`cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked`）。
-- **その他の構成要素:** `DomainService`、`DomainFactory`、`ProcessManager`、
-  `UnitOfWork`。実行例と契約テストは [public-contracts.md](public-contracts.md#日本語)を
+- **その他の構成要素:** `DomainService`、`DomainFactory`、`UnitOfWork`、
+  `process::ProcessManager`（feature `process`）。
+  実行例と契約テストは [public-contracts.md](public-contracts.md#日本語)を
   参照してください。
-- **シークレット:** `Secret` は書式出力を秘匿化し、破棄時にゼロ化します。feature
-  指定は不要です。直列化は [secret-serde.md](secret-serde.md)を参照してください。
+- **シークレット:** `secret::Secret`（feature `secret`、既定で有効）は書式出力を秘匿化し、破棄時にゼロ化します。
+  直列化は [secret-serde.md](secret-serde.md)を参照してください。

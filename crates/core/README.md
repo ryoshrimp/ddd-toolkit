@@ -28,9 +28,13 @@ cargo add ddd-toolkit-core
 The minimum supported Rust version (MSRV) is 1.88, verified in CI. Also tested
 with the latest stable Rust (edition 2024).
 
-There are no default features.
+The default features enable the experimental `cqrs`, `event_sourcing`, `delivery`,
+`process`, and `secret` modules; disable them with `default-features = false` and
+select only what you need (`delivery` includes `event_sourcing`). Without them the
+crate root keeps only the central domain-model and publishing items. The `subtle`
+and `zeroize` dependencies are pulled in only by `secret`.
 The optional `serde` feature exposes serde internally for generated implementations
-and adds `Secret<T>` deserialization. `serde_with` includes `serde` and adds the
+and adds `Secret<T>` deserialization (with `secret`). `serde_with` includes `serde` and adds the
 `ExposeSecret` output adapter. Neither automatically serializes domain types or `Secret`.
 The crate uses `zeroize` for secret-value cleanup and has no async-runtime
 dependency.
@@ -42,17 +46,17 @@ dependency.
 | Domain model | `Entity`, `ValueObject`, `AggregateRoot`, `DomainEvent` |
 | Persistence | `Repository`, `AsyncRepository` |
 | Event publishing | `DomainEventPublisher`, `AsyncDomainEventPublisher`, `dispatch_events`, `dispatch_events_async` |
-| Event description | `DomainEventMetadata`, `DomainEventConversion`, `DeliveryMetadata`, `DomainEventDeliveryMetadata` |
-| CQRS | `CommandHandler`, `AggregateCreator`, `QueryHandler`, lifecycle contexts/callbacks, and their `Async` counterparts |
-| Event sourcing | `EventStore`, `AsyncEventStore`, revision/history types, `AggregateReplay`, `replay_aggregate` |
-| Snapshots | `AggregateSnapshot`, `SnapshotStore`, `AsyncSnapshotStore`, `replay_with_optional_snapshot` |
-| Event consumption | `EventConsumer`, `Projection`, and their `Async` counterparts |
-| Reliable projections | `ProjectionCheckpoint`, `ProjectionCheckpointStore`, `IdempotentProjection`, `ProjectionApplication`, and asynchronous ports |
-| Transactional outbox | `TransactionalOutbox`, `AsyncTransactionalOutbox`, `OutboxClaim`, `OutboxMessageId`, and lifecycle contexts |
+| Event description | `DomainEventMetadata`, `DomainEventConversion`; `delivery::{DeliveryMetadata, DomainEventDeliveryMetadata}` |
+| CQRS (`cqrs`) | `CommandHandler`, `AggregateCreator`, `QueryHandler`, lifecycle contexts/callbacks, and their `Async` counterparts |
+| Event sourcing (`event_sourcing`) | `EventStore`, `AsyncEventStore`, revision/history types, `AggregateReplay`, `replay_aggregate` |
+| Snapshots (`event_sourcing`) | `AggregateSnapshot`, `SnapshotStore`, `AsyncSnapshotStore`, `replay_with_optional_snapshot` |
+| Event consumption (`delivery`) | `EventConsumer`, `Projection`, and their `Async` counterparts |
+| Reliable projections (`delivery`) | `ProjectionCheckpoint`, `ProjectionCheckpointStore`, `IdempotentProjection`, `ProjectionApplication`, and asynchronous ports |
+| Transactional outbox (`delivery`) | `TransactionalOutbox`, `AsyncTransactionalOutbox`, `OutboxClaim`, `OutboxMessageId`, and lifecycle contexts |
 | Domain rules | `Specification`, `And`, `Or`, `Not`, `DomainService`, `Policy`, `DomainFactory` |
-| Workflow and transactions | `ProcessManager`, `Transition`, `UnitOfWork` |
-| Schema evolution | `EventIdentity`, `VersionedEvent`, `EventUpcaster`, `UpcasterChain` |
-| Secrets | `Secret`, `SecretMetadata` |
+| Workflow (`process`) and transactions | `ProcessManager`, `Transition`; `UnitOfWork` at the root |
+| Schema evolution (`event_sourcing`) | `EventIdentity`, `VersionedEvent`, `EventUpcaster`, `UpcasterChain` |
+| Secrets (`secret`) | `Secret`, `SecretMetadata` |
 
 Async ports return boxed `Send` futures. Their implementations and callers must
 satisfy the relevant lifetime and thread-safety bounds; the crate does not
@@ -242,7 +246,7 @@ assert_eq!(name.into_inner(), "Alice");
 zeroizes the wrapped value on drop. Access to plaintext is explicit:
 
 ```rust
-use ddd_toolkit_core::Secret;
+use ddd_toolkit_core::secret::Secret;
 
 let token = Secret::new(String::from("example-token"));
 assert_eq!(format!("{token}"), "[REDACTED]");

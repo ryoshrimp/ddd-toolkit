@@ -1,6 +1,11 @@
+#![cfg(all(feature = "event_sourcing", feature = "process"))]
+
+use ddd_toolkit_core::event_sourcing::{
+    EventIdentity, EventUpcaster, UpcasterChain, VersionedEvent,
+};
+use ddd_toolkit_core::process::{ProcessManager, Transition};
 use ddd_toolkit_core::{
-    And, DomainFactory, DomainService, EventIdentity, EventUpcaster, Not, Or, Policy,
-    ProcessManager, Specification, Transition, UnitOfWork, UpcasterChain, VersionedEvent,
+    And, DomainFactory, DomainService, Not, Or, Policy, Specification, UnitOfWork,
 };
 use std::cell::Cell;
 

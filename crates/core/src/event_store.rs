@@ -101,11 +101,11 @@ pub enum CurrentRevision {
 /// # Example / 使用例
 ///
 /// ```rust
-/// use ddd_toolkit_core::{StreamHistory, StreamRevision};
+/// use ddd_toolkit_core::event_sourcing::{StreamHistory, StreamRevision};
 /// let history = StreamHistory::try_new(vec!["created", "updated"], StreamRevision::new(1))?;
 /// assert_eq!(history.events_after(StreamRevision::new(0)), Some(&["updated"][..]));
 /// assert_eq!(history.events_after(StreamRevision::new(1)), Some(&[][..]));
-/// # Ok::<(), ddd_toolkit_core::StreamHistoryError>(())
+/// # Ok::<(), ddd_toolkit_core::event_sourcing::StreamHistoryError>(())
 /// ```
 #[derive(Debug, Eq, PartialEq)]
 pub struct StreamHistory<E> {

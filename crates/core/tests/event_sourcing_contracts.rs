@@ -1,9 +1,11 @@
-use ddd_toolkit_core::{
-    AggregateReplay, AggregateRoot, AppendError, AppendResult, CurrentRevision, DomainEvent,
-    Entity, EventStore, ExpectedRevision, LoadResult, NoStream, ReplayError, SnapshotReplayError,
-    SnapshotUse, StreamHistory, StreamHistoryError, StreamRevision, replay_aggregate,
-    replay_with_optional_snapshot,
+#![cfg(feature = "event_sourcing")]
+
+use ddd_toolkit_core::event_sourcing::{
+    AggregateReplay, AppendError, AppendResult, CurrentRevision, EventStore, ExpectedRevision,
+    LoadResult, NoStream, ReplayError, SnapshotReplayError, SnapshotUse, StreamHistory,
+    StreamHistoryError, StreamRevision, replay_aggregate, replay_with_optional_snapshot,
 };
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
 use std::cell::Cell;
 use std::collections::HashMap;
 
@@ -94,10 +96,12 @@ impl EventStore for Store {
             _ => false,
         };
         if !matches {
-            return Err(AppendError::Conflict(ddd_toolkit_core::RevisionConflict {
-                expected,
-                current: current_carrier,
-            }));
+            return Err(AppendError::Conflict(
+                ddd_toolkit_core::event_sourcing::RevisionConflict {
+                    expected,
+                    current: current_carrier,
+                },
+            ));
         }
         if self.fail_append {
             return Err(AppendError::Adapter(StoreError));
@@ -144,7 +148,7 @@ impl AggregateReplay for Aggregate {
         }
     }
     fn classify_snapshot(
-        snapshot: &ddd_toolkit_core::AggregateSnapshot<i32>,
+        snapshot: &ddd_toolkit_core::event_sourcing::AggregateSnapshot<i32>,
         _revision: StreamRevision,
     ) -> Result<SnapshotUse, Self::SnapshotValidationError> {
         if *snapshot.state() == -1 {
@@ -159,7 +163,7 @@ impl AggregateReplay for Aggregate {
     }
     fn from_snapshot(
         id: &u64,
-        snapshot: ddd_toolkit_core::AggregateSnapshot<i32>,
+        snapshot: ddd_toolkit_core::event_sourcing::AggregateSnapshot<i32>,
     ) -> Result<Self, Self::SnapshotStateError> {
         SNAPSHOT_RESTORATIONS.with(|calls| calls.set(calls.get() + 1));
         let (value, _) = snapshot.into_parts();
@@ -226,10 +230,12 @@ fn append_load_and_conflict_are_typed_atomic_and_zero_based() {
     assert_eq!(store.load(&1).unwrap(), before);
     assert_eq!(
         store.append(&1, ExpectedRevision::NoStream(NoStream), vec![Event(3)]),
-        Err(AppendError::Conflict(ddd_toolkit_core::RevisionConflict {
-            expected: ExpectedRevision::NoStream(NoStream),
-            current: CurrentRevision::Revision(StreamRevision::new(1))
-        }))
+        Err(AppendError::Conflict(
+            ddd_toolkit_core::event_sourcing::RevisionConflict {
+                expected: ExpectedRevision::NoStream(NoStream),
+                current: CurrentRevision::Revision(StreamRevision::new(1))
+            }
+        ))
     );
     assert_eq!(store.load(&1).unwrap(), before);
     assert_eq!(
@@ -238,10 +244,12 @@ fn append_load_and_conflict_are_typed_atomic_and_zero_based() {
             ExpectedRevision::Revision(StreamRevision::new(0)),
             vec![Event(3), Event(4)]
         ),
-        Err(AppendError::Conflict(ddd_toolkit_core::RevisionConflict {
-            expected: ExpectedRevision::Revision(StreamRevision::new(0)),
-            current: CurrentRevision::Revision(StreamRevision::new(1))
-        }))
+        Err(AppendError::Conflict(
+            ddd_toolkit_core::event_sourcing::RevisionConflict {
+                expected: ExpectedRevision::Revision(StreamRevision::new(0)),
+                current: CurrentRevision::Revision(StreamRevision::new(1))
+            }
+        ))
     );
     assert_eq!(store.load(&1).unwrap(), before);
     assert_eq!(
@@ -326,7 +334,8 @@ fn replay_is_ordered_additive_and_keeps_pending_queue_empty() {
 
 #[test]
 fn optional_snapshot_replays_suffix_and_distinguishes_failures() {
-    let snapshot = ddd_toolkit_core::AggregateSnapshot::new(10, StreamRevision::new(0));
+    let snapshot =
+        ddd_toolkit_core::event_sourcing::AggregateSnapshot::new(10, StreamRevision::new(0));
     let result = replay_with_optional_snapshot::<Aggregate>(
         &1,
         &history(vec![Event(1), Event(2)]),
@@ -344,7 +353,7 @@ fn optional_snapshot_replays_suffix_and_distinguishes_failures() {
     let final_snapshot = replay_with_optional_snapshot::<Aggregate>(
         &1,
         &history(vec![Event(1), Event(2)]),
-        Some(ddd_toolkit_core::AggregateSnapshot::new(
+        Some(ddd_toolkit_core::event_sourcing::AggregateSnapshot::new(
             10,
             StreamRevision::new(1),
         )),
@@ -359,7 +368,7 @@ fn optional_snapshot_replays_suffix_and_distinguishes_failures() {
         replay_with_optional_snapshot::<Aggregate>(
             &1,
             &history(vec![Event(1)]),
-            Some(ddd_toolkit_core::AggregateSnapshot::new(
+            Some(ddd_toolkit_core::event_sourcing::AggregateSnapshot::new(
                 42,
                 StreamRevision::new(1)
             ))
@@ -375,7 +384,7 @@ fn optional_snapshot_replays_suffix_and_distinguishes_failures() {
         replay_with_optional_snapshot::<Aggregate>(
             &1,
             &history(vec![Event(1)]),
-            Some(ddd_toolkit_core::AggregateSnapshot::new(
+            Some(ddd_toolkit_core::event_sourcing::AggregateSnapshot::new(
                 -1,
                 StreamRevision::new(0)
             ))
@@ -387,7 +396,7 @@ fn optional_snapshot_replays_suffix_and_distinguishes_failures() {
         replay_with_optional_snapshot::<Aggregate>(
             &1,
             &history(vec![Event(1)]),
-            Some(ddd_toolkit_core::AggregateSnapshot::new(
+            Some(ddd_toolkit_core::event_sourcing::AggregateSnapshot::new(
                 -2,
                 StreamRevision::new(0)
             ))
@@ -399,7 +408,7 @@ fn optional_snapshot_replays_suffix_and_distinguishes_failures() {
         replay_with_optional_snapshot::<Aggregate>(
             &1,
             &history(vec![Event(1)]),
-            Some(ddd_toolkit_core::AggregateSnapshot::new(
+            Some(ddd_toolkit_core::event_sourcing::AggregateSnapshot::new(
                 77,
                 StreamRevision::new(77)
             ))
@@ -413,7 +422,7 @@ fn optional_snapshot_replays_suffix_and_distinguishes_failures() {
         replay_with_optional_snapshot::<Aggregate>(
             &1,
             &history(vec![Event(1)]),
-            Some(ddd_toolkit_core::AggregateSnapshot::new(
+            Some(ddd_toolkit_core::event_sourcing::AggregateSnapshot::new(
                 88,
                 StreamRevision::new(88)
             ))

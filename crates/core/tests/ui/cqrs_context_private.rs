@@ -1,6 +1,5 @@
-use ddd_toolkit_core::{
-    AggregateRoot, DomainEvent, DomainEventPublisher, Entity, LifecycleContext, Repository,
-};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, DomainEventPublisher, Entity, Repository};
+use ddd_toolkit_core::cqrs::LifecycleContext;
 
 struct Event;
 impl DomainEvent for Event {}

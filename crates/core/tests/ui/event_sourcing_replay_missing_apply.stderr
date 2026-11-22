@@ -1,7 +1,7 @@
 error[E0046]: not all trait items implemented, missing: `InitializationError`, `ApplicationError`, `Snapshot`, `SnapshotValidationError`, `SnapshotStateError`, `initial_state`, `apply_event`, `classify_snapshot`, `from_snapshot`
- --> tests/ui/event_sourcing_replay_missing_apply.rs:6:1
+ --> tests/ui/event_sourcing_replay_missing_apply.rs:7:1
   |
-6 | impl AggregateReplay for Aggregate {}
+7 | impl AggregateReplay for Aggregate {}
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `InitializationError`, `ApplicationError`, `Snapshot`, `SnapshotValidationError`, `SnapshotStateError`, `initial_state`, `apply_event`, `classify_snapshot`, `from_snapshot` in implementation
   |
   = help: implement the missing item: `type InitializationError = /* Type */;`

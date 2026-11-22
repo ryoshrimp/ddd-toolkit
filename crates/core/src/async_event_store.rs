@@ -1,11 +1,12 @@
 #![allow(clippy::type_complexity)]
 
-use crate::{AggregateRoot, AppendError, AppendResult, Entity, ExpectedRevision, LoadResult};
+use crate::event_sourcing::{AppendError, AppendResult, ExpectedRevision, LoadResult};
+use crate::{AggregateRoot, Entity};
 use std::future::Future;
 use std::pin::Pin;
 
 /// **English:**<br>
-/// Asynchronous event-stream storage using the result types of [`crate::EventStore`].
+/// Asynchronous event-stream storage using the result types of [`crate::event_sourcing::EventStore`].
 ///
 /// Returned futures are `Send` and borrow the store and identifier for `'a`; no executor or
 /// synchronization is provided. Adapters define atomicity, durability, writer coordination,
@@ -13,7 +14,7 @@ use std::pin::Pin;
 /// Cancellation does not by itself imply that writes were rolled back.
 ///
 /// **日本語:**<br>
-/// [`crate::EventStore`] と同じ結果型を使う非同期イベントストリームストアです。
+/// [`crate::event_sourcing::EventStore`] と同じ結果型を使う非同期イベントストリームストアです。
 ///
 /// 返される Future は `Send` で、ストアと識別子を `'a` の間借用します。
 /// 実行器や同期機構は提供しません。原子性、永続性、書き込みの調整、パニック条件、

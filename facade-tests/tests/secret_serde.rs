@@ -1,4 +1,4 @@
-use ddd_toolkit::{ExposeSecret, Secret};
+use ddd_toolkit::secret::{ExposeSecret, Secret};
 use serde::{Deserialize, Serialize};
 use serde_with::{SerializeAs, serde_as};
 use std::collections::BTreeMap;

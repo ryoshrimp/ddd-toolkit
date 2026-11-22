@@ -1,4 +1,4 @@
-use ddd_toolkit_core::{AggregateSnapshot, SnapshotLoadError, SnapshotSaveError, SnapshotStore};
+use ddd_toolkit_core::event_sourcing::{AggregateSnapshot, SnapshotLoadError, SnapshotSaveError, SnapshotStore};
 struct NotAggregate;
 struct Store;
 impl SnapshotStore for Store {

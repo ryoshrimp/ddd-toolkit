@@ -11,13 +11,16 @@
 //! ブローカー・位置保存・ack失敗から再試行し、配信3回でも残高は10のまま。
 //! Memory adapters demonstrate contracts, not durable or exactly-once delivery.
 //! メモリ実装は契約の教材。永続性やexactly-once配信を提供するものではない。
-use ddd_toolkit::{
-    AggregateRoot as _, AppendError, AppendResult, AsyncDomainEventPublisher,
+use ddd_toolkit::delivery::{
     AsyncIdempotentProjection, AsyncProjectionCheckpointStore, AsyncTransactionalOutbox,
-    AsyncTransactionalOutboxLifecycleContext, CurrentRevision, ExpectedRevision, NoStream,
-    OutboxClaim, OutboxMessageId, ProjectionApplication, ProjectionCheckpoint, RevisionConflict,
+    AsyncTransactionalOutboxLifecycleContext, OutboxClaim, OutboxMessageId, ProjectionApplication,
+    ProjectionCheckpoint,
+};
+use ddd_toolkit::event_sourcing::{
+    AppendError, AppendResult, CurrentRevision, ExpectedRevision, NoStream, RevisionConflict,
     StreamRevision,
 };
+use ddd_toolkit::{AggregateRoot as _, AsyncDomainEventPublisher};
 use std::{
     collections::{HashSet, VecDeque},
     future::Future,

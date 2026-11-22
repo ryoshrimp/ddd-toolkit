@@ -7,7 +7,7 @@ core/macro support range of generated code, see
 procedure, see [Releasing the workspace](releasing.md).
 
 This policy applies starting after the next release. The breaking changes listed
-under `[Unreleased]` in the changelogs (#60, #64, #66, #68, #69, #70), some of
+under `[Unreleased]` in the changelogs (#60, #64, #66, #68, #69, #70, #73), some of
 which remove APIs without deprecated aliases, are exempt.
 
 ## Breaking changes in 0.x
@@ -28,6 +28,18 @@ A public API is first marked `#[deprecated]` (naming its replacement) in at
 least one released minor line before it is removed. Removal happens in a later
 minor release at the earliest: for example, deprecated in 0.4.x, removable from
 0.5.0. There is no time-based minimum.
+
+## Stability tiers and features
+
+The crate root of `ddd-toolkit-core` (and the facade) keeps the central items:
+`ValueObject`, `Entity`, `AggregateRoot`, `DomainEvent` and its helpers, the
+repository and publisher ports with `dispatch_events`, `UnitOfWork`,
+`Specification`, `DomainService`, `Policy`, `DomainFactory`. Items in the
+`cqrs`, `event_sourcing`, `delivery`, `process`, and `secret` modules are
+**experimental**: they may change during 0.x. Each module is behind a feature of the same name,
+enabled by default (`delivery` includes `event_sourcing`; `secret` is also
+required by `serde_with`). Core's `subtle` and `zeroize` dependencies are only
+pulled in by `secret`.
 
 ## MSRV policy
 
@@ -72,7 +84,7 @@ For the precise support range when depending on core and macro directly, see
 [リリース手順](releasing.md)を参照してください。
 
 この方針は次のリリースの後から適用します。changelog の `[Unreleased]` に記載された
-破壊的変更（#60, #64, #66, #68, #69, #70。非推奨エイリアスなしで API を削除するものを含む）は対象外です。
+破壊的変更（#60, #64, #66, #68, #69, #70, #73。非推奨エイリアスなしで API を削除するものを含む）は対象外です。
 
 ### 0.x での破壊的変更
 
@@ -91,6 +103,16 @@ For the precise support range when depending on core and macro directly, see
 公開 API は、削除する前に、少なくとも 1 つのリリース済み minor ラインで、代替を明記した
 `#[deprecated]` を付けます。削除は早くても後続の minor リリースで行います（例: 0.4.x で
 非推奨化した場合、0.5.0 以降で削除可能）。期間による最小保証はありません。
+
+### 安定性の区分と feature
+
+`ddd-toolkit-core`（およびファサード）のルートには中核の項目だけを残します:
+`ValueObject`、`Entity`、`AggregateRoot`、`DomainEvent` とその補助、リポジトリと
+パブリッシャーのポートおよび `dispatch_events`、`UnitOfWork`、`Specification`、
+`DomainService`、`Policy`、`DomainFactory`。`cqrs`、`event_sourcing`、`delivery`、
+`process`、`secret` の各モジュールの項目は**実験的**で、0.x の間は変わる可能性があります。各モジュールは同名の feature（既定で有効）の背後にあり、
+`delivery` は `event_sourcing` を含み、`secret` は `serde_with` にも必要です。
+core の `subtle` と `zeroize` は `secret` のときだけ依存に加わります。
 
 ### MSRV 方針
 

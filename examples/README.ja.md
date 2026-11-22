@@ -164,4 +164,4 @@ cargo run -p ddd-toolkit --example reliable_delivery --features derive --locked
   場合は、このヘルパーではなく永続的なアプリケーション／アダプターの復旧で解決してください。
 
 CIは通常のワークスペーステストとfeature-matrixに加え、5例を明示的にビルド・実行します。
-`required-features = ["derive"]` により、no-default-features の検査ではderive依存の例を除外します。
+`required-features`（`derive` と、必要に応じて `cqrs`・`event_sourcing`・`delivery`）により、該当 feature が無効な検査ではそれらの例を除外します。

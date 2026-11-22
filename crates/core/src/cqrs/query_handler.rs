@@ -1,9 +1,7 @@
 #![allow(clippy::type_complexity)]
 
-use crate::{
-    AggregateRoot, DomainEventPublisher, Entity, LifecycleCompletionError, LifecycleOperationError,
-    Repository, cqrs::OperationState, dispatch_events,
-};
+use crate::cqrs_impl::{LifecycleCompletionError, LifecycleOperationError, OperationState};
+use crate::{AggregateRoot, DomainEventPublisher, Entity, Repository, dispatch_events};
 
 /// **English:**<br>
 /// Coordinates one synchronous aggregate save and event dispatch sequence.

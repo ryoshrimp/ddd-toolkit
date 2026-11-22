@@ -75,7 +75,7 @@ jobs:
           components: miri, rust-src
       - run: cargo +nightly miri setup
       # Only this integration target: no workspace, doctests, or trybuild suites.
-      - run: cargo +nightly miri test -p ddd-toolkit-core --no-default-features --test secret --locked
+      - run: cargo +nightly miri test -p ddd-toolkit-core --no-default-features --features secret --test secret --locked
 
   rustdoc:
     runs-on: ubuntu-latest

@@ -1,4 +1,4 @@
-use crate::Secret;
+use crate::secret::Secret;
 use zeroize::Zeroize;
 
 /// **English:**<br>
@@ -28,7 +28,7 @@ use zeroize::Zeroize;
 ///
 /// ```rust
 /// # #[cfg(feature = "serde_with")] {
-/// use ddd_toolkit_core::{ExposeSecret, Secret};
+/// use ddd_toolkit_core::secret::{ExposeSecret, Secret};
 /// use serde_with::SerializeAs;
 ///
 /// let token = Secret::new(String::from("storage-token"));

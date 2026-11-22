@@ -1,8 +1,11 @@
-use ddd_toolkit_core::{
-    AggregateReplay, AggregateRoot, AggregateSnapshot, DomainEvent, Entity, RehydratedAggregate,
-    SnapshotLoadError, SnapshotReplayError, SnapshotSaveError, SnapshotStore, StreamHistory,
-    StreamRevision, replay_with_optional_snapshot,
+#![cfg(feature = "event_sourcing")]
+
+use ddd_toolkit_core::event_sourcing::{
+    AggregateReplay, AggregateSnapshot, RehydratedAggregate, SnapshotLoadError,
+    SnapshotReplayError, SnapshotSaveError, SnapshotStore, StreamHistory, StreamRevision,
+    replay_with_optional_snapshot,
 };
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
 use std::cell::Cell;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -54,8 +57,8 @@ impl AggregateReplay for Aggregate {
     fn classify_snapshot(
         _: &AggregateSnapshot<u32>,
         _: StreamRevision,
-    ) -> Result<ddd_toolkit_core::SnapshotUse, ()> {
-        Ok(ddd_toolkit_core::SnapshotUse::Applicable)
+    ) -> Result<ddd_toolkit_core::event_sourcing::SnapshotUse, ()> {
+        Ok(ddd_toolkit_core::event_sourcing::SnapshotUse::Applicable)
     }
     fn from_snapshot(id: &u64, snapshot: AggregateSnapshot<u32>) -> Result<Self, ()> {
         let (value, _) = snapshot.into_parts();

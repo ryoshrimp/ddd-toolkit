@@ -1,9 +1,14 @@
-use ddd_toolkit_core::{
-    AggregateRoot, AppendError, AppendResult, AsyncTransactionalOutbox,
-    AsyncTransactionalOutboxCompletionError, AsyncTransactionalOutboxLifecycleContext,
-    AsyncTransactionalOutboxOperationError, CurrentRevision, DomainEvent, Entity, ExpectedRevision,
-    OutboxClaim, OutboxMessageId, ProjectionCheckpoint, RevisionConflict, StreamRevision,
+#![cfg(feature = "delivery")]
+
+use ddd_toolkit_core::delivery::{
+    AsyncTransactionalOutbox, AsyncTransactionalOutboxCompletionError,
+    AsyncTransactionalOutboxLifecycleContext, AsyncTransactionalOutboxOperationError, OutboxClaim,
+    OutboxMessageId, ProjectionCheckpoint,
 };
+use ddd_toolkit_core::event_sourcing::{
+    AppendError, AppendResult, CurrentRevision, ExpectedRevision, RevisionConflict, StreamRevision,
+};
+use ddd_toolkit_core::{AggregateRoot, DomainEvent, Entity};
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll, Waker};
@@ -66,8 +71,10 @@ impl AsyncTransactionalOutbox for Outbox {
             }),
             Mode::Failure => Box::pin(async {
                 Err(AppendError::Conflict(RevisionConflict {
-                    expected: ExpectedRevision::NoStream(ddd_toolkit_core::NoStream),
-                    current: CurrentRevision::NoStream(ddd_toolkit_core::NoStream),
+                    expected: ExpectedRevision::NoStream(
+                        ddd_toolkit_core::event_sourcing::NoStream,
+                    ),
+                    current: CurrentRevision::NoStream(ddd_toolkit_core::event_sourcing::NoStream),
                 }))
             }),
             Mode::Pending => Box::pin(std::future::pending()),
@@ -104,7 +111,7 @@ fn poll_ready<T>(mut future: Pin<Box<dyn Future<Output = T> + Send + '_>>) -> T 
 }
 
 fn expected() -> ExpectedRevision {
-    ExpectedRevision::NoStream(ddd_toolkit_core::NoStream)
+    ExpectedRevision::NoStream(ddd_toolkit_core::event_sourcing::NoStream)
 }
 
 #[test]

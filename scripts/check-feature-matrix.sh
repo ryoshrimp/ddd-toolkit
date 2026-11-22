@@ -12,6 +12,11 @@ combos=(
   "--no-default-features --features serde"
   "--no-default-features --features derive,serde"
   "--no-default-features --features serde_with"
+  "--no-default-features --features cqrs"
+  "--no-default-features --features event_sourcing"
+  "--no-default-features --features delivery"
+  "--no-default-features --features process"
+  "--no-default-features --features secret"
   "--all-features"
 )
 
@@ -26,6 +31,10 @@ done
 
 # Core must also work without serde, independently of macro's dev-dependencies.
 cargo test -p ddd-toolkit-core --no-default-features --locked
+for feature in cqrs event_sourcing delivery process secret secret,serde; do
+  echo "==> cargo test -p ddd-toolkit-core --no-default-features --features ${feature}"
+  cargo test -p ddd-toolkit-core --no-default-features --features "${feature}" --locked
+done
 cargo test -p ddd-toolkit-core --features serde --locked
 cargo test -p ddd-toolkit-core --features serde_with --locked
 

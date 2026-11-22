@@ -1,17 +1,17 @@
 error[E0616]: field `aggregate` of struct `AsyncLifecycleContext` is private
-  --> tests/ui/cqrs_async_context_private.rs:16:22
+  --> tests/ui/cqrs_async_context_private.rs:15:22
    |
-16 |     let _ = &context.aggregate;
+15 |     let _ = &context.aggregate;
    |                      ^^^^^^^^^ private field
 
 error[E0616]: field `repository` of struct `AsyncLifecycleContext` is private
-  --> tests/ui/cqrs_async_context_private.rs:17:22
+  --> tests/ui/cqrs_async_context_private.rs:16:22
    |
-17 |     let _ = &context.repository;
+16 |     let _ = &context.repository;
    |                      ^^^^^^^^^^ private field
 
 error[E0616]: field `publisher` of struct `AsyncLifecycleContext` is private
-  --> tests/ui/cqrs_async_context_private.rs:18:22
+  --> tests/ui/cqrs_async_context_private.rs:17:22
    |
-18 |     let _ = &context.publisher;
+17 |     let _ = &context.publisher;
    |                      ^^^^^^^^^ private field

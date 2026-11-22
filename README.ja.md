@@ -125,12 +125,12 @@ cargo run -p ddd-toolkit --example getting_started --features derive --locked
 
 - `Repository` / `AsyncRepository`、`DomainEventPublisher` /
   `AsyncDomainEventPublisher`、`dispatch_events` / `dispatch_events_async`。
-- CQRS のコマンド／クエリハンドラーとライフサイクルコンテキスト。
-- イベントストア、リビジョンの型、集約の再生、スナップショット。
-- イベント処理、プロジェクション、チェックポイント、トランザクショナルアウトボックスの契約。
-- 仕様、ドメインサービス／ポリシー／ファクトリー、プロセスマネージャー、
-  Unit of Work、イベントのアップキャスター。
-- 書式出力の秘匿化と破棄時のゼロ化を行う `Secret<T>`。
+- 仕様、ドメインサービス／ポリシー／ファクトリー、Unit of Work。
+- feature でゲートされた実験的モジュール（既定ですべて有効）: `cqrs`（コマンド／クエリ
+  ハンドラーとライフサイクルコンテキスト）、`event_sourcing`（イベントストア、リビジョンの型、
+  集約の再生、スナップショット、アップキャスター）、`delivery`（イベント処理、プロジェクション、
+  チェックポイント、トランザクショナルアウトボックス）、`process`（プロセスマネージャー）、
+  `secret`（書式出力の秘匿化と破棄時のゼロ化を行う `Secret<T>`）。
 
 コアが定義するのは契約です。ストレージアダプター、時計、ID 生成器、非同期ランタイムは
 提供せず、トランザクションや配信も自動的には保証しません。アダプターはアプリケーション側で
@@ -161,7 +161,7 @@ cargo run -p ddd-toolkit --example getting_started --features derive --locked
 
 ```rust
 fn main() {
-    let key = ddd_toolkit::Secret::new("sekret".to_owned());
+    let key = ddd_toolkit::secret::Secret::new("sekret".to_owned());
     assert_eq!(format!("{key:?}"), "[REDACTED]");
     assert_eq!(key.expose_secret(|value| value.len()), 6);
 }
@@ -213,8 +213,13 @@ fn main() {
 | Feature | デフォルト | 有効になる機能 |
 |---------|---------|---------|
 | `derive` | 有効 | `ValueObject`、`Entity`、`DomainEvent`、`AggregateRoot` の derive。コアの直接依存は不要 |
-| `serde` | 無効 | コアの serde 再エクスポート、`Secret<T>` の復元、`#[value_object(serde)]` に必要な serde derive 対応。`derive` とは独立 |
-| `serde_with` | 無効 | `serde` を含み、合成可能な明示的平文出力用の `ExposeSecret` を追加 |
+| `cqrs` | 有効 | 実験的な `cqrs` モジュール: コマンド／クエリハンドラーとライフサイクルコンテキスト |
+| `event_sourcing` | 有効 | 実験的な `event_sourcing` モジュール: イベントストア、再生、スナップショット、アップキャスター |
+| `delivery` | 有効 | 実験的な `delivery` モジュール: アウトボックス、コンシューマー、プロジェクション。`event_sourcing` を含む |
+| `process` | 有効 | 実験的な `process` モジュール: `ProcessManager`、`Transition` |
+| `secret` | 有効 | 実験的な `secret` モジュール: `Secret<T>`、`SecretMetadata` |
+| `serde` | 無効 | コアの serde 再エクスポート、`Secret<T>` の復元（`secret` と併用）、`#[value_object(serde)]` に必要な serde derive 対応。`derive` とは独立 |
+| `serde_with` | 無効 | `serde` と `secret` を含み、合成可能な明示的平文出力用の `ExposeSecret` を追加 |
 
 値オブジェクトをシリアライズするには、ファサードの `serde` feature を有効にし、
 型ごとに次の属性を指定します。
@@ -255,7 +260,7 @@ struct UserId(String);
 `clippy::redundant_field_names` の許可は不要です。対応バージョンや serde feature の
 要件は [core/macro の互換性契約](docs/macro-compatibility.md) を参照してください。
 
-`Secret<T>` は feature の指定なしで使え、`Serialize` は実装しません。
+`Secret<T>`（`ddd_toolkit::secret::Secret`、feature `secret`、既定で有効）は `Serialize` を実装しません。
 `serde` feature は `Deserialize` を、`serde_with` feature は明示的な平文出力アダプター
 `ExposeSecret` を追加します。合成例、エラー秘匿と入出力のゼロ化の限界は
 [Secret の serde 連携](docs/secret-serde.md)を参照してください。

@@ -1,6 +1,8 @@
+#![cfg(feature = "secret")]
+
 use std::sync::{Arc, Mutex};
 
-use ddd_toolkit_core::{Secret, SecretMetadata};
+use ddd_toolkit_core::secret::{Secret, SecretMetadata};
 use zeroize::Zeroize;
 
 #[derive(Clone)]
