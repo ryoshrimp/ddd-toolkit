@@ -259,6 +259,7 @@ struct UserId(String);
 `ExposeSecret` を追加します。合成例、エラー秘匿と入出力のゼロ化の限界は
 [Secret の serde 連携](docs/secret-serde.md)を参照してください。
 `Secret::into_exposed_secret` を呼び出した後のゼロ化は呼び出し側の責任です。
+`Secret<T>` は `Clone` を実装しません。複製は `Secret::clone_secret` で明示的に行います。
 
 ## core/macro 0.3 からの移行
 

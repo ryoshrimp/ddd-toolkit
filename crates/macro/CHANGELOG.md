@@ -14,9 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   enum variant) and report an error pointing at the field or variant instead of
   an `E0592` in generated code (#62).
 - `#[value_object(no_eq)]` skips the generated `Eq` and `Hash` impls and
-  `#[value_object(no_hash)]` skips only `Hash`, so field types such as `f64` or
-  `Secret<String>` can use `ValueObject` together with `validate`, `error`, and
-  `serde` (#61). Both flags work on every shape, may be combined (same as
+  `#[value_object(no_hash)]` skips only `Hash`, so field types such as `f64` can
+  use `ValueObject` together with `validate`, `error`, and `serde` (#61). Both flags work on every shape, may be combined (same as
   `no_eq`), and cannot be combined with `trait_only`. Default output is unchanged.
 
 ### Changed
@@ -41,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `is_http_error`. Single-word variants (`Active` gives `is_active`) are
   unchanged. Variants that collide after conversion (`FooBar` and `Foo_Bar`) are
   reported as a duplicate-name error.
+- **Breaking:** `Secret<T>` no longer implements `Clone`, so `#[derive(ValueObject)]` types
+  that contain a `Secret<T>` no longer compile. This follows the core change (#70).
 
 ### Fixed
 

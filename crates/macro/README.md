@@ -39,7 +39,7 @@ only the facade with its default `derive` feature is also supported.
 In the default mode, do not separately implement or derive traits already generated
 by a macro. Field types must satisfy the corresponding generated trait bounds.
 Each generated trait is bounded on the field types, so a type without `Eq` or
-`Hash`, such as `f64` or `Secret<String>`, needs `#[value_object(no_eq)]`
+`Hash`, such as `f64`, needs `#[value_object(no_eq)]`
 (skips both `Eq` and `Hash`) or `#[value_object(no_hash)]` (skips only `Hash`).
 Both flags work on every `ValueObject` shape and with `validate`, `error`, and
 `serde`, but not with `trait_only`.

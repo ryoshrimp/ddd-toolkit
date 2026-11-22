@@ -264,6 +264,7 @@ The `serde` feature adds `Deserialize`; the `serde_with` feature adds the explic
 `ExposeSecret` plaintext output adapter. See [Secret serde integration](docs/secret-serde.md)
 for composition examples, error redaction and input/output zeroization limits.
 Calling `Secret::into_exposed_secret` transfers zeroization responsibility to the caller.
+`Secret<T>` does not implement `Clone`; copy a secret explicitly with `Secret::clone_secret`.
 
 ## Migrating from core/macro 0.3
 

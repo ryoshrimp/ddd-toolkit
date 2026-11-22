@@ -73,7 +73,7 @@ mod value_object;
 /// fields, direct enum construction, or independently implemented deserialization.
 ///
 /// `#[value_object(no_eq)]` skips `Eq` and `Hash`; `#[value_object(no_hash)]`
-/// skips only `Hash`. Use them for field types such as `f64` or `Secret<String>`
+/// skips only `Hash`. Use them for field types such as `f64`
 /// that lack `Eq` or `Hash`; `Debug`, `Clone`, and `PartialEq` are still generated.
 /// Both may be combined (equivalent to `no_eq`), work with `validate`, `error`,
 /// and `serde`, and cannot be combined with `trait_only`.
@@ -137,7 +137,7 @@ mod value_object;
 /// 公開フィールド、列挙型の直接構築、別途実装された逆直列化の不変条件は保証しません。
 ///
 /// `#[value_object(no_eq)]` は `Eq` と `Hash` を、`#[value_object(no_hash)]` は
-/// `Hash` だけを生成しません。`f64` や `Secret<String>` のように `Eq` や `Hash` を
+/// `Hash` だけを生成しません。`f64` のように `Eq` や `Hash` を
 /// 持たない型に使います。`Debug`、`Clone`、`PartialEq` は引き続き生成されます。
 /// 両方の併記は `no_eq` 単独と同じで、`validate`、`error`、`serde` と併用でき、
 /// `trait_only` とは併用できません。

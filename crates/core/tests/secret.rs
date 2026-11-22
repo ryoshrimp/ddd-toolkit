@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use ddd_toolkit_core::{Secret, SecretMetadata};
 use zeroize::Zeroize;
 
+#[derive(Clone)]
 struct Probe {
     value: Vec<u8>,
     operations: Arc<Mutex<Vec<&'static str>>>,
@@ -59,11 +60,35 @@ fn into_exposed_secret_neither_zeroizes_nor_drops_the_returned_value() {
 }
 
 #[test]
-fn secret_clone_and_equality_delegate_to_inner() {
+fn secret_clone_secret_and_equality_delegate_to_inner() {
     let left = Secret::new(String::from("same"));
-    let right = left.clone();
+    let right = left.clone_secret();
     assert_eq!(left, right);
     assert_eq!(right.expose_secret_ref(), "same");
+}
+
+#[test]
+fn clone_secret_copies_are_zeroized_independently_on_drop() {
+    let operations = Arc::new(Mutex::new(Vec::new()));
+    let original = Secret::new(Probe {
+        value: b"secret".to_vec(),
+        operations: Arc::clone(&operations),
+    });
+    let copy = original.clone_secret();
+
+    drop(copy);
+    assert_eq!(*operations.lock().unwrap(), ["zeroize", "drop"]);
+    drop(original);
+    assert_eq!(
+        *operations.lock().unwrap(),
+        ["zeroize", "drop", "zeroize", "drop"]
+    );
+}
+
+#[test]
+fn secret_implements_zeroize_on_drop() {
+    fn assert_zod<T: zeroize::ZeroizeOnDrop>() {}
+    assert_zod::<Secret<String>>();
 }
 
 #[test]
