@@ -24,6 +24,15 @@
 //! Validation returns an application-defined error; construction
 //! uses `try_new` rather than the removed `TryFrom` implementation.
 //!
+//! New to the crate? Follow the staged
+//! [getting-started guide](https://github.com/ryoshrimp/ddd-toolkit/blob/main/docs/guide.md);
+//! the API map below lists the public items by area, linking those available in every
+//! feature set. For per-API examples and contract tests, see the
+//! [public contract map](https://github.com/ryoshrimp/ddd-toolkit/blob/main/docs/public-contracts.md).
+//! The map's areas roughly follow the guide's stages. The four derive macros (`ValueObject`,
+//! `Entity`, `DomainEvent`, `AggregateRoot`; feature `derive`) share names with
+//! the traits listed there, and `ExposeSecret` needs feature `serde_with`.
+//!
 //! **日本語:**<br>
 //! `ddd-toolkit-core` 0.4 のトレイトとヘルパーを再公開します。
 //! [`Entity`]、[`ValueObject`]、[`AggregateRoot`]、[`Repository`]、
@@ -49,6 +58,68 @@
 //!
 //! 検証はアプリケーション定義のエラーを返します。廃止された
 //! `TryFrom` 実装の代わりに `try_new` で構築します。
+//!
+//! 初めての方は、段階的な
+//! [入門ガイド](https://github.com/ryoshrimp/ddd-toolkit/blob/main/docs/guide.ja.md)から
+//! 始めてください。下の API マップは公開項目を領域別に一覧し、どの feature でも使えるものは
+//! リンクします。API ごとの実行例と
+//! 契約テストは[公開契約の対応表](https://github.com/ryoshrimp/ddd-toolkit/blob/main/docs/public-contracts.md)を
+//! 参照してください。マップの領域はガイドのステージにおおむね対応します。四つの derive
+//! マクロ（`ValueObject`、`Entity`、`DomainEvent`、`AggregateRoot`。feature `derive`）は
+//! マップに挙げるトレイトと同名で、`ExposeSecret` には feature `serde_with` が必要です。
+//!
+//! # API map / API マップ
+//!
+//! ## Domain modeling / ドメインモデル
+//!
+//! [`ValueObject`], [`Entity`], [`AggregateRoot`], [`DomainEvent`],
+//! [`DomainEventMetadata`], [`DomainEventConversion`]
+//!
+//! ## Persistence and publication / 永続化と発行
+//!
+//! [`Repository`], [`AsyncRepository`], [`DomainEventPublisher`],
+//! [`AsyncDomainEventPublisher`], [`dispatch_events`], [`dispatch_events_async`]
+//!
+//! ## CQRS / CQRS
+//!
+//! [`CommandHandler`], [`AsyncCommandHandler`], [`QueryHandler`], [`AsyncQueryHandler`],
+//! [`AggregateCreator`], [`AsyncAggregateCreator`], [`LifecycleContext`],
+//! [`AsyncLifecycleContext`], [`LifecycleCallback`], [`AsyncLifecycleCallback`],
+//! [`LifecycleCompletionError`], [`LifecycleOperationError`],
+//! [`Specification`], [`And`], [`Or`], [`Not`], [`Policy`]
+//!
+//! ## Event sourcing / イベントソーシング
+//!
+//! [`EventStore`], [`AsyncEventStore`], [`ExpectedRevision`], [`CurrentRevision`],
+//! [`StreamRevision`], [`NoStream`], [`AppendResult`], [`AppendError`],
+//! [`RevisionConflict`], [`LoadResult`], [`StreamHistory`], [`StreamHistoryError`],
+//! [`AggregateReplay`], [`RehydratedAggregate`], [`ReplayError`], [`SnapshotReplayError`],
+//! [`replay_aggregate`], [`replay_with_optional_snapshot`],
+//! [`SnapshotStore`], [`AsyncSnapshotStore`], [`AggregateSnapshot`], [`SnapshotUse`],
+//! [`SnapshotLoadError`], [`SnapshotSaveError`],
+//! [`EventIdentity`], [`VersionedEvent`], [`EventUpcaster`], [`UpcasterChain`]
+//!
+//! ## Delivery and projections / 配送とプロジェクション
+//!
+//! [`TransactionalOutbox`], [`AsyncTransactionalOutbox`], [`OutboxClaim`], [`OutboxMessageId`],
+//! [`OutboxLifecycleContext`], [`AsyncOutboxLifecycleContext`],
+//! [`TransactionalOutboxLifecycleContext`], [`AsyncTransactionalOutboxLifecycleContext`],
+//! [`OutboxLifecycleCompletionError`], [`OutboxLifecycleOperationError`],
+//! [`TransactionalOutboxCompletionError`], [`TransactionalOutboxOperationError`],
+//! [`AsyncOutboxLifecycleCompletionError`], [`AsyncOutboxLifecycleOperationError`],
+//! [`AsyncTransactionalOutboxCompletionError`], [`AsyncTransactionalOutboxOperationError`],
+//! [`EventConsumer`], [`AsyncEventConsumer`], [`Projection`], [`AsyncProjection`],
+//! [`DeliveryMetadata`], [`DomainEventDeliveryMetadata`],
+//! [`IdempotentProjection`], [`AsyncIdempotentProjection`], [`ProjectionApplication`],
+//! [`ProjectionCheckpoint`], [`ProjectionCheckpointStore`], [`AsyncProjectionCheckpointStore`]
+//!
+//! ## Other building blocks / その他の構成要素
+//!
+//! [`DomainService`], [`DomainFactory`], [`ProcessManager`], [`Transition`], [`UnitOfWork`]
+//!
+//! ## Secret / シークレット
+//!
+//! [`Secret`], [`SecretMetadata`], `ExposeSecret`
 //!
 //! # Example / 使用例
 //!

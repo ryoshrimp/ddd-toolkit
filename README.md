@@ -24,6 +24,7 @@ Start with the [four derives and quick start](#four-derives), continue with the
 when you need additional contracts. Use the
 [public contract map](docs/public-contracts.md) to find examples and contract tests
 by API name, including sync/async modes and feature requirements.
+For a staged path through the APIs, see the [getting-started guide](docs/guide.md).
 
 ## Package and toolchain
 
